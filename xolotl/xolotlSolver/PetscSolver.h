@@ -33,8 +33,12 @@ private:
 	 * @param data The DM (data manager) created by PETSc
 	 * @param solutionVector The solution vector that contains the PDE
 	 * solution and which needs to be initialized.
+	 * @param oldData The previous DM
+	 * @param oldSolution The previous solution vector that contains the PDE
+	 * solution.
 	 */
-	void setupInitialConditions(DM data, Vec solutionVector);
+	void setupInitialConditions(DM data, Vec solutionVector, DM oldData,
+			Vec oldSolution);
 
 public:
 

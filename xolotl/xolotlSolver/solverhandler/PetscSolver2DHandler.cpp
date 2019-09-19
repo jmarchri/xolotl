@@ -132,7 +132,8 @@ void PetscSolver2DHandler::createSolverContext(DM &da) {
 	return;
 }
 
-void PetscSolver2DHandler::initializeConcentration(DM &da, Vec &C) {
+void PetscSolver2DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
+		Vec &oldC) {
 	PetscErrorCode ierr;
 
 	// Pointer for the concentration vector
@@ -336,7 +337,7 @@ void PetscSolver2DHandler::updateConcentration(TS &ts, Vec &localC, Vec &F,
 			// Share the concentration with all the processes
 			totalAtomConc = 0.0;
 			MPI_Allreduce(&atomConc, &totalAtomConc, 1, MPI_DOUBLE, MPI_SUM,
-			MPI_COMM_WORLD);
+					MPI_COMM_WORLD);
 
 			// Set the disappearing rate in the modified TM handler
 			mutationHandler->updateDisappearingRate(totalAtomConc);
@@ -837,7 +838,7 @@ void PetscSolver2DHandler::computeDiagonalJacobian(TS &ts, Vec &localC, Mat &J,
 			// Share the concentration with all the processes
 			totalAtomConc = 0.0;
 			MPI_Allreduce(&atomConc, &totalAtomConc, 1, MPI_DOUBLE, MPI_SUM,
-			MPI_COMM_WORLD);
+					MPI_COMM_WORLD);
 
 			// Set the disappearing rate in the modified TM handler
 			mutationHandler->updateDisappearingRate(totalAtomConc);

@@ -60,8 +60,11 @@ public:
 	 *
 	 * @param da The PETSc distributed array
 	 * @param C The PETSc solution vector
+	 * @param oldDA The previous PETSc distributed array
+	 * @param oldC The previous PETSc solution vector
 	 */
-	virtual void initializeConcentration(DM &da, Vec &C) = 0;
+	virtual void initializeConcentration(DM &da, Vec &C, DM &oldDA,
+			Vec &oldC) = 0;
 
 	/**
 	 * Compute the new concentrations for the RHS function given an initial
@@ -142,6 +145,15 @@ public:
 	 * @param k The index on the grid in the z direction
 	 */
 	virtual void setSurfacePosition(int pos, int j = -1, int k = -1) = 0;
+
+	/**
+	 * Set the number of grid points we want to move by at the surface.
+	 *
+	 * @param offset The number of grid points
+	 * @param j The index on the grid in the y direction
+	 * @param k The index on the grid in the z direction
+	 */
+	virtual void setSurfaceOffset(int offset, int j = -1, int k = -1) = 0;
 
 	/**
 	 * Get the initial vacancy concentration.

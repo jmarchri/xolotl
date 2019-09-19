@@ -119,200 +119,232 @@ protected:
 	 *
 	 * @param nx The number of grid points
 	 * @param hx The step size
-	 * @param surfacePos The position of the surface on the grid
+	 * @param surfaceOffset The number of grid point to add/remove at the surface
 	 * @param isPSI To know if we want a PSI grid or a NE grid
 	 */
-	void generateGrid(int nx, double hx, int surfacePos) {
-		// Clear the grid
-		grid.clear();
+	void generateGrid(int nx, double hx, int surfaceOffset) {
+		// Initial case
+		if (surfaceOffset == 0) {
+			// Clear the grid
+			grid.clear();
 
-		// Maybe the user wants a Chebyshev grid
-		if (useChebyshevGrid) {
-			// The first grid point will be at x = 0.0
-			grid.push_back(0.0);
-			grid.push_back(0.0);
+			// Maybe the user wants a Chebyshev grid
+			if (useChebyshevGrid) {
+				// The first grid point will be at x = 0.0
+				grid.push_back(0.0);
+				grid.push_back(0.0);
 
-			// In that case hx correspond to the full length of the grid
-			for (int l = 1; l <= nx - 1; l++) {
-				grid.push_back(
-						(hx / 2.0)
-								* (1.0
-										- cos(
-												xolotlCore::pi * double(l)
-														/ double(nx - 1))));
+				// In that case hx correspond to the full length of the grid
+				for (int l = 1; l <= nx - 1; l++) {
+					grid.push_back(
+							(hx / 2.0)
+									* (1.0
+											- cos(
+													xolotlCore::pi * double(l)
+															/ double(nx - 1))));
+				}
+				// The last grid point will be at x = hx
+				grid.push_back(hx);
 			}
-			// The last grid point will be at x = hx
-			grid.push_back(hx);
-		}
-		// Check if the user wants a regular grid
-		if (useRegularGrid == "regular") {
-			// The grid will me made of nx + 1 points separated by hx nm
-			for (int l = 0; l <= nx + 1; l++) {
-				grid.push_back((double) l * hx);
+			// Check if the user wants a regular grid
+			if (useRegularGrid == "regular") {
+				// The grid will me made of nx + 1 points separated by hx nm
+				for (int l = 0; l <= nx + 1; l++) {
+					grid.push_back((double) l * hx);
+				}
+			}
+			// If it is not regular do a fine mesh close to the surface and
+			// increase the step size when away from the surface
+			else if (useRegularGrid == "PSI") {
+				// Initialize the value of the previous point
+				double previousPoint = 0.0;
+
+				// Loop on all the grid points
+				for (int l = 0; l <= nx + 1; l++) {
+					// Add the previous point
+					grid.push_back(previousPoint);
+					// 0.1nm step near the surface (x < 2.5nm)
+					if (l < 26) {
+						previousPoint += 0.1;
+					}
+					// Then 0.25nm (2.5nm < x < 5.0nm)
+					else if (l < 36) {
+						previousPoint += 0.25;
+					}
+					// Then 0.5nm (5.0nm < x < 7.5nm)
+					else if (l < 41) {
+						previousPoint += 0.5;
+					}
+					// Then 1.0nm step size (7.5nm < x < 50.5)
+					else if (l < 84) {
+						previousPoint += 1.0;
+					}
+					// Then 2.0nm step size (50.5nm < x < 100.5)
+					else if (l < 109) {
+						previousPoint += 2.0;
+					}
+					// Then 5.0nm step size (100.5nm < x < 150.5)
+					else if (l < 119) {
+						previousPoint += 5.0;
+					}
+					// Then 10.0nm step size (150.5nm < x < 300.5)
+					else if (l < 134) {
+						previousPoint += 10.0;
+					}
+					// Then 20.0nm step size (300.5nm < x < 500.5)
+					else if (l < 144) {
+						previousPoint += 20.0;
+					}
+					// Then 50.0nm step size (500.5nm < x < 1000.5)
+					else if (l < 154) {
+						previousPoint += 50.0;
+					}
+					// Then 100.0nm step size (1000.5nm < x < 5000.5)
+					else if (l < 194) {
+						previousPoint += 100.0;
+					}
+					// Then 200.0nm step size (5000.5nm < x < 10000.5)
+					else if (l < 219) {
+						previousPoint += 200.0;
+					}
+					// Then 500.0nm step size (10000.5nm < x < 20000.5)
+					else if (l < 239) {
+						previousPoint += 500.0;
+					}
+					// Then 1.0um step size (20000.5nm < x < 30000.5nm )
+					else if (l < 249) {
+						previousPoint += 1000.0;
+					}
+					// Then 2.0um step size (30000.5nm < x < 50000.5)
+					else if (l < 259) {
+						previousPoint += 2000.0;
+					}
+					// Then 5.0um step size (50000.5nm < x < 100000.5)
+					else if (l < 269) {
+						previousPoint += 5000.0;
+					}
+					// Then 10.0um step size (100000.5nm < x < 200000.5nm )
+					else if (l < 279) {
+						previousPoint += 10000.0;
+					}
+					// Then 20.0um step size (200000.5nm < x < 500000.5)
+					else if (l < 294) {
+						previousPoint += 20000.0;
+					}
+					// Then 50.0um step size (500000.5nm < x < 1000000.5)
+					else if (l < 304) {
+						previousPoint += 50000.0;
+					}
+					// Then 100.0um step size (1mm < x < 2mm )
+					else if (l < 314) {
+						previousPoint += 100000.0;
+					}
+					// Then 200.0um step size (2mm < x < 5mm)
+					else if (l < 329) {
+						previousPoint += 200000.0;
+					}
+					// Then 500.0um step size (5mm < x < 10mm)
+					else if (l < 339) {
+						previousPoint += 500000.0;
+					}
+					// Then 1.0mm step size (10mm < x)
+					else {
+						previousPoint += 1000000.0;
+					}
+				}
+			}
+			// If it is not regular do a fine mesh near points of interests
+			else if (useRegularGrid == "NE") {
+				// Initialize the value of the previous point
+				double previousPoint = 0.0;
+
+				// Loop on all the grid points
+				for (int l = 0; l <= nx + 1; l++) {
+					// Add the previous point
+					grid.push_back(previousPoint);
+					// 10nm step near the surface (x < 200nm)
+					if (l < 21) {
+						previousPoint += 10;
+					}
+					// 100nm step size (200nm < x < 1um)
+					else if (l < 29) {
+						previousPoint += 100;
+					}
+					// 1um step size (1um < x < 5um)
+					else if (l < 33) {
+						previousPoint += 1000;
+					}
+					// 5um step size (5um < x < 45um)
+					else if (l < 41) {
+						previousPoint += 5000;
+					}
+					// 1um step size (45um < x < 49um)
+					else if (l < 45) {
+						previousPoint += 1000;
+					}
+					// 100nm step size
+					else if (l < 53) {
+						previousPoint += 100;
+					}
+					// 10nm step size
+					else if (l < 93) {
+						previousPoint += 10;
+					}
+					// 100nm step size
+					else if (l < 101) {
+						previousPoint += 100;
+					}
+					// 1um step size
+					else if (l < 105) {
+						previousPoint += 1000;
+					}
+					// 5um step size
+					else if (l < 113) {
+						previousPoint += 5000;
+					}
+					// 1um step size
+					else if (l < 117) {
+						previousPoint += 1000;
+					}
+					// 100nm step size
+					else if (l < 125) {
+						previousPoint += 100;
+					}
+					// 10nm step size
+					else {
+						previousPoint += 10;
+					}
+				}
 			}
 		}
-		// If it is not regular do a fine mesh close to the surface and
-		// increase the step size when away from the surface
-		else if (useRegularGrid == "PSI") {
-			// Initialize the value of the previous point
+		// Modify grid
+		else {
+			// Transfer the grid
+			auto oldGrid = grid;
+			grid.clear();
+
+			// Get the near surface step size
+			double step = grid[1] - grid[0];
+
+			// Initalize previous point
 			double previousPoint = 0.0;
 
-			// Loop on all the grid points
-			for (int l = 0; l <= nx + 1; l++) {
+			// Add the offset
+			for (int l = 0; l < surfaceOffset; l++) {
 				// Add the previous point
 				grid.push_back(previousPoint);
-				// 0.1nm step near the surface (x < 2.5nm)
-				if (l < surfacePos + 26) {
-					previousPoint += 0.1;
-				}
-				// Then 0.25nm (2.5nm < x < 5.0nm)
-				else if (l < surfacePos + 36) {
-					previousPoint += 0.25;
-				}
-				// Then 0.5nm (5.0nm < x < 7.5nm)
-				else if (l < surfacePos + 41) {
-					previousPoint += 0.5;
-				}
-				// Then 1.0nm step size (7.5nm < x < 50.5)
-				else if (l < surfacePos + 84) {
-					previousPoint += 1.0;
-				}
-				// Then 2.0nm step size (50.5nm < x < 100.5)
-				else if (l < surfacePos + 109) {
-					previousPoint += 2.0;
-				}
-				// Then 5.0nm step size (100.5nm < x < 150.5)
-				else if (l < surfacePos + 119) {
-					previousPoint += 5.0;
-				}
-				// Then 10.0nm step size (150.5nm < x < 300.5)
-				else if (l < surfacePos + 134) {
-					previousPoint += 10.0;
-				}
-				// Then 20.0nm step size (300.5nm < x < 500.5)
-				else if (l < surfacePos + 144) {
-					previousPoint += 20.0;
-				}
-				// Then 50.0nm step size (500.5nm < x < 1000.5)
-				else if (l < surfacePos + 154) {
-					previousPoint += 50.0;
-				}
-				// Then 100.0nm step size (1000.5nm < x < 5000.5)
-				else if (l < surfacePos + 194) {
-					previousPoint += 100.0;
-				}
-				// Then 200.0nm step size (5000.5nm < x < 10000.5)
-				else if (l < surfacePos + 219) {
-					previousPoint += 200.0;
-				}
-				// Then 500.0nm step size (10000.5nm < x < 20000.5)
-				else if (l < surfacePos + 239) {
-					previousPoint += 500.0;
-				}
-				// Then 1.0um step size (20000.5nm < x < 30000.5nm )
-				else if (l < surfacePos + 249) {
-					previousPoint += 1000.0;
-				}
-				// Then 2.0um step size (30000.5nm < x < 50000.5)
-				else if (l < surfacePos + 259) {
-					previousPoint += 2000.0;
-				}
-				// Then 5.0um step size (50000.5nm < x < 100000.5)
-				else if (l < surfacePos + 269) {
-					previousPoint += 5000.0;
-				}
-				// Then 10.0um step size (100000.5nm < x < 200000.5nm )
-				else if (l < surfacePos + 279) {
-					previousPoint += 10000.0;
-				}
-				// Then 20.0um step size (200000.5nm < x < 500000.5)
-				else if (l < surfacePos + 294) {
-					previousPoint += 20000.0;
-				}
-				// Then 50.0um step size (500000.5nm < x < 1000000.5)
-				else if (l < surfacePos + 304) {
-					previousPoint += 50000.0;
-				}
-				// Then 100.0um step size (1mm < x < 2mm )
-				else if (l < surfacePos + 314) {
-					previousPoint += 100000.0;
-				}
-				// Then 200.0um step size (2mm < x < 5mm)
-				else if (l < surfacePos + 329) {
-					previousPoint += 200000.0;
-				}
-				// Then 500.0um step size (5mm < x < 10mm)
-				else if (l < surfacePos + 339) {
-					previousPoint += 500000.0;
-				}
-				// Then 1.0mm step size (10mm < x)
-				else {
-					previousPoint += 1000000.0;
-				}
+				// Update its value
+				previousPoint += step;
 			}
-		}
-		// If it is not regular do a fine mesh near points of interests
-		else if (useRegularGrid == "NE") {
-			// Initialize the value of the previous point
-			double previousPoint = 0.0;
-
-			// Loop on all the grid points
-			for (int l = 0; l <= nx + 1; l++) {
+			// Add the rest of the grid
+			for (int l = 1; l < oldGrid.size(); l++) {
 				// Add the previous point
 				grid.push_back(previousPoint);
-				// 10nm step near the surface (x < 200nm)
-				if (l < surfacePos + 21) {
-					previousPoint += 10;
-				}
-				// 100nm step size (200nm < x < 1um)
-				else if (l < surfacePos + 29) {
-					previousPoint += 100;
-				}
-				// 1um step size (1um < x < 5um)
-				else if (l < surfacePos + 33) {
-					previousPoint += 1000;
-				}
-				// 5um step size (5um < x < 45um)
-				else if (l < surfacePos + 41) {
-					previousPoint += 5000;
-				}
-				// 1um step size (45um < x < 49um)
-				else if (l < surfacePos + 45) {
-					previousPoint += 1000;
-				}
-				// 100nm step size
-				else if (l < surfacePos + 53) {
-					previousPoint += 100;
-				}
-				// 10nm step size
-				else if (l < surfacePos + 93) {
-					previousPoint += 10;
-				}
-				// 100nm step size
-				else if (l < surfacePos + 101) {
-					previousPoint += 100;
-				}
-				// 1um step size
-				else if (l < surfacePos + 105) {
-					previousPoint += 1000;
-				}
-				// 5um step size
-				else if (l < surfacePos + 113) {
-					previousPoint += 5000;
-				}
-				// 1um step size
-				else if (l < surfacePos + 117) {
-					previousPoint += 1000;
-				}
-				// 100nm step size
-				else if (l < surfacePos + 125) {
-					previousPoint += 100;
-				}
-				// 10nm step size
-				else {
-					previousPoint += 10;
-				}
+				// Update its value
+				previousPoint += oldGrid[l] - oldGrid[l - 1];
 			}
+			// Add the last point
+			grid.push_back(previousPoint);
 		}
 
 		return;
@@ -329,10 +361,10 @@ protected:
 					1), topOffset(1), frontOffset(1), backOffset(1), initialVConc(
 					0.0), electronicStoppingPower(0.0), dimension(-1), portion(
 					0.0), useRegularGrid(""), movingSurface(false), bubbleBursting(
-					false), useAttenuation(false), sputteringYield(0.0), fluxHandler(nullptr), temperatureHandler(
-					nullptr), diffusionHandler(nullptr), mutationHandler(
-					nullptr), resolutionHandler(nullptr), tauBursting(10.0), rngSeed(
-					0) {
+					false), useAttenuation(false), sputteringYield(0.0), fluxHandler(
+					nullptr), temperatureHandler(nullptr), diffusionHandler(
+					nullptr), mutationHandler(nullptr), resolutionHandler(
+					nullptr), tauBursting(10.0), rngSeed(0) {
 	}
 
 public:
@@ -591,7 +623,9 @@ public:
 	 * Get the minimum size for computing average radius.
 	 * \see ISolverHandler.h
 	 */
-	xolotlCore::Array<int, 4> getMinSizes() const override { return minRadiusSizes;}
+	xolotlCore::Array<int, 4> getMinSizes() const override {
+		return minRadiusSizes;
+	}
 
 	/**
 	 * Get the flux handler.
@@ -683,6 +717,15 @@ public:
 	 */
 	std::vector<std::tuple<int, int, int> > getGBVector() const override {
 		return gbVector;
+	}
+
+	/**
+	 * Set the number of grid points we want to move by at the surface.
+	 * \see ISolverHandler.h
+	 */
+	void setSurfaceOffset(int offset, int j = -1, int k = -1) override {
+		// Do nothing for now
+		return;
 	}
 }
 ;

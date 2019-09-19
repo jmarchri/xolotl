@@ -2753,67 +2753,9 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
 
 		// Throw an exception if the position is negative
 		if (surfacePos < 0) {
-			PetscBool flagCheck;
-			ierr = PetscOptionsHasName(NULL, NULL, "-check_collapse",
-					&flagCheck);
+			solverHandler.setSurfaceOffset(nGridPoints);
+			ierr = TSSetConvergedReason(ts, TS_CONVERGED_USER);
 			CHKERRQ(ierr);
-			if (flagCheck) {
-				// Write the convergence reason
-				std::ofstream outputFile;
-				outputFile.open("solverStatus.txt");
-				outputFile << "overgrid" << std::endl;
-				outputFile.close();
-			}
-			throw std::string(
-					"\nxolotlSolver::Monitor1D: The surface is trying to go outside of the grid!!");
-		}
-
-		// Printing information about the extension of the material
-		if (procId == 0) {
-			std::cout << "Adding " << nGridPoints
-					<< " points to the grid at time: " << time << " s."
-					<< std::endl;
-		}
-
-		// Set it in the solver
-		solverHandler.setSurfacePosition(surfacePos);
-
-		// Initialize the vacancy concentration and the temperature on the new grid points
-		// Get the single vacancy ID
-		auto singleVacancyCluster = network.get(Species::V, 1);
-		int vacancyIndex = -1;
-		if (singleVacancyCluster)
-			vacancyIndex = singleVacancyCluster->getId() - 1;
-		// Get the surface temperature
-		double temp = 0.0;
-		if (xi >= xs && xi < xs + xm) {
-			temp = solutionArray[xi][dof - 1];
-		}
-		double surfTemp = 0.0;
-		MPI_Allreduce(&temp, &surfTemp, 1, MPI_DOUBLE, MPI_SUM,
-				PETSC_COMM_WORLD);
-
-		// Loop on the new grid points
-		while (nGridPoints >= 0) {
-			// Position of the newly created grid point
-			xi = surfacePos + nGridPoints;
-
-			// If xi is on this process
-			if (xi >= xs && xi < xs + xm) {
-				// Get the concentrations
-				gridPointSolution = solutionArray[xi];
-
-				// Set the new surface temperature
-				gridPointSolution[dof - 1] = surfTemp;
-
-				if (vacancyIndex > 0 && nGridPoints > 0) {
-					// Initialize the vacancy concentration
-					gridPointSolution[vacancyIndex] = initialVConc;
-				}
-			}
-
-			// Decrease the number of grid points
-			--nGridPoints;
 		}
 	}
 
@@ -2892,7 +2834,8 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
  * @return A standard PETSc error code
  */
 PetscErrorCode setupPetsc1DMonitor(TS ts,
-		std::shared_ptr<xolotlPerf::IHandlerRegistry> handlerRegistry) {
+		std::shared_ptr<xolotlPerf::IHandlerRegistry> handlerRegistry,
+		bool firstLoop) {
 
 	PetscErrorCode ierr;
 
@@ -3085,7 +3028,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 
 		// Compute the correct hdf5Previous1D for a restart
 		// Get the last time step written in the HDF5 file
-		if (hasConcentrations) {
+		if (hasConcentrations && firstLoop) {
 
 			assert(lastTsGroup);
 
@@ -3095,7 +3038,8 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 		}
 
 		// Don't do anything if both files have the same name
-		if (hdf5OutputName1D != solverHandler.getNetworkName()) {
+		// Or if it is not the first loop
+		if (hdf5OutputName1D != solverHandler.getNetworkName() && !firstLoop) {
 
 			PetscInt Mx;
 			PetscErrorCode ierr;
@@ -3151,7 +3095,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 // If the user wants the surface to be able to move or bursting
 	if (solverHandler.moveSurface() || solverHandler.burstBubbles()) {
 		// Surface
-		if (solverHandler.moveSurface()) {
+		if (solverHandler.moveSurface() && firstLoop) {
 
 			// Get the interstitial information at the surface if concentrations were stored
 			if (hasConcentrations) {
@@ -3193,10 +3137,12 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 		checkPetscError(ierr,
 				"setupPetsc1DMonitor: TSSetEventHandler (eventFunction1D) failed.");
 
-		// Uncomment to clear the file where the bursting info will be written
-		std::ofstream outputFile;
-		outputFile.open("bursting.txt");
-		outputFile.close();
+		if (firstLoop) {
+			// Uncomment to clear the file where the bursting info will be written
+			std::ofstream outputFile;
+			outputFile.open("bursting.txt");
+			outputFile.close();
+		}
 	}
 
 // Set the monitor to save 1D plot of xenon distribution
@@ -3339,7 +3285,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 
 // Initialize indices1D and weights1D if we want to compute the
 // retention or the cumulative value and others
-	if (flagMeanSize || flagConc || flagHeRetention) {
+	if ((flagMeanSize || flagConc || flagHeRetention) && firstLoop) {
 		// Loop on the helium clusters
 		for (auto const& heMapItem : network.getAll(ReactantType::He)) {
 			auto const& cluster = *(heMapItem.second);
@@ -3371,7 +3317,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 	if (flagHeRetention) {
 
 		// Get the previous time if concentrations were stored and initialize the fluence
-		if (hasConcentrations) {
+		if (hasConcentrations && firstLoop) {
 
 			assert(lastTsGroup);
 
@@ -3409,43 +3355,52 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 		checkPetscError(ierr,
 				"setupPetsc1DMonitor: TSMonitorSet (computeHeliumRetention1D) failed.");
 
-		// Uncomment to clear the file where the retention will be written
-		std::ofstream outputFile;
-		outputFile.open("retentionOut.txt");
-		outputFile.close();
+		if (firstLoop) {
+			// Uncomment to clear the file where the retention will be written
+			std::ofstream outputFile;
+			outputFile.open("retentionOut.txt");
+			outputFile.close();
+		}
 	}
 
 // Set the monitor to compute the xenon fluence and the retention
 // for the retention calculation
 	if (flagXeRetention) {
-		// Loop on the xenon clusters
-		for (auto const& xeMapItem : network.getAll(ReactantType::Xe)) {
-			auto const& cluster = *(xeMapItem.second);
+		if (firstLoop) {
+			// Loop on the xenon clusters
+			for (auto const& xeMapItem : network.getAll(ReactantType::Xe)) {
+				auto const& cluster = *(xeMapItem.second);
 
-			int id = cluster.getId() - 1;
-			// Add the Id to the vector
-			indices1D.push_back(id);
-			// Add the number of xenon of this cluster to the weight
-			weights1D.push_back(cluster.getSize());
-			radii1D.push_back(cluster.getReactionRadius());
-		}
+				int id = cluster.getId() - 1;
+				// Add the Id to the vector
+				indices1D.push_back(id);
+				// Add the number of xenon of this cluster to the weight
+				weights1D.push_back(cluster.getSize());
+				radii1D.push_back(cluster.getReactionRadius());
+			}
 
-		// Get the previous time if concentrations were stored and initialize the fluence
-		if (hasConcentrations) {
+			// Get the previous time if concentrations were stored and initialize the fluence
+			if (hasConcentrations) {
 
-			assert(lastTsGroup);
+				assert(lastTsGroup);
 
-			// Get the previous time from the HDF5 file
-			double time = lastTsGroup->readPreviousTime();
-			// Initialize the fluence
-			auto fluxHandler = solverHandler.getFluxHandler();
-			// The length of the time step
-			double dt = time;
-			// Increment the fluence with the value at this current timestep
-			fluxHandler->incrementFluence(dt);
-			// Get the previous time from the HDF5 file
-			// TODO isn't this the same as 'time' above?
-			previousTime = lastTsGroup->readPreviousTime();
+				// Get the previous time from the HDF5 file
+				double time = lastTsGroup->readPreviousTime();
+				// Initialize the fluence
+				auto fluxHandler = solverHandler.getFluxHandler();
+				// The length of the time step
+				double dt = time;
+				// Increment the fluence with the value at this current timestep
+				fluxHandler->incrementFluence(dt);
+				// Get the previous time from the HDF5 file
+				// TODO isn't this the same as 'time' above?
+				previousTime = lastTsGroup->readPreviousTime();
+			}
+
+			// Uncomment to clear the file where the retention will be written
+			std::ofstream outputFile;
+			outputFile.open("retentionOut.txt");
+			outputFile.close();
 		}
 
 		// computeFluence will be called at each timestep
@@ -3457,11 +3412,6 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 		ierr = TSMonitorSet(ts, computeXenonRetention1D, NULL, NULL);
 		checkPetscError(ierr,
 				"setupPetsc1DMonitor: TSMonitorSet (computeXenonRetention1D) failed.");
-
-		// Uncomment to clear the file where the retention will be written
-		std::ofstream outputFile;
-		outputFile.open("retentionOut.txt");
-		outputFile.close();
 	}
 
 // Set the monitor to compute the cumulative helium concentration
@@ -3524,7 +3474,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 	// Set the monitor to compute the temperature profile
 	if (flagTemp) {
 
-		if (procId == 0) {
+		if (procId == 0 && firstLoop) {
 			// Uncomment to clear the file where the retention will be written
 			std::ofstream outputFile;
 			outputFile.open("tempProf.txt");

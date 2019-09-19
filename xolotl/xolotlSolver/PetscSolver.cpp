@@ -39,14 +39,14 @@ static char help[] =
 // ----- GLOBAL VARIABLES ----- //
 extern PetscErrorCode setupPetsc0DMonitor(TS);
 extern PetscErrorCode setupPetsc1DMonitor(TS,
-		std::shared_ptr<xolotlPerf::IHandlerRegistry>);
+		std::shared_ptr<xolotlPerf::IHandlerRegistry>, bool firstLoop);
 extern PetscErrorCode setupPetsc2DMonitor(TS);
 extern PetscErrorCode setupPetsc3DMonitor(TS);
 
-void PetscSolver::setupInitialConditions(DM da, Vec C) {
+void PetscSolver::setupInitialConditions(DM da, Vec C, DM oldDA, Vec oldC) {
 	// Initialize the concentrations in the solution vector
 	auto& solverHandler = Solver::getSolverHandler();
-	solverHandler.initializeConcentration(da, C);
+	solverHandler.initializeConcentration(da, C, oldDA, oldC);
 
 	return;
 }
@@ -205,43 +205,6 @@ void PetscSolver::initialize() {
 void PetscSolver::solve() {
 	PetscErrorCode ierr;
 
-	// Create the solver context
-	DM da;
-	getSolverHandler().createSolverContext(da);
-
-	/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 Extract global vector from DMDA to hold solution
-	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	Vec C;
-	ierr = DMCreateGlobalVector(da, &C);
-	checkPetscError(ierr, "PetscSolver::solve: DMCreateGlobalVector failed.");
-
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 Create timestepping solver context
-	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	TS ts;
-	ierr = TSCreate(PETSC_COMM_WORLD, &ts);
-	checkPetscError(ierr, "PetscSolver::solve: TSCreate failed.");
-	ierr = TSSetType(ts, TSARKIMEX);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetType failed.");
-	ierr = TSARKIMEXSetFullyImplicit(ts, PETSC_TRUE);
-	checkPetscError(ierr,
-			"PetscSolver::solve: TSARKIMEXSetFullyImplicit failed.");
-	ierr = TSSetDM(ts, da);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetDM failed.");
-	ierr = TSSetProblemType(ts, TS_NONLINEAR);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetProblemType failed.");
-	ierr = TSSetRHSFunction(ts, NULL, RHSFunction, NULL);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetRHSFunction failed.");
-	ierr = TSSetRHSJacobian(ts, NULL, NULL, RHSJacobian, NULL);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetRHSJacobian failed.");
-	ierr = TSSetSolution(ts, C);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetSolution failed.");
-
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 Set solver options
-	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
 	// Read the times if the information is in the HDF5 file
 	auto fileName = getSolverHandler().getNetworkName();
 	double time = 0.0, deltaTime = 1.0e-12;
@@ -256,59 +219,142 @@ void PetscSolver::solve() {
 		}
 	}
 
-	ierr = TSSetTime(ts, time);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetTime failed.");
-	ierr = TSSetTimeStep(ts, deltaTime);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetTimeStep failed.");
-	ierr = TSSetFromOptions(ts);
-	checkPetscError(ierr, "PetscSolver::solve: TSSetFromOptions failed.");
+	// Initialiaze the converged reason
+	TSConvergedReason reason = TS_CONVERGED_USER;
+	Vec oldC;
+	DM oldDA;
+	bool firstLoop = true;
+	while (reason == TS_CONVERGED_USER) {
 
-	// Switch on the number of dimensions to set the monitors
-	int dim = getSolverHandler().getDimension();
-	switch (dim) {
-	case 0:
-		// One dimension
-		ierr = setupPetsc0DMonitor(ts);
-		checkPetscError(ierr,
-				"PetscSolver::solve: setupPetsc0DMonitor failed.");
-		break;
-	case 1:
-		// One dimension
-		ierr = setupPetsc1DMonitor(ts, handlerRegistry);
-		checkPetscError(ierr,
-				"PetscSolver::solve: setupPetsc1DMonitor failed.");
-		break;
-	case 2:
-		// Two dimensions
-		ierr = setupPetsc2DMonitor(ts);
-		checkPetscError(ierr,
-				"PetscSolver::solve: setupPetsc2DMonitor failed.");
-		break;
-	case 3:
-		// Three dimensions
-		ierr = setupPetsc3DMonitor(ts);
-		checkPetscError(ierr,
-				"PetscSolver::solve: setupPetsc3DMonitor failed.");
-		break;
-	default:
-		throw std::string("PetscSolver Exception: Wrong number of dimensions "
-				"to set the monitors.");
-	}
+		// Create the solver context
+		DM da;
+		getSolverHandler().createSolverContext(da);
 
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 Set initial conditions
-	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	setupInitialConditions(da, C);
+		/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		 Extract global vector from DMDA to hold solution
+		 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+		Vec C;
+		ierr = DMCreateGlobalVector(da, &C);
+		checkPetscError(ierr,
+				"PetscSolver::solve: DMCreateGlobalVector failed.");
 
-	// Set the output precision for std::out
-	std::cout.precision(16);
+		/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		 Create timestepping solver context
+		 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+		TS ts;
+		ierr = TSCreate(PETSC_COMM_WORLD, &ts);
+		checkPetscError(ierr, "PetscSolver::solve: TSCreate failed.");
+		ierr = TSSetType(ts, TSARKIMEX);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetType failed.");
+		ierr = TSARKIMEXSetFullyImplicit(ts, PETSC_TRUE);
+		checkPetscError(ierr,
+				"PetscSolver::solve: TSARKIMEXSetFullyImplicit failed.");
+		ierr = TSSetDM(ts, da);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetDM failed.");
+		ierr = TSSetProblemType(ts, TS_NONLINEAR);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetProblemType failed.");
+		ierr = TSSetRHSFunction(ts, NULL, RHSFunction, NULL);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetRHSFunction failed.");
+		ierr = TSSetRHSJacobian(ts, NULL, NULL, RHSJacobian, NULL);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetRHSJacobian failed.");
+		ierr = TSSetSolution(ts, C);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetSolution failed.");
 
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 Solve the ODE system
-	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	if (ts != NULL && C != NULL) {
-		ierr = TSSolve(ts, C);
-		checkPetscError(ierr, "PetscSolver::solve: TSSolve failed.");
+		/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		 Set solver options
+		 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+		ierr = TSSetTime(ts, time);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetTime failed.");
+		ierr = TSSetTimeStep(ts, deltaTime);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetTimeStep failed.");
+		ierr = TSSetFromOptions(ts);
+		checkPetscError(ierr, "PetscSolver::solve: TSSetFromOptions failed.");
+
+		// Switch on the number of dimensions to set the monitors
+		int dim = getSolverHandler().getDimension();
+		switch (dim) {
+		case 0:
+			// One dimension
+			ierr = setupPetsc0DMonitor(ts);
+			checkPetscError(ierr,
+					"PetscSolver::solve: setupPetsc0DMonitor failed.");
+			break;
+		case 1:
+			// One dimension
+			ierr = setupPetsc1DMonitor(ts, handlerRegistry, firstLoop);
+			checkPetscError(ierr,
+					"PetscSolver::solve: setupPetsc1DMonitor failed.");
+			break;
+		case 2:
+			// Two dimensions
+			ierr = setupPetsc2DMonitor(ts);
+			checkPetscError(ierr,
+					"PetscSolver::solve: setupPetsc2DMonitor failed.");
+			break;
+		case 3:
+			// Three dimensions
+			ierr = setupPetsc3DMonitor(ts);
+			checkPetscError(ierr,
+					"PetscSolver::solve: setupPetsc3DMonitor failed.");
+			break;
+		default:
+			throw std::string(
+					"PetscSolver Exception: Wrong number of dimensions "
+							"to set the monitors.");
+		}
+
+		/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		 Set initial conditions
+		 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+		setupInitialConditions(da, C, oldDA, oldC);
+
+		// Set the output precision for std::out
+		std::cout.precision(16);
+
+		/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		 Solve the ODE system
+		 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+		if (ts != NULL && C != NULL) {
+			ierr = TSSolve(ts, C);
+			checkPetscError(ierr, "PetscSolver::solve: TSSolve failed.");
+
+			// This is not the first loop anymore
+			firstLoop = false;
+
+			// Catch the change in surface
+			// Get the converged reason from PETSc
+			ierr = TSGetConvergedReason(ts, &reason);
+			checkPetscError(ierr,
+					"PetscSolver::solve: TSGetConvergedReason failed.");
+			if (reason == TS_CONVERGED_USER)
+				std::cout << "Caught the change of surface!" << std::endl;
+
+			// Save the time
+			ierr = TSGetTime(ts, &time);
+			checkPetscError(ierr, "PetscSolver::solve: TSGetTime failed.");
+
+			// Save the old DA and associated vector
+			PetscInt dof;
+			ierr = DMDAGetDof(da, &dof);
+			checkPetscError(ierr, "PetscSolver::solve: DMDAGetDof failed.");
+
+			ierr = DMDACreateCompatibleDMDA(da, dof, &oldDA);
+			checkPetscError(ierr,
+					"PetscSolver::solve: DMDACreateCompatibleDMDA failed.");
+
+			// Save the old vector as a natural one to make the transfer easier
+			ierr = DMDACreateNaturalVector(oldDA, &oldC);
+			checkPetscError(ierr,
+					"PetscSolver::solve: DMDACreateNaturalVector failed.");
+			ierr = DMDAGlobalToNaturalBegin(oldDA, C, INSERT_VALUES, oldC);
+			ierr = DMDAGlobalToNaturalEnd(oldDA, C, INSERT_VALUES, oldC);
+			checkPetscError(ierr,
+					"PetscSolver::solve: DMDAGlobalToNatural failed.");
+		} else {
+			throw std::string(
+					"PetscSolver Exception: Unable to solve! Data not configured properly.");
+		}
 
 		/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		 Write in a file if everything went well or not.
@@ -340,20 +386,17 @@ void PetscSolver::solve() {
 
 			outputFile.close();
 		}
-	} else {
-		throw std::string(
-				"PetscSolver Exception: Unable to solve! Data not configured properly.");
-	}
 
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 Free work space.
-	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	ierr = VecDestroy(&C);
-	checkPetscError(ierr, "PetscSolver::solve: VecDestroy failed.");
-	ierr = TSDestroy(&ts);
-	checkPetscError(ierr, "PetscSolver::solve: TSDestroy failed.");
-	ierr = DMDestroy(&da);
-	checkPetscError(ierr, "PetscSolver::solve: DMDestroy failed.");
+		/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		 Free work space.
+		 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+		ierr = VecDestroy(&C);
+		checkPetscError(ierr, "PetscSolver::solve: VecDestroy failed.");
+		ierr = TSDestroy(&ts);
+		checkPetscError(ierr, "PetscSolver::solve: TSDestroy failed.");
+		ierr = DMDestroy(&da);
+		checkPetscError(ierr, "PetscSolver::solve: DMDestroy failed.");
+	}
 
 	return;
 }

@@ -74,7 +74,8 @@ void PetscSolver0DHandler::createSolverContext(DM &da) {
 	return;
 }
 
-void PetscSolver0DHandler::initializeConcentration(DM &da, Vec &C) {
+void PetscSolver0DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
+		Vec &oldC) {
 	PetscErrorCode ierr;
 
 	// Initialize the last temperature and rates
@@ -339,8 +340,8 @@ void PetscSolver0DHandler::computeDiagonalJacobian(TS &ts, Vec &localC, Mat &J,
 	MatStencil rowIds[5];
 
 	// Compute the partial derivative from re-solution at this grid point
-	int nResoluting = resolutionHandler->computePartialsForReSolution(
-			network, resolutionVals, resolutionIndices, 0, 0);
+	int nResoluting = resolutionHandler->computePartialsForReSolution(network,
+			resolutionVals, resolutionIndices, 0, 0);
 
 	// Loop on the number of xenon to set the values in the Jacobian
 	for (int i = 0; i < nResoluting; i++) {
@@ -362,9 +363,8 @@ void PetscSolver0DHandler::computeDiagonalJacobian(TS &ts, Vec &localC, Mat &J,
 		colIds[1].c = resolutionIndices[(5 * i) + 1];
 		ierr = MatSetValuesStencil(J, 5, rowIds, 2, colIds,
 				resolutionVals + (10 * i), ADD_VALUES);
-		checkPetscError(ierr,
-				"PetscSolver0DHandler::computeDiagonalJacobian: "
-						"MatSetValuesStencil (Xe re-solution) failed.");
+		checkPetscError(ierr, "PetscSolver0DHandler::computeDiagonalJacobian: "
+				"MatSetValuesStencil (Xe re-solution) failed.");
 	}
 
 	/*

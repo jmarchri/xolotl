@@ -15,6 +15,9 @@ private:
 	//! The position of the surface
 	int surfacePosition;
 
+	//! The offset at the surface
+	int surfaceOffset;
+
 public:
 
 	/**
@@ -28,7 +31,7 @@ public:
 	 * @param _network The reaction network to use.
 	 */
 	PetscSolver1DHandler(xolotlCore::IReactionNetwork& _network) :
-			PetscSolverHandler(_network), surfacePosition(0) {
+			PetscSolverHandler(_network), surfacePosition(0), surfaceOffset(0) {
 	}
 
 	//! The Destructor
@@ -45,7 +48,7 @@ public:
 	 * Initialize the concentration solution vector.
 	 * \see ISolverHandler.h
 	 */
-	void initializeConcentration(DM &da, Vec &C);
+	void initializeConcentration(DM &da, Vec &C, DM &oldDA, Vec &oldC);
 
 	/**
 	 * Compute the new concentrations for the RHS function given an initial
@@ -81,6 +84,16 @@ public:
 	 */
 	void setSurfacePosition(int pos, int j = -1, int k = -1) {
 		surfacePosition = pos;
+
+		return;
+	}
+
+	/**
+	 * Set the number of grid points we want to move by at the surface.
+	 * \see ISolverHandler.h
+	 */
+	void setSurfaceOffset(int offset, int j = -1, int k = -1) {
+		surfaceOffset = offset;
 
 		return;
 	}
