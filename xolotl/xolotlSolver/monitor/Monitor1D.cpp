@@ -2399,7 +2399,7 @@ PetscErrorCode eventFunction1D(TS ts, PetscReal time, Vec solution,
 		if (procId == 0 && xolotlCore::equal(time, 0.0)) {
 			std::ofstream outputFile;
 			outputFile.open("surface.txt", ios::app);
-			outputFile << time << " " << grid[surfacePos + 1] - grid[1]
+			outputFile << time << " " << grid[grid.size() - 2] - grid[1]
 					<< std::endl;
 			outputFile.close();
 		}
@@ -2708,6 +2708,10 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
 		}
 	}
 
+	// Restore the solutionArray
+	ierr = DMDAVecRestoreArrayDOF(da, solution, &solutionArray);
+	CHKERRQ(ierr);
+
 	// Now takes care of moving surface
 	bool moving = false;
 	bool movingUp = false;
@@ -2720,10 +2724,6 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
 
 	// Skip if nothing is moving
 	if (!moving) {
-		// Restore the solutionArray
-		ierr = DMDAVecRestoreArrayDOF(da, solution, &solutionArray);
-		CHKERRQ(ierr);
-
 		PetscFunctionReturn(0);
 	}
 
@@ -2751,7 +2751,7 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
 					* (grid[xi + 1] - grid[xi]);
 		}
 
-		// Throw an exception if the position is negative
+		// Stop the solver if the position is negative
 		if (surfacePos < 0) {
 			solverHandler.setSurfaceOffset(nGridPoints);
 			ierr = TSSetConvergedReason(ts, TS_CONVERGED_USER);
@@ -2761,68 +2761,34 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
 
 	// Moving the surface back
 	else {
+		int nGridPoints = 0;
 		// Move it back as long as the number of interstitials in negative
 		while (nInterstitial1D < 0.0) {
 			// Compute the threshold to a deeper grid point
 			threshold = (62.8 - initialVConc) * (grid[xi + 2] - grid[xi + 1]);
-			// Set all the concentrations to 0.0 at xi = surfacePos + 1
-			// if xi is on this process
-			if (xi >= xs && xi < xs + xm) {
-				// Get the concentrations at xi = surfacePos + 1
-				gridPointSolution = solutionArray[xi];
-				// Loop on DOF
-				for (int i = 0; i < dof - 1; i++) {
-					gridPointSolution[i] = 0.0;
-				}
-			}
 
 			// Move the surface deeper
 			surfacePos++;
 			xi = surfacePos + 1;
+			nGridPoints--;
 			// Update the number of interstitials
 			nInterstitial1D += threshold;
 		}
 
-		// Printing information about the extension of the material
-		if (procId == 0) {
-			std::cout << "Removing grid points to the grid at time: " << time
-					<< " s." << std::endl;
-		}
-
-		// Set it in the solver
-		solverHandler.setSurfacePosition(surfacePos);
+		// Stop the solver
+		solverHandler.setSurfaceOffset(nGridPoints);
+		ierr = TSSetConvergedReason(ts, TS_CONVERGED_USER);
+		CHKERRQ(ierr);
 	}
-
-	// Set the new surface location in the surface advection handler
-	auto advecHandler = solverHandler.getAdvectionHandler();
-	advecHandler->setLocation(grid[surfacePos + 1] - grid[1]);
-
-	// Set the new surface in the temperature handler
-	auto tempHandler = solverHandler.getTemperatureHandler();
-	tempHandler->updateSurfacePosition(surfacePos);
-
-	// Get the flux handler to reinitialize it
-	auto fluxHandler = solverHandler.getFluxHandler();
-	fluxHandler->initializeFluxHandler(network, surfacePos, grid);
-
-	// Get the modified trap-mutation handler to reinitialize it
-	auto mutationHandler = solverHandler.getMutationHandler();
-	auto advecHandlers = solverHandler.getAdvectionHandlers();
-	mutationHandler->initializeIndex1D(surfacePos, network, advecHandlers,
-			grid);
 
 	// Write the updated surface position
 	if (procId == 0) {
 		std::ofstream outputFile;
 		outputFile.open("surface.txt", ios::app);
-		outputFile << time << " " << grid[surfacePos + 1] - grid[1]
+		outputFile << time << " " << grid[grid.size() - 2] - grid[2]
 				<< std::endl;
 		outputFile.close();
 	}
-
-	// Restore the solutionArray
-	ierr = DMDAVecRestoreArrayDOF(da, solution, &solutionArray);
-	CHKERRQ(ierr);
 
 	PetscFunctionReturn(0);
 }

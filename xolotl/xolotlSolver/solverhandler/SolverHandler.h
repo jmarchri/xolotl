@@ -323,28 +323,43 @@ protected:
 			auto oldGrid = grid;
 			grid.clear();
 
-			// Get the near surface step size
-			double step = grid[1] - grid[0];
-
 			// Initalize previous point
 			double previousPoint = 0.0;
 
-			// Add the offset
-			for (int l = 0; l < surfaceOffset; l++) {
-				// Add the previous point
+			// Adding grid points case
+			if (surfaceOffset > 0) {
+				// Get the near surface step size
+				double step = grid[1] - grid[0];
+
+				// Add the offset
+				for (int l = 0; l < surfaceOffset; l++) {
+					// Add the previous point
+					grid.push_back(previousPoint);
+					// Update its value
+					previousPoint += step;
+				}
+				// Add the rest of the grid
+				for (int l = 1; l < oldGrid.size(); l++) {
+					// Add the previous point
+					grid.push_back(previousPoint);
+					// Update its value
+					previousPoint += oldGrid[l] - oldGrid[l - 1];
+				}
+				// Add the last point
 				grid.push_back(previousPoint);
-				// Update its value
-				previousPoint += step;
 			}
-			// Add the rest of the grid
-			for (int l = 1; l < oldGrid.size(); l++) {
-				// Add the previous point
+			// Removing grid points case
+			else {
+				// Loop on the old grid, skipping the beginning
+				for (int l = -surfaceOffset + 1; l < oldGrid.size(); l++) {
+					// Add the previous point
+					grid.push_back(previousPoint);
+					// Update its value
+					previousPoint += oldGrid[l] - oldGrid[l - 1];
+				}
+				// Add the last point
 				grid.push_back(previousPoint);
-				// Update its value
-				previousPoint += oldGrid[l] - oldGrid[l - 1];
 			}
-			// Add the last point
-			grid.push_back(previousPoint);
 		}
 
 		return;

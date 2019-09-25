@@ -157,7 +157,8 @@ void PetscSolver1DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
 		if (not networkName.empty()) {
 
 			xfile.reset(new xolotlCore::XFile(networkName));
-			concGroup = xfile->getGroup<xolotlCore::XFile::ConcentrationGroup>();
+			concGroup =
+					xfile->getGroup<xolotlCore::XFile::ConcentrationGroup>();
 			hasConcentrations = (concGroup and concGroup->hasTimesteps());
 		}
 
@@ -221,7 +222,6 @@ void PetscSolver1DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
 			}
 		}
 
-
 		/*
 		 Restore vectors
 		 */
@@ -246,22 +246,34 @@ void PetscSolver1DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
 
 		// Set the indices for the scatter of all the components of the old solution
 		PetscInt *lidxFrom, *lidxTo, lict = 0;
-		ierr = PetscMalloc1(oldXm, &lidxTo);
-		ierr = PetscMalloc1(oldXm, &lidxFrom);
-		for (PetscInt i = oldXs; i < oldXs + oldXm; i++) {
-			/*  global number in natural ordering */
-			lidxTo[lict] = surfaceOffset + i;
-			lidxFrom[lict] = i;
-			lict++;
+		ierr = PetscMalloc1(min(xm, oldXm), &lidxTo);
+		ierr = PetscMalloc1(min(xm, oldXm), &lidxFrom);
+		// The surface is going up
+		if (surfaceOffset > 0) {
+			for (PetscInt i = oldXs; i < oldXs + oldXm; i++) {
+				/*  global number in natural ordering */
+				lidxTo[lict] = surfaceOffset + i;
+				lidxFrom[lict] = i;
+				lict++;
+			}
+		}
+		// The surface is going down
+		else {
+			for (PetscInt i = xs; i < xs + xm; i++) {
+				/*  global number in natural ordering */
+				lidxTo[lict] = i;
+				lidxFrom[lict] = i - surfaceOffset;
+				lict++;
+			}
 		}
 
 		// Create the list of indices for the scatter
 		VecScatter scatter;
 		IS isTo, isFrom;
-		ierr = ISCreateBlock(PetscObjectComm((PetscObject) da), dof, oldXm,
-				lidxTo, PETSC_OWN_POINTER, &isTo);
-		ierr = ISCreateBlock(PetscObjectComm((PetscObject) oldDA), dof, oldXm,
-				lidxFrom, PETSC_OWN_POINTER, &isFrom);
+		ierr = ISCreateBlock(PetscObjectComm((PetscObject) da), dof,
+				min(xm, oldXm), lidxTo, PETSC_OWN_POINTER, &isTo);
+		ierr = ISCreateBlock(PetscObjectComm((PetscObject) oldDA), dof,
+				min(xm, oldXm), lidxFrom, PETSC_OWN_POINTER, &isFrom);
 		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
 				"ISCreateBlock failed.");
 
@@ -333,6 +345,50 @@ void PetscSolver1DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
 
 			// Decrease the offset by 1
 			surfaceOffset--;
+		}
+
+		// Boundary conditions
+		if (surfaceOffset < 0) {
+			// Set the index to scatter at the surface
+			ierr = PetscMalloc1(1, &lidxTo);
+			ierr = PetscMalloc1(1, &lidxFrom);
+			lidxTo[0] = 0;
+			lidxFrom[0] = 0;
+
+			// Create the scatter object
+			ierr = ISCreateBlock(PetscObjectComm((PetscObject) da), dof, 1,
+					lidxTo, PETSC_OWN_POINTER, &isTo);
+			ierr = ISCreateBlock(PetscObjectComm((PetscObject) oldDA), dof, 1,
+					lidxFrom, PETSC_OWN_POINTER, &isFrom);
+			checkPetscError(ierr,
+					"PetscSolver1DHandler::initializeConcentration: "
+							"ISCreateBlock failed.");
+
+			// Create the scatter object
+			ierr = VecScatterCreate(oldC, isFrom, natural, isTo, &scatter);
+			checkPetscError(ierr,
+					"PetscSolver1DHandler::initializeConcentration: "
+							"VecScatterCreate failed.");
+
+			// Do the scatter
+			ierr = VecScatterBegin(scatter, oldC, natural, INSERT_VALUES,
+					SCATTER_FORWARD);
+			ierr = VecScatterEnd(scatter, oldC, natural, INSERT_VALUES,
+					SCATTER_FORWARD);
+			checkPetscError(ierr,
+					"PetscSolver1DHandler::initializeConcentration: "
+							"VecScatter failed.");
+
+			// Destroy everything we don't need anymore
+			ierr = VecScatterDestroy(&scatter);
+			ierr = ISDestroy(&isTo);
+			ierr = ISDestroy(&isFrom);
+			checkPetscError(ierr,
+					"PetscSolver1DHandler::initializeConcentration: "
+							"Destroy failed.");
+
+			// Reset the offset
+			surfaceOffset = 0;
 		}
 
 		// Transfer the natural vector to the current solution
