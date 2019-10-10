@@ -29,6 +29,9 @@ protected:
 	//! The original network created from the network loader.
 	xolotlCore::IReactionNetwork& network;
 
+	//! Vector storing the previous grid in the x direction
+	std::vector<double> oldGrid;
+
 	//! Vector storing the grid in the x direction
 	std::vector<double> grid;
 
@@ -320,16 +323,16 @@ protected:
 		// Modify grid
 		else {
 			// Transfer the grid
-			auto oldGrid = grid;
-			grid.clear();
-
-			// Initalize previous point
-			double previousPoint = 0.0;
+			oldGrid = grid;
 
 			// Adding grid points case
 			if (surfaceOffset > 0) {
+				// Initialize previous point
+				double previousPoint = 0.0;
+				grid.clear();
+
 				// Get the near surface step size
-				double step = grid[1] - grid[0];
+				double step = oldGrid[1] - oldGrid[0];
 
 				// Add the offset
 				for (int l = 0; l < surfaceOffset; l++) {
@@ -349,16 +352,21 @@ protected:
 				grid.push_back(previousPoint);
 			}
 			// Removing grid points case
+			// (Work on the current grid because we want to keep the previous geometry in oldGrid)
 			else {
-				// Loop on the old grid, skipping the beginning
-				for (int l = -surfaceOffset + 1; l < oldGrid.size(); l++) {
-					// Add the previous point
-					grid.push_back(previousPoint);
-					// Update its value
-					previousPoint += oldGrid[l] - oldGrid[l - 1];
+				// Compute the distance between what needs to be removed
+				double step = grid[-surfaceOffset] - grid[0];
+				// Update the value of the last used grid point
+				grid[grid.size() - 2] -= step;
+				// Remove the last point if it is smaller to the second to last grid point
+				while (grid[grid.size() - 2]
+						< grid[grid.size() - 3] + 1.0e-4) {
+					grid[grid.size() - 3] = grid[grid.size() - 2];
+					grid.pop_back();
 				}
-				// Add the last point
-				grid.push_back(previousPoint);
+				// Update the last grid point for boundary conditions
+				grid[grid.size() - 1] = 2.0 * grid[grid.size() - 2]
+						- grid[grid.size() - 3];
 			}
 		}
 

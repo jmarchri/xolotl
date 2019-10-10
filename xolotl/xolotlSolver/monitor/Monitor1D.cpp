@@ -495,7 +495,7 @@ PetscErrorCode computeHeliumRetention1D(TS ts, PetscInt, PetscReal time,
 	for (PetscInt xi = xs; xi < xs + xm; xi++) {
 
 		// Boundary conditions
-		if (xi < surfacePos || xi == Mx - 1)
+		if (xi < surfacePos || xi == Mx - solverHandler.getRightOffset())
 			continue;
 
 		// Get the pointer to the beginning of the solution data for this grid point
