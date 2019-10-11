@@ -56,16 +56,25 @@ public:
 		// Name of the concentrations data set.
 		static const std::string concDatasetName;
 
+		// Names of grid-specification attributes.
+		static const std::string nxAttrName;
+		static const std::string hxAttrName;
+		static const std::string nyAttrName;
+		static const std::string hyAttrName;
+		static const std::string nzAttrName;
+		static const std::string hzAttrName;
+
 		/**
 		 * Construct the group name for the given time step.
 		 *
 		 * @param concGroup The parent concentration group.
+		 * @param loop The solver loop in which it is.
 		 * @param timeStep The time step the group will represent.
 		 * @return A string to use for the name of the time step group for
 		 *          the given time step.
 		 */
 		static std::string makeGroupName(const ConcentrationGroup& concGroup,
-				int timeStep);
+				int loop, int timeStep);
 
 	public:
 		// Concise name for surface representations.
@@ -96,20 +105,38 @@ public:
 		 * Create and populate a Timestep group within the given
 		 * concentration group.
 		 *
+		 * @param concGroup The concentration group
+		 * @param loop The loop number we're at
 		 * @param timeStep The number of the time step
 		 * @param time The physical time at this time step
 		 * @param previousTime The physical time at the previous time step
 		 * @param deltaTime The physical length of the time step
 		 */
-		TimestepGroup(const ConcentrationGroup& concGroup, int timeStep,
-				double time, double previousTime, double deltaTime);
+		TimestepGroup(const ConcentrationGroup& concGroup, int loop,
+				int timeStep, double time, double previousTime,
+				double deltaTime);
 
 		/**
 		 * Open a TimestepGroup within the given concentration group.
 		 *
+		 * @param concGroup The concentration group
+		 * @param loop The loop number we're at
 		 * @param timeStep The time step of the desired group.
 		 */
-		TimestepGroup(const ConcentrationGroup& concGroup, int timeStep);
+		TimestepGroup(const ConcentrationGroup& concGroup, int loop,
+				int timeStep);
+
+		/**
+		 * Save the grid information to our timestep group.
+		 *
+		 * @param grid The grid points in the x direction (depth)
+		 * @param ny The number of grid points in the y direction
+		 * @param hy The step size in the y direction
+		 * @param nz The number of grid points in the z direction
+		 * @param hz The step size in the z direction
+		 */
+		void writeGrid(const std::vector<double>& grid, int ny = 0, double hy =
+				0.0, int nz = 0, double hz = 0.0) const;
 
 		/**
 		 * Save the surface positions to our timestep group.
@@ -181,8 +208,8 @@ public:
 		 * @param k The index of the position on the grid on the z direction
 		 */
 		// TODO this should go away.
-		void writeConcentrationDataset(int size, double concArray[][2], bool write, int i,
-				int j = -1, int k = -1);
+		void writeConcentrationDataset(int size, double concArray[][2],
+				bool write, int i, int j = -1, int k = -1);
 
 		/**
 		 * Add a concentration dataset for all grid points in a 1D problem.
@@ -235,6 +262,26 @@ public:
 		 * @return The physical time at the previous timestep
 		 */
 		double readPreviousTime(void) const;
+
+		/**
+		 * Read the grid size.
+		 *
+		 * @param nx The number of grid points in the x direction (depth)
+		 * @param hx The step size in the x direction
+		 * @param ny The number of grid points in the y direction
+		 * @param hy The step size in the y direction
+		 * @param nz The number of grid points in the z direction
+		 * @param hz The step size in the z direction
+		 */
+		void readSizes(int &nx, double &hx, int &ny, double &hy, int &nz,
+				double &hz) const;
+
+		/**
+		 * Read the grid.
+		 *
+		 * @return The grid
+		 */
+		std::vector<double> readGrid() const;
 
 		/**
 		 * Read the surface position from our concentration group in
@@ -303,8 +350,9 @@ public:
 	// Our concentrations group.
 	class ConcentrationGroup: public HDF5File::Group {
 	private:
-		// Name of our last timestep attribute.
+		// Name of our last timestep and loop attributes.
 		static const std::string lastTimestepAttrName;
+		static const std::string lastLoopAttrName;
 
 	public:
 		// Path of the concentrations group within the file.
@@ -318,13 +366,21 @@ public:
 		/**
 		 * Add a concentration timestep group for the given time step.
 		 *
+		 * @param loop The loop number we're at
 		 * @param timeStep The number of the time step
 		 * @param time The physical time at this time step
 		 * @param previousTime The physical time at the previous time step
 		 * @param deltaTime The physical length of the time step
 		 */
-		std::unique_ptr<TimestepGroup> addTimestepGroup(int timeStep,
+		std::unique_ptr<TimestepGroup> addTimestepGroup(int loop, int timeStep,
 				double time, double previousTime, double deltaTime) const;
+
+		/**
+		 * Obtain the last loop known to our group.
+		 *
+		 * @return Loop of last TimestepGroup written to our group.
+		 */
+		int getLastLoop(void) const;
 
 		/**
 		 * Obtain the last timestep known to our group.
@@ -345,11 +401,13 @@ public:
 		/**
 		 * Access the TimestepGroup associated with the given time step.
 		 *
-		 * @param ts Time step of the desired TimestepGroup.
+		 * @param loop The loop number we're at
+		 * @param timeStep Time step of the desired TimestepGroup.
 		 * @return TimestepGroup associated with the given time step.  Empty
 		 *          pointer if the given time step is not known to us.
 		 */
-		std::unique_ptr<TimestepGroup> getTimestepGroup(int timeStep) const;
+		std::unique_ptr<TimestepGroup> getTimestepGroup(int loop,
+				int timeStep) const;
 
 		/**
 		 * Access the TimestepGroup associated with the last known time step.
@@ -370,14 +428,6 @@ public:
 	private:
 		// Name of network composition dataset within our group.
 		static const std::string netCompsDatasetName;
-
-		// Names of grid-specification attributes.
-		static const std::string nxAttrName;
-		static const std::string hxAttrName;
-		static const std::string nyAttrName;
-		static const std::string hyAttrName;
-		static const std::string nzAttrName;
-		static const std::string hzAttrName;
 
 		/**
 		 * Initialize the list of cluster compositions.
@@ -402,32 +452,14 @@ public:
 		 * points and step size in each direction.
 		 *
 		 * @param file The file in which the header should be added.
-		 * @param grid The grid points in the x direction (depth)
-		 * @param ny The number of grid points in the y direction
-		 * @param hy The step size in the y direction
-		 * @param nz The number of grid points in the z direction
-		 * @param hz The step size in the z direction
+		 * @param compVector The composition vector
 		 */
-		HeaderGroup(const XFile& file, const std::vector<double>& grid, int ny,
-				double hy, int nz, double hz, const NetworkCompsType& compVec);
+		HeaderGroup(const XFile& file, const NetworkCompsType& compVec);
 
 		/**
 		 * Open an existing header group.
 		 */
 		HeaderGroup(const XFile& file);
-
-		/**
-		 * Read our file header.
-		 *
-		 * @param nx The number of grid points in the x direction (depth)
-		 * @param hx The step size in the x direction
-		 * @param ny The number of grid points in the y direction
-		 * @param hy The step size in the y direction
-		 * @param nz The number of grid points in the z direction
-		 * @param hz The step size in the z direction
-		 */
-		void read(int &nx, double &hx, int &ny, double &hy, int &nz,
-				double &hz) const;
 
 		/**
 		 * Read our network compositions.
@@ -541,6 +573,7 @@ public:
 		 * Construct the group name for the given time step.
 		 *
 		 * @param id The id of the cluster.
+		 * @param loop The solver loop in which it is.
 		 * @return A string to use for the name of the cluster group.
 		 */
 		static std::string makeGroupName(int id);
@@ -553,8 +586,8 @@ public:
 		 * @param diffusionFactor The diffusion factor.
 		 * @return The cluster composition.
 		 */
-		clusterComp readCluster(double &formationEnergy, double &migrationEnergy,
-				double &diffusionFactor) const;
+		clusterComp readCluster(double &formationEnergy,
+				double &migrationEnergy, double &diffusionFactor) const;
 
 		/**
 		 * Read the cluster properties from our group.
@@ -585,7 +618,8 @@ public:
 		 * @param maxAtom The maximum value
 		 * @param type The type of cluster
 		 */
-		void readAlloySuperCluster(int &nTot, int &maxXe, ReactantType &type) const;
+		void readAlloySuperCluster(int &nTot, int &maxXe,
+				ReactantType &type) const;
 
 		/**
 		 * Read the reactions from our group.
@@ -621,21 +655,14 @@ public:
 	 * Create and initialize a checkpoint file.
 	 *
 	 * @param path Path of file to create.
-	 * @param grid The grid points in the x direction (depth)
 	 * @param compVec The composition vector.
 	 * @param _comm The MPI communicator used to access the file.
-	 * @param ny The number of grid points in the y direction
-	 * @param hy The step size in the y direction
-	 * @param nz The number of grid points in the z direction
-	 * @param hz The step size in the z direction
 	 * @param mode Access mode for file.  Only HDF5File Create* modes
 	 *              are supported.
 	 */
-	XFile(fs::path path, const std::vector<double>& grid,
-			const HeaderGroup::NetworkCompsType& compVec,
-			MPI_Comm _comm = MPI_COMM_WORLD, int ny =
-					0, double hy = 0.0, int nz = 0, double hz = 0.0,
-			AccessMode mode = AccessMode::CreateOrTruncateIfExists);
+	XFile(fs::path path, const HeaderGroup::NetworkCompsType& compVec,
+			MPI_Comm _comm = MPI_COMM_WORLD, AccessMode mode =
+					AccessMode::CreateOrTruncateIfExists);
 
 	/**
 	 * Open an existing checkpoint or network file.

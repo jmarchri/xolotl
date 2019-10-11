@@ -36,12 +36,12 @@ HDF5File::AccessMode XFile::EnsureOpenAccessMode(HDF5File::AccessMode mode) {
 	return mode;
 }
 
-XFile::XFile(fs::path _path, const std::vector<double>& grid,
+XFile::XFile(fs::path _path,
 		const XFile::HeaderGroup::NetworkCompsType& compVec, MPI_Comm _comm,
-		int ny, double hy, int nz, double hz, AccessMode _mode) :
+		AccessMode _mode) :
 		HDF5File(_path, EnsureCreateAccessMode(_mode), _comm, true) {
 	// Create and initialize the header group.
-	HeaderGroup headerGroup(*this, grid, ny, hy, nz, hz, compVec);
+	HeaderGroup headerGroup(*this, compVec);
 
 	// Create and initialize the group where the concentrations will be stored
 	ConcentrationGroup concGroup(*this, true);
@@ -58,63 +58,12 @@ XFile::XFile(fs::path _path, MPI_Comm _comm, AccessMode _mode) :
 //
 const fs::path XFile::HeaderGroup::path = "/headerGroup";
 const std::string XFile::HeaderGroup::netCompsDatasetName = "composition";
-const std::string XFile::HeaderGroup::nxAttrName = "nx";
-const std::string XFile::HeaderGroup::hxAttrName = "hx";
-const std::string XFile::HeaderGroup::nyAttrName = "ny";
-const std::string XFile::HeaderGroup::hyAttrName = "hy";
-const std::string XFile::HeaderGroup::nzAttrName = "nz";
-const std::string XFile::HeaderGroup::hzAttrName = "hz";
 
 XFile::HeaderGroup::HeaderGroup(const XFile& file,
-		const std::vector<double>& grid, int ny, double hy, int nz, double hz,
 		const NetworkCompsType& compVec) :
 		HDF5File::Group(file, HeaderGroup::path, true) {
 
 	// Base class created the group.
-
-	// Build a dataspace for our scalar attributes.
-	XFile::ScalarDataSpace scalarDSpace;
-
-	// Add an nx attribute.
-	int nx = grid.size() - 2;
-	Attribute<decltype(nx)> nxAttr(*this, nxAttrName, scalarDSpace);
-	nxAttr.setTo(nx);
-
-	// Add an hy attribute.
-	double hx = 0.0;
-	if (grid.size() > 0)
-		hx = grid[1] - grid[0];
-	Attribute<decltype(hx)> hxAttr(*this, hxAttrName, scalarDSpace);
-	hxAttr.setTo(hx);
-
-	// Add an ny attribute.
-	Attribute<decltype(ny)> nyAttr(*this, nyAttrName, scalarDSpace);
-	nyAttr.setTo(ny);
-	// Add an hy attribute.
-	Attribute<decltype(hy)> hyAttr(*this, hyAttrName, scalarDSpace);
-	hyAttr.setTo(hy);
-
-	// Add an nz attribute.
-	Attribute<decltype(nz)> nzAttr(*this, nzAttrName, scalarDSpace);
-	nzAttr.setTo(nz);
-	// Add an hz attribute.
-	Attribute<decltype(hz)> hzAttr(*this, hzAttrName, scalarDSpace);
-	hzAttr.setTo(hz);
-
-	if (nx > 0) {
-		// Create, write, and close the grid dataset
-		double gridArray[nx];
-		for (int i = 0; i < nx; i++) {
-			gridArray[i] = grid[i + 1] - grid[1];
-		}
-		std::array<hsize_t, 1> dims { (hsize_t) nx };
-		XFile::SimpleDataSpace<1> gridDSpace(dims);
-		hid_t datasetId = H5Dcreate2(getId(), "grid", H5T_IEEE_F64LE,
-				gridDSpace.getId(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-		auto status = H5Dwrite(datasetId, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL,
-		H5P_DEFAULT, &gridArray);
-		status = H5Dclose(datasetId);
-	}
 
 	// Initialize the network composition list.  Done here because
 	// it is a dataset in the header group.
@@ -153,34 +102,6 @@ void XFile::HeaderGroup::initNetworkComps(
 	H5P_DEFAULT, &compArray);
 	// Close everything
 	status = H5Dclose(datasetId);
-}
-
-void XFile::HeaderGroup::read(int &nx, double &hx, int &ny, double &hy, int &nz,
-		double &hz) const {
-
-	// Open and read the nx attribute
-	Attribute<int> nxAttr(*this, nxAttrName);
-	nx = nxAttr.get();
-
-	// Open and read the hx attribute
-	Attribute<double> hxAttr(*this, hxAttrName);
-	hx = hxAttr.get();
-
-	// Open and read the ny attribute
-	Attribute<int> nyAttr(*this, nyAttrName);
-	ny = nyAttr.get();
-
-	// Open and read the hy attribute
-	Attribute<double> hyAttr(*this, hyAttrName);
-	hy = hyAttr.get();
-
-	// Open and read the nz attribute
-	Attribute<int> nzAttr(*this, nzAttrName);
-	nz = nzAttr.get();
-
-	// Open and read the hz attribute
-	Attribute<double> hzAttr(*this, hzAttrName);
-	hz = hzAttr.get();
 }
 
 XFile::HeaderGroup::NetworkCompsType XFile::HeaderGroup::readNetworkComps(
@@ -410,8 +331,7 @@ XFile::ClusterGroup::ClusterGroup(const NetworkGroup& networkGroup,
 		Attribute<decltype(nTot)> nTotAttr(*this, nTotAttrName, scalarDSpace);
 		nTotAttr.setTo(nTot);
 		// Add a numAtom attribute.
-		int numAtom = currCluster.getSize()
-				+ (double) (nTot - 1) / 2.0;
+		int numAtom = currCluster.getSize() + (double) (nTot - 1) / 2.0;
 		Attribute<decltype(numAtom)> numAtomAttr(*this, numAtomAttrName,
 				scalarDSpace);
 		numAtomAttr.setTo(numAtom);
@@ -821,6 +741,7 @@ void XFile::ClusterGroup::readReactions(IReactionNetwork& network,
 const fs::path XFile::ConcentrationGroup::path = "/concentrationsGroup";
 const std::string XFile::ConcentrationGroup::lastTimestepAttrName =
 		"lastTimeStep";
+const std::string XFile::ConcentrationGroup::lastLoopAttrName = "lastLoop";
 
 XFile::ConcentrationGroup::ConcentrationGroup(const XFile& file, bool create) :
 		HDF5File::Group(file, ConcentrationGroup::path, create) {
@@ -835,20 +756,28 @@ XFile::ConcentrationGroup::ConcentrationGroup(const XFile& file, bool create) :
 		Attribute<decltype(lastTimeStep)> lastTimestepAttr(*this,
 				lastTimestepAttrName, lastDSpace);
 		lastTimestepAttr.setTo(lastTimeStep);
+		// Create, write, and close the last written loop attribute
+		int lastLoop = -1;
+		Attribute<decltype(lastLoop)> lastLoopAttr(*this, lastLoopAttrName,
+				lastDSpace);
+		lastLoopAttr.setTo(lastLoop);
 	}
 }
 
 std::unique_ptr<XFile::TimestepGroup> XFile::ConcentrationGroup::addTimestepGroup(
-		int timeStep, double time, double previousTime,
+		int loop, int timeStep, double time, double previousTime,
 		double deltaTime) const {
 
 	// Create a group for the new timestep.
 	std::unique_ptr<XFile::TimestepGroup> tsGroup(
-			new TimestepGroup(*this, timeStep, time, previousTime, deltaTime));
+			new TimestepGroup(*this, loop, timeStep, time, previousTime,
+					deltaTime));
 
-	// Update our last known timestep.
+	// Update our last known timestep and loop.
 	Attribute<decltype(timeStep)> lastTimestepAttr(*this, lastTimestepAttrName);
 	lastTimestepAttr.setTo(timeStep);
+	Attribute<decltype(loop)> lastLoopAttr(*this, lastLoopAttrName);
+	lastLoopAttr.setTo(loop);
 
 	return std::move(tsGroup);
 }
@@ -859,14 +788,20 @@ int XFile::ConcentrationGroup::getLastTimeStep(void) const {
 	return lastTimestepAttr.get();
 }
 
+int XFile::ConcentrationGroup::getLastLoop(void) const {
+
+	Attribute<int> lastLoopAttr(*this, lastLoopAttrName);
+	return lastLoopAttr.get();
+}
+
 std::unique_ptr<XFile::TimestepGroup> XFile::ConcentrationGroup::getTimestepGroup(
-		int timeStep) const {
+		int loop, int timeStep) const {
 
 	std::unique_ptr<XFile::TimestepGroup> tsGroup;
 
 	try {
 		// Open the sub-group associated with the desired time step.
-		tsGroup.reset(new TimestepGroup(*this, timeStep));
+		tsGroup.reset(new TimestepGroup(*this, loop, timeStep));
 	} catch (HDF5Exception& e) {
 		// We were unable to open the group associated with the given time step.
 		assert(not tsGroup);
@@ -884,8 +819,9 @@ std::unique_ptr<XFile::TimestepGroup> XFile::ConcentrationGroup::getLastTimestep
 		// Open the sub-group associated with the last known time step,
 		// if any time steps have been written.
 		auto lastTimeStep = getLastTimeStep();
-		if (lastTimeStep >= 0) {
-			tsGroup.reset(new TimestepGroup(*this, lastTimeStep));
+		auto lastLoop = getLastLoop();
+		if (lastTimeStep >= 0 && lastLoop >= 0) {
+			tsGroup.reset(new TimestepGroup(*this, lastLoop, lastTimeStep));
 		}
 	} catch (HDF5Exception& e) {
 		// We were unable to open the group associated with the given time step.
@@ -911,20 +847,28 @@ const std::string XFile::TimestepGroup::nDAttrName = "nDeuterium";
 const std::string XFile::TimestepGroup::prevDFluxAttrName = "previousDFlux";
 const std::string XFile::TimestepGroup::nTAttrName = "nTritium";
 const std::string XFile::TimestepGroup::prevTFluxAttrName = "previousTFlux";
-
+const std::string XFile::TimestepGroup::nxAttrName = "nx";
+const std::string XFile::TimestepGroup::hxAttrName = "hx";
+const std::string XFile::TimestepGroup::nyAttrName = "ny";
+const std::string XFile::TimestepGroup::hyAttrName = "hy";
+const std::string XFile::TimestepGroup::nzAttrName = "nz";
+const std::string XFile::TimestepGroup::hzAttrName = "hz";
 const std::string XFile::TimestepGroup::concDatasetName = "concs";
 
 std::string XFile::TimestepGroup::makeGroupName(
-		const XFile::ConcentrationGroup& concGroup, int timeStep) {
+		const XFile::ConcentrationGroup& concGroup, int loop, int timeStep) {
 
 	std::ostringstream namestr;
-	namestr << concGroup.getName() << '/' << groupNamePrefix << timeStep;
+	namestr << concGroup.getName() << '/' << groupNamePrefix << loop << "_"
+			<< timeStep;
 	return namestr.str();
 }
 
 XFile::TimestepGroup::TimestepGroup(const XFile::ConcentrationGroup& concGroup,
-		int timeStep, double time, double previousTime, double deltaTime) :
-		HDF5File::Group(concGroup, makeGroupName(concGroup, timeStep), true) {
+		int loop, int timeStep, double time, double previousTime,
+		double deltaTime) :
+		HDF5File::Group(concGroup, makeGroupName(concGroup, loop, timeStep),
+				true) {
 
 	// Get a dataspace for our scalar attributes.
 	XFile::ScalarDataSpace scalarDSpace;
@@ -945,10 +889,60 @@ XFile::TimestepGroup::TimestepGroup(const XFile::ConcentrationGroup& concGroup,
 }
 
 XFile::TimestepGroup::TimestepGroup(const XFile::ConcentrationGroup& concGroup,
-		int timeStep) :
-		HDF5File::Group(concGroup, makeGroupName(concGroup, timeStep), false) {
+		int loop, int timeStep) :
+		HDF5File::Group(concGroup, makeGroupName(concGroup, loop, timeStep),
+				false) {
 
 	// Base class opened the group, so nothing else to do.
+}
+
+void XFile::TimestepGroup::writeGrid(const std::vector<double>& grid, int ny,
+		double hy, int nz, double hz) const {
+	// Build a dataspace for our scalar attributes.
+	XFile::ScalarDataSpace scalarDSpace;
+
+	// Add an nx attribute.
+	int nx = grid.size() - 2;
+	Attribute<decltype(nx)> nxAttr(*this, nxAttrName, scalarDSpace);
+	nxAttr.setTo(nx);
+
+	// Add an hy attribute.
+	double hx = 0.0;
+	if (grid.size() > 0)
+		hx = grid[1] - grid[0];
+	Attribute<decltype(hx)> hxAttr(*this, hxAttrName, scalarDSpace);
+	hxAttr.setTo(hx);
+
+	// Add an ny attribute.
+	Attribute<decltype(ny)> nyAttr(*this, nyAttrName, scalarDSpace);
+	nyAttr.setTo(ny);
+	// Add an hy attribute.
+	Attribute<decltype(hy)> hyAttr(*this, hyAttrName, scalarDSpace);
+	hyAttr.setTo(hy);
+
+	// Add an nz attribute.
+	Attribute<decltype(nz)> nzAttr(*this, nzAttrName, scalarDSpace);
+	nzAttr.setTo(nz);
+	// Add an hz attribute.
+	Attribute<decltype(hz)> hzAttr(*this, hzAttrName, scalarDSpace);
+	hzAttr.setTo(hz);
+
+	if (nx > 0) {
+		// Create, write, and close the grid dataset
+		double gridArray[grid.size()];
+		for (int i = 0; i < grid.size(); i++) {
+			gridArray[i] = grid[i];
+		}
+		std::array<hsize_t, 1> dims { (hsize_t) grid.size() };
+		XFile::SimpleDataSpace<1> gridDSpace(dims);
+		hid_t datasetId = H5Dcreate2(getId(), "grid", H5T_IEEE_F64LE,
+				gridDSpace.getId(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		auto status = H5Dwrite(datasetId, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL,
+		H5P_DEFAULT, &gridArray);
+		status = H5Dclose(datasetId);
+	}
+
+	return;
 }
 
 void XFile::TimestepGroup::writeSurface1D(Surface1DType iSurface,
@@ -1266,6 +1260,40 @@ double XFile::TimestepGroup::readPreviousTime(void) const {
 	// Open and read the previousTime attribute
 	Attribute<double> prevTimeAttr(*this, prevTimeAttrName);
 	return prevTimeAttr.get();
+}
+
+void XFile::TimestepGroup::readSizes(int &nx, double &hx, int &ny, double &hy,
+		int &nz, double &hz) const {
+
+	// Open and read the nx attribute
+	Attribute<int> nxAttr(*this, nxAttrName);
+	nx = nxAttr.get();
+
+	// Open and read the hx attribute
+	Attribute<double> hxAttr(*this, hxAttrName);
+	hx = hxAttr.get();
+
+	// Open and read the ny attribute
+	Attribute<int> nyAttr(*this, nyAttrName);
+	ny = nyAttr.get();
+
+	// Open and read the hy attribute
+	Attribute<double> hyAttr(*this, hyAttrName);
+	hy = hyAttr.get();
+
+	// Open and read the nz attribute
+	Attribute<int> nzAttr(*this, nzAttrName);
+	nz = nzAttr.get();
+
+	// Open and read the hz attribute
+	Attribute<double> hzAttr(*this, hzAttrName);
+	hz = hzAttr.get();
+}
+
+std::vector<double> XFile::TimestepGroup::readGrid() const {
+
+	DataSet<std::vector<double> > dataset(*this, "grid");
+	return dataset.read();
 }
 
 auto XFile::TimestepGroup::readSurface1D(void) const -> Surface1DType {

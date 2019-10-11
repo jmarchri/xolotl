@@ -115,7 +115,7 @@ PetscErrorCode startStop0D(TS ts, PetscInt timestep, PetscReal time,
 	auto concGroup = checkpointFile.getGroup<
 			xolotlCore::XFile::ConcentrationGroup>();
 	assert(concGroup);
-	auto tsGroup = concGroup->addTimestepGroup(timestep, time, previousTime,
+	auto tsGroup = concGroup->addTimestepGroup(0, timestep, time, previousTime,
 			currentTimeStep);
 
 	// Determine the concentration values we will write.
@@ -813,7 +813,7 @@ PetscErrorCode setupPetsc0DMonitor(TS ts) {
 			// the network from another file using a single-process
 			// MPI communicator.
 			{
-				xolotlCore::XFile checkpointFile(hdf5OutputName0D, grid,
+				xolotlCore::XFile checkpointFile(hdf5OutputName0D,
 						compList, PETSC_COMM_WORLD);
 			}
 

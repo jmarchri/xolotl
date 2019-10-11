@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(checkIO) {
 	// Get the size of the network
 	int networkSize = network->size();
 
-	// Set the time step number
-	int timeStep = 0;
+	// Set the time step and loop number
+	int timeStep = 0, loop = 0;
 
 	// Set the number of grid points and step size
 	int nGrid = 5;
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(checkIO) {
 	const std::string testFileName = "test_basic.h5";
 	{
 		BOOST_TEST_MESSAGE("Creating file.");
-		xolotlCore::XFile testFile(testFileName, grid, testCompsVec,
+		xolotlCore::XFile testFile(testFileName, testCompsVec,
 		MPI_COMM_WORLD);
 		xolotlCore::XFile::NetworkGroup netGroup(testFile, *network);
 	}
@@ -139,11 +139,14 @@ BOOST_AUTO_TEST_CASE(checkIO) {
 		auto concGroup =
 				testFile.getGroup<xolotlCore::XFile::ConcentrationGroup>();
 		BOOST_REQUIRE(concGroup);
-		auto tsGroup = concGroup->addTimestepGroup(timeStep, currentTime,
+		auto tsGroup = concGroup->addTimestepGroup(loop, timeStep, currentTime,
 				previousTime, currentTimeStep);
 
 		// Write the surface position
 		tsGroup->writeSurface1D(iSurface, nInter, previousFlux);
+
+		// Write the grid
+		tsGroup->writeGrid(grid);
 
 #if READY
 		// Fill it
@@ -169,19 +172,8 @@ BOOST_AUTO_TEST_CASE(checkIO) {
 
 		// Read the header of the written file
 		BOOST_TEST_MESSAGE("Checking test file header.");
-		int nx = 0, ny = 0, nz = 0;
-		double hx = 0.0, hy = 0.0, hz = 0.0;
 		auto headerGroup = testFile.getGroup<xolotlCore::XFile::HeaderGroup>();
 		BOOST_REQUIRE(headerGroup);
-		headerGroup->read(nx, hx, ny, hy, nz, hz);
-
-		// Check the obtained values
-		BOOST_REQUIRE_EQUAL(nx, nGrid);
-		BOOST_REQUIRE_CLOSE(hx, stepSize, 0.0001);
-		BOOST_REQUIRE_EQUAL(ny, 0);
-		BOOST_REQUIRE_CLOSE(hy, 0.0, 0.0001);
-		BOOST_REQUIRE_EQUAL(nz, 0);
-		BOOST_REQUIRE_CLOSE(hz, 0.0, 0.0001);
 
 		// Access the last-written timestep group.
 		BOOST_TEST_MESSAGE("Checking test file last time step.");
@@ -199,6 +191,25 @@ BOOST_AUTO_TEST_CASE(checkIO) {
 		BOOST_REQUIRE_CLOSE(dt, currentTimeStep, 0.0001);
 		double previousReadTime = tsGroup->readPreviousTime();
 		BOOST_REQUIRE_CLOSE(previousReadTime, previousTime, 0.0001);
+
+		// Read the sizes
+		int nx = 0, ny = 0, nz = 0;
+		double hx = 0.0, hy = 0.0, hz = 0.0;
+		tsGroup->readSizes(nx, hx, ny, hy, nz, hz);
+
+		// Check the obtained values
+		BOOST_REQUIRE_EQUAL(nx, nGrid);
+		BOOST_REQUIRE_CLOSE(hx, stepSize, 0.0001);
+		BOOST_REQUIRE_EQUAL(ny, 0);
+		BOOST_REQUIRE_CLOSE(hy, 0.0, 0.0001);
+		BOOST_REQUIRE_EQUAL(nz, 0);
+		BOOST_REQUIRE_CLOSE(hz, 0.0, 0.0001);
+
+		// Get the grid from the file and compare it to the original one
+		auto fileGrid = tsGroup->readGrid();
+		for (int i = 0; i < fileGrid.size(); i++) {
+			BOOST_REQUIRE_CLOSE(fileGrid[i], grid[i], 0.0001);
+		}
 
 		// Read the surface position
 		BOOST_TEST_MESSAGE(
@@ -333,14 +344,7 @@ BOOST_AUTO_TEST_CASE(checkSurface2D) {
 	{
 		BOOST_TEST_MESSAGE("Creating 2D test file");
 
-		// Set the number of grid points and step size
-		int nGrid = 5;
-		double stepSize = 0.5;
-		std::vector<double> grid;
-		for (int i = 0; i < nGrid + 2; i++)
-			grid.push_back((double) i * stepSize);
-
-		xolotlCore::XFile testFile(testFileName, grid, createTestNetworkComps(),
+		xolotlCore::XFile testFile(testFileName, createTestNetworkComps(),
 		MPI_COMM_WORLD);
 	}
 
@@ -365,14 +369,14 @@ BOOST_AUTO_TEST_CASE(checkSurface2D) {
 		xolotlCore::XFile testFile(testFileName,
 		MPI_COMM_WORLD, xolotlCore::XFile::AccessMode::OpenReadWrite);
 
-		// Set the time step number
-		int timeStep = 0;
+		// Set the time step and loop numbers
+		int timeStep = 0, loop = 0;
 
 		// Add the concentration sub group
 		auto concGroup =
 				testFile.getGroup<xolotlCore::XFile::ConcentrationGroup>();
 		BOOST_REQUIRE(concGroup);
-		auto tsGroup = concGroup->addTimestepGroup(timeStep, currentTime,
+		auto tsGroup = concGroup->addTimestepGroup(loop, timeStep, currentTime,
 				previousTime, currentTimeStep);
 		BOOST_REQUIRE(tsGroup);
 
@@ -431,14 +435,7 @@ BOOST_AUTO_TEST_CASE(checkSurface3D) {
 	{
 		BOOST_TEST_MESSAGE("Creating 3D test file.");
 
-		// Set the number of grid points and step size
-		int nGrid = 5;
-		double stepSize = 0.5;
-		std::vector<double> grid;
-		for (int i = 0; i < nGrid + 2; i++)
-			grid.push_back((double) i * stepSize);
-
-		xolotlCore::XFile testFile(testFileName, grid, createTestNetworkComps(),
+		xolotlCore::XFile testFile(testFileName, createTestNetworkComps(),
 		MPI_COMM_WORLD);
 	}
 
@@ -466,15 +463,15 @@ BOOST_AUTO_TEST_CASE(checkSurface3D) {
 		xolotlCore::XFile testFile(testFileName,
 		MPI_COMM_WORLD, xolotlCore::XFile::AccessMode::OpenReadWrite);
 
-		// Set the time step number
-		int timeStep = 0;
+		// Set the time step and loop numbers
+		int timeStep = 0, loop = 0;
 
 		// Add the concentration sub group
 		auto concGroup =
 				testFile.getGroup<xolotlCore::XFile::ConcentrationGroup>();
 		BOOST_REQUIRE(concGroup);
 
-		auto tsGroup = concGroup->addTimestepGroup(timeStep, currentTime,
+		auto tsGroup = concGroup->addTimestepGroup(loop, timeStep, currentTime,
 				previousTime, currentTimeStep);
 		BOOST_REQUIRE(tsGroup);
 

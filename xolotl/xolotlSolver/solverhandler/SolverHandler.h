@@ -359,8 +359,7 @@ protected:
 				// Update the value of the last used grid point
 				grid[grid.size() - 2] -= step;
 				// Remove the last point if it is smaller to the second to last grid point
-				while (grid[grid.size() - 2]
-						< grid[grid.size() - 3] + 1.0e-4) {
+				while (grid[grid.size() - 2] < grid[grid.size() - 3] + 1.0e-4) {
 					grid[grid.size() - 3] = grid[grid.size() - 2];
 					grid.pop_back();
 				}
@@ -440,16 +439,13 @@ public:
 				options.getZStepSize();
 		// Update them if we use an HDF5 file with header group
 		if (options.useHDF5()) {
-			int nx = 0, ny = 0, nz = 0;
-			double hx = 0.0, hy = 0.0, hz = 0.0;
-
 			xolotlCore::XFile xfile(networkName);
-			auto headerGroup = xfile.getGroup<xolotlCore::XFile::HeaderGroup>();
-			if (headerGroup) {
-				headerGroup->read(nx, hx, ny, hy, nz, hz);
-
-				nX = nx, nY = ny, nZ = nz;
-				hX = hx, hY = hy, hZ = hz;
+			auto concGroup = xfile.getGroup<
+					xolotlCore::XFile::ConcentrationGroup>();
+			bool hasConcentrations = (concGroup and concGroup->hasTimesteps());
+			if (hasConcentrations) {
+				auto lastTsGroup = concGroup->getLastTimestepGroup();
+				lastTsGroup->readSizes(nX, hX, nY, hY, nZ, hZ);
 			}
 		}
 

@@ -153,7 +153,7 @@ PetscErrorCode startStop3D(TS ts, PetscInt timestep, PetscReal time,
 	auto concGroup = checkpointFile.getGroup<
 			xolotlCore::XFile::ConcentrationGroup>();
 	assert(concGroup);
-	auto tsGroup = concGroup->addTimestepGroup(timestep, time, previousTime,
+	auto tsGroup = concGroup->addTimestepGroup(0, timestep, time, previousTime,
 			currentTimeStep);
 
 	if (solverHandler.moveSurface()) {
@@ -1705,8 +1705,8 @@ PetscErrorCode setupPetsc3DMonitor(TS ts) {
 			// the network from another file using a single-process
 			// MPI communicator.
 			{
-				xolotlCore::XFile checkpointFile(hdf5OutputName3D, grid,
-						compList, PETSC_COMM_WORLD, My, hy, Mz, hz);
+				xolotlCore::XFile checkpointFile(hdf5OutputName3D,
+						compList, PETSC_COMM_WORLD);
 			}
 
 			// Copy the network group from the given file (if it has one).

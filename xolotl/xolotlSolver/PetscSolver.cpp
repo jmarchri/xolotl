@@ -39,7 +39,7 @@ static char help[] =
 // ----- GLOBAL VARIABLES ----- //
 extern PetscErrorCode setupPetsc0DMonitor(TS);
 extern PetscErrorCode setupPetsc1DMonitor(TS,
-		std::shared_ptr<xolotlPerf::IHandlerRegistry>, bool firstLoop);
+		std::shared_ptr<xolotlPerf::IHandlerRegistry>, int loopNumber);
 extern PetscErrorCode setupPetsc2DMonitor(TS);
 extern PetscErrorCode setupPetsc3DMonitor(TS);
 
@@ -223,7 +223,7 @@ void PetscSolver::solve() {
 	TSConvergedReason reason = TS_CONVERGED_USER;
 	Vec oldC;
 	DM oldDA;
-	bool firstLoop = true;
+	int loopNumber = 0;
 	while (reason == TS_CONVERGED_USER) {
 
 		// Create the solver context
@@ -282,7 +282,7 @@ void PetscSolver::solve() {
 			break;
 		case 1:
 			// One dimension
-			ierr = setupPetsc1DMonitor(ts, handlerRegistry, firstLoop);
+			ierr = setupPetsc1DMonitor(ts, handlerRegistry, loopNumber);
 			checkPetscError(ierr,
 					"PetscSolver::solve: setupPetsc1DMonitor failed.");
 			break;
@@ -319,8 +319,8 @@ void PetscSolver::solve() {
 			ierr = TSSolve(ts, C);
 			checkPetscError(ierr, "PetscSolver::solve: TSSolve failed.");
 
-			// This is not the first loop anymore
-			firstLoop = false;
+			// We are done with the loop
+			loopNumber++;
 
 			// Catch the change in surface
 			// Get the converged reason from PETSc

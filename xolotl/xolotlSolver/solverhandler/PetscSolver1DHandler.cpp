@@ -16,8 +16,26 @@ void PetscSolver1DHandler::createSolverContext(DM &da) {
 	// Degrees of freedom is the total number of clusters in the network
 	const int dof = network.getDOF();
 
-	// Generate the grid in the x direction which will give us the size of the DMDA
-	generateGrid(nX, hX, surfaceOffset);
+	// Check if we are reading from a network file
+	// Get the last time step written in the HDF5 file
+	bool hasConcentrations = false;
+	std::unique_ptr<xolotlCore::XFile> xfile;
+	std::unique_ptr<xolotlCore::XFile::ConcentrationGroup> concGroup;
+	if (not networkName.empty()) {
+
+		xfile.reset(new xolotlCore::XFile(networkName));
+		concGroup = xfile->getGroup<xolotlCore::XFile::ConcentrationGroup>();
+		hasConcentrations = (concGroup and concGroup->hasTimesteps());
+	}
+	if (hasConcentrations && surfaceOffset == 0) {
+		// Read from the file
+		auto tsGroup = concGroup->getLastTimestepGroup();
+		assert(tsGroup);
+		grid = tsGroup->readGrid();
+	} else {
+		// Generate the grid in the x direction which will give us the size of the DMDA
+		generateGrid(nX, hX, surfaceOffset);
+	}
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	 Create distributed array (DMDA) to manage parallel grid and vectors
@@ -45,18 +63,10 @@ void PetscSolver1DHandler::createSolverContext(DM &da) {
 	int procId;
 	MPI_Comm_rank(PETSC_COMM_WORLD, &procId);
 	if (procId == 0) {
-		std::cout << nX << std::endl;
 		for (int i = 1; i < grid.size() - 1; i++) {
 			std::cout << grid[i + 1] - grid[surfacePosition + 1] << " ";
 		}
 		std::cout << std::endl;
-		if (oldGrid.size() > 0) {
-			for (int i = 1; i < oldGrid.size() - 1; i++) {
-				std::cout << oldGrid[i + 1] - oldGrid[surfacePosition + 1]
-						<< " ";
-			}
-			std::cout << std::endl;
-		}
 	}
 
 	// Set the size of the partial derivatives vector
@@ -479,8 +489,10 @@ void PetscSolver1DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
 												* xFactor;
 							}
 
-							if (totalProcs[2] != totalProcs[0]) delete leftConc;
-							if (totalProcs[2] != totalProcs[1]) delete rightConc;
+							if (totalProcs[2] != totalProcs[0])
+								delete leftConc;
+							if (totalProcs[2] != totalProcs[1])
+								delete rightConc;
 						}
 
 						break;
