@@ -262,309 +262,176 @@ void PetscSolver1DHandler::initializeConcentration(DM &da, Vec &C, DM &oldDA,
 		}
 		network.addGridPoints(xm - oldXm);
 
-		if (surfaceOffset > 0) {
-			// Set the indices for the scatter of all the components of the old solution
-			PetscInt *lidxFrom, *lidxTo, lict = 0;
-			ierr = PetscMalloc1(min(xm, oldXm), &lidxTo);
-			ierr = PetscMalloc1(min(xm, oldXm), &lidxFrom);
-			// The surface is going up
-			for (PetscInt i = oldXs; i < oldXs + oldXm; i++) {
-				/*  global number in natural ordering */
-				lidxTo[lict] = surfaceOffset + i;
-				lidxFrom[lict] = i;
-				lict++;
-			}
+		// Pointers to the PETSc arrays that start at the beginning (xs) of the
+		// local array
+		PetscScalar **concs = nullptr, **oldConcs = nullptr;
+		// Get pointers to vector data
+		ierr = DMDAVecGetArrayDOFRead(da, C, &concs);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"DMDAVecGetArrayDOFRead (C) failed.");
+		ierr = DMDAVecGetArrayDOF(oldDA, oldC, &oldConcs);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"DMDAVecGetArrayDOF (oldC) failed.");
 
-			// Create the list of indices for the scatter
-			VecScatter scatter;
-			IS isTo, isFrom;
-			ierr = ISCreateBlock(PetscObjectComm((PetscObject) da), dof,
-					min(xm, oldXm), lidxTo, PETSC_OWN_POINTER, &isTo);
-			ierr = ISCreateBlock(PetscObjectComm((PetscObject) oldDA), dof,
-					min(xm, oldXm), lidxFrom, PETSC_OWN_POINTER, &isFrom);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"ISCreateBlock failed.");
+		// Get the procId
+		int procId;
+		MPI_Comm_rank(MPI_COMM_WORLD, &procId);
 
-			// Create the natural vector that will receive the scatter
-			Vec natural;
-			ierr = DMDACreateNaturalVector(da, &natural);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"DMDACreateNaturalVector failed.");
+		// We have to interpolate between grid points because the grid spacing is changing
+		// Loop on the current grid
+		for (int xi = 1; xi < nX; xi++) {
+			// Compute its distance from the bottom
+			double distance = grid[grid.size() - 2] - grid[xi + 1];
+			// Loop on the old grid to find the same distance
+			for (int i = 1; i < oldGrid.size() - 1; i++) {
+				double left = oldGrid[oldGrid.size() - 2] - oldGrid[i];
+				double right = oldGrid[oldGrid.size() - 2] - oldGrid[i + 1];
+				// Check the distance
+				if (distance > right - 1.0e-4) {
+					// Create the arrays to receive the data
+					PetscScalar *rightConc, *leftConc;
 
-			// Create the scatter object
-			ierr = VecScatterCreate(oldC, isFrom, natural, isTo, &scatter);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"VecScatterCreate failed.");
-
-			// Do the scatter
-			ierr = VecScatterBegin(scatter, oldC, natural, INSERT_VALUES,
-					SCATTER_FORWARD);
-			ierr = VecScatterEnd(scatter, oldC, natural, INSERT_VALUES,
-					SCATTER_FORWARD);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"VecScatter failed.");
-
-			// Destroy everything we don't need anymore
-			ierr = VecScatterDestroy(&scatter);
-			ierr = ISDestroy(&isTo);
-			ierr = ISDestroy(&isFrom);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"Destroy failed.");
-
-			// Scatter to the new grid points
-			while (surfaceOffset > 0) {
-				// Set the index to scatter at the surface
-				ierr = PetscMalloc1(1, &lidxTo);
-				ierr = PetscMalloc1(1, &lidxFrom);
-				lidxTo[0] = surfaceOffset - 1;
-				lidxFrom[0] = 0;
-
-				// Create the scatter object
-				ierr = ISCreateBlock(PetscObjectComm((PetscObject) da), dof, 1,
-						lidxTo, PETSC_OWN_POINTER, &isTo);
-				ierr = ISCreateBlock(PetscObjectComm((PetscObject) oldDA), dof,
-						1, lidxFrom, PETSC_OWN_POINTER, &isFrom);
-				checkPetscError(ierr,
-						"PetscSolver1DHandler::initializeConcentration: "
-								"ISCreateBlock failed.");
-
-				// Create the scatter object
-				ierr = VecScatterCreate(oldC, isFrom, natural, isTo, &scatter);
-				checkPetscError(ierr,
-						"PetscSolver1DHandler::initializeConcentration: "
-								"VecScatterCreate failed.");
-
-				// Do the scatter
-				ierr = VecScatterBegin(scatter, oldC, natural, INSERT_VALUES,
-						SCATTER_FORWARD);
-				ierr = VecScatterEnd(scatter, oldC, natural, INSERT_VALUES,
-						SCATTER_FORWARD);
-				checkPetscError(ierr,
-						"PetscSolver1DHandler::initializeConcentration: "
-								"VecScatter failed.");
-
-				// Destroy everything we don't need anymore
-				ierr = VecScatterDestroy(&scatter);
-				ierr = ISDestroy(&isTo);
-				ierr = ISDestroy(&isFrom);
-				checkPetscError(ierr,
-						"PetscSolver1DHandler::initializeConcentration: "
-								"Destroy failed.");
-
-				// Decrease the offset by 1
-				surfaceOffset--;
-			}
-
-			// Transfer the natural vector to the current solution
-			ierr = DMDANaturalToGlobalBegin(da, natural, INSERT_VALUES, C);
-			ierr = DMDANaturalToGlobalEnd(da, natural, INSERT_VALUES, C);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"DMDANaturalToGlobal failed.");
-
-//		VecView(oldC, PETSC_VIEWER_STDOUT_WORLD);
-//		VecView(C, PETSC_VIEWER_STDOUT_WORLD);
-
-			// Destroy everything we don't need anymore
-			ierr = VecDestroy(&oldC);
-			ierr = DMDestroy(&oldDA);
-			ierr = VecDestroy(&natural);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"Destroy failed.");
-		}
-		// The surface is going down
-		else {
-
-			// Pointers to the PETSc arrays that start at the beginning (xs) of the
-			// local array
-			PetscScalar **concs = nullptr, **oldConcs = nullptr;
-			// Get pointers to vector data
-			ierr = DMDAVecGetArrayDOFRead(da, C, &concs);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"DMDAVecGetArrayDOFRead (C) failed.");
-			ierr = DMDAVecGetArrayDOF(oldDA, oldC, &oldConcs);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"DMDAVecGetArrayDOF (oldC) failed.");
-
-			// Get the procId
-			int procId;
-			MPI_Comm_rank(MPI_COMM_WORLD, &procId);
-
-			// We have to interpolate between grid points because the grid spacing is changing
-			// Loop on the current grid
-			for (int xi = 1; xi < nX; xi++) {
-				// Compute its distance from the bottom
-				double distance = grid[grid.size() - 2] - grid[xi + 1];
-				// Loop on the old grid to find the same distance
-				for (int i = 1; i < oldGrid.size() - 1; i++) {
-					double left = oldGrid[oldGrid.size() - 2] - oldGrid[i];
-					double right = oldGrid[oldGrid.size() - 2] - oldGrid[i + 1];
-					// Check the distance
-					if (distance > right - 1.0e-4) {
-						// Create the arrays to receive the data
-						PetscScalar *rightConc, *leftConc;
-
-						// Check where all the needed data is located
-						int procs[3] = { 0, 0, 0 };
-						if (i - 1 >= oldXs && i - 1 < oldXs + oldXm) {
-							procs[0] = procId;
-						}
-						if (i >= oldXs && i < oldXs + oldXm) {
-							procs[1] = procId;
-						}
-						// Take care of the receive proc
-						if (xi >= xs && xi < xs + xm) {
-							procs[2] = procId;
-						}
-						// Get which processor will send and receive the information
-						int totalProcs[3] = { 0, 0, 0 };
-						MPI_Allreduce(&procs, &totalProcs, 3, MPI_INT, MPI_SUM,
-								MPI_COMM_WORLD);
-
-						// If the left data shares the same process as the new one
-						if (totalProcs[0] == totalProcs[2]) {
-							if (procId == totalProcs[2]) {
-								leftConc = oldConcs[i - 1];
-							}
-						} else {
-							// We have to send the data
-							// Send the left data
-							if (procId == totalProcs[0]) {
-								// Send the values
-								MPI_Send(&oldConcs[i - 1][0], dof, MPI_DOUBLE,
-										totalProcs[2], 2, MPI_COMM_WORLD);
-							}
-							// Receive the data on the new proc
-							if (procId == totalProcs[2]) {
-								// Receive the data
-								leftConc = new PetscScalar[dof];
-								MPI_Recv(leftConc, dof, MPI_DOUBLE,
-										totalProcs[0], 2, MPI_COMM_WORLD,
-										MPI_STATUS_IGNORE);
-							}
-						}
-
-						// If the right data shares the same process as the new one
-						if (totalProcs[1] == totalProcs[2]) {
-							if (procId == totalProcs[2]) {
-								rightConc = oldConcs[i];
-							}
-						} else {
-							// We have to send the data
-							// Send the right data
-							if (procId == totalProcs[1]) {
-								// Send the values
-								MPI_Send(&oldConcs[i][0], dof, MPI_DOUBLE,
-										totalProcs[2], 1, MPI_COMM_WORLD);
-							}
-							// Receive the data on the new proc
-							if (procId == totalProcs[2]) {
-								// Receive the data
-								rightConc = new PetscScalar[dof];
-								MPI_Recv(rightConc, dof, MPI_DOUBLE,
-										totalProcs[1], 1, MPI_COMM_WORLD,
-										MPI_STATUS_IGNORE);
-							}
-						}
-
-						// Compute the new value on the new proc
-						if (procId == totalProcs[2]) {
-
-							// Compute the location of the new grid point within the old segment
-							double xFactor = (distance - left) / (right - left);
-							// Get the pointer to the data we want to update
-							PetscScalar *newConc = concs[xi];
-							// Loop on the DOF
-							for (int k = 0; k < dof; k++) {
-								newConc[k] = leftConc[k]
-										+ (rightConc[k] - leftConc[k])
-												* xFactor;
-							}
-
-							if (totalProcs[2] != totalProcs[0])
-								delete leftConc;
-							if (totalProcs[2] != totalProcs[1])
-								delete rightConc;
-						}
-
-						break;
+					// Check where all the needed data is located
+					int procs[3] = { 0, 0, 0 };
+					if (i - 1 >= oldXs && i - 1 < oldXs + oldXm) {
+						procs[0] = procId;
 					}
+					if (i >= oldXs && i < oldXs + oldXm) {
+						procs[1] = procId;
+					}
+					// Take care of the receive proc
+					if (xi >= xs && xi < xs + xm) {
+						procs[2] = procId;
+					}
+					// Get which processor will send and receive the information
+					int totalProcs[3] = { 0, 0, 0 };
+					MPI_Allreduce(&procs, &totalProcs, 3, MPI_INT, MPI_SUM,
+							MPI_COMM_WORLD);
+
+					// If the left data shares the same process as the new one
+					if (totalProcs[0] == totalProcs[2]) {
+						if (procId == totalProcs[2]) {
+							leftConc = oldConcs[i - 1];
+						}
+					} else {
+						// We have to send the data
+						// Send the left data
+						if (procId == totalProcs[0]) {
+							// Send the values
+							MPI_Send(&oldConcs[i - 1][0], dof, MPI_DOUBLE,
+									totalProcs[2], 2, MPI_COMM_WORLD);
+						}
+						// Receive the data on the new proc
+						if (procId == totalProcs[2]) {
+							// Receive the data
+							leftConc = new PetscScalar[dof];
+							MPI_Recv(leftConc, dof, MPI_DOUBLE, totalProcs[0],
+									2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+						}
+					}
+
+					// If the right data shares the same process as the new one
+					if (totalProcs[1] == totalProcs[2]) {
+						if (procId == totalProcs[2]) {
+							rightConc = oldConcs[i];
+						}
+					} else {
+						// We have to send the data
+						// Send the right data
+						if (procId == totalProcs[1]) {
+							// Send the values
+							MPI_Send(&oldConcs[i][0], dof, MPI_DOUBLE,
+									totalProcs[2], 1, MPI_COMM_WORLD);
+						}
+						// Receive the data on the new proc
+						if (procId == totalProcs[2]) {
+							// Receive the data
+							rightConc = new PetscScalar[dof];
+							MPI_Recv(rightConc, dof, MPI_DOUBLE, totalProcs[1],
+									1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+						}
+					}
+
+					// Compute the new value on the new proc
+					if (procId == totalProcs[2]) {
+
+						// Compute the location of the new grid point within the old segment
+						double xFactor = (distance - left) / (right - left);
+						// Get the pointer to the data we want to update
+						PetscScalar *newConc = concs[xi];
+						// Loop on the DOF
+						for (int k = 0; k < dof; k++) {
+							newConc[k] = leftConc[k]
+									+ (rightConc[k] - leftConc[k]) * xFactor;
+						}
+
+						if (totalProcs[2] != totalProcs[0])
+							delete leftConc;
+						if (totalProcs[2] != totalProcs[1])
+							delete rightConc;
+					}
+
+					break;
 				}
 			}
+		}
 
-			// Restore the vectors
-			ierr = DMDAVecRestoreArrayDOFRead(da, C, &concs);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"DMDAVecRestoreArrayDOFRead (C) failed.");
-			ierr = DMDAVecRestoreArrayDOF(oldDA, oldC, &oldConcs);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"DMDAVecRestoreArrayDOF (oldC) failed.");
+		// Restore the vectors
+		ierr = DMDAVecRestoreArrayDOFRead(da, C, &concs);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"DMDAVecRestoreArrayDOFRead (C) failed.");
+		ierr = DMDAVecRestoreArrayDOF(oldDA, oldC, &oldConcs);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"DMDAVecRestoreArrayDOF (oldC) failed.");
 
-			// Boundary conditions
-			// Set the index to scatter at the surface
-			PetscInt *lidxFrom, *lidxTo, lict = 0;
-			ierr = PetscMalloc1(1, &lidxTo);
-			ierr = PetscMalloc1(1, &lidxFrom);
-			lidxTo[0] = 0;
-			lidxFrom[0] = 0;
+		// Boundary conditions
+		// Set the index to scatter at the surface
+		PetscInt *lidxFrom, *lidxTo, lict = 0;
+		ierr = PetscMalloc1(1, &lidxTo);
+		ierr = PetscMalloc1(1, &lidxFrom);
+		lidxTo[0] = 0;
+		lidxFrom[0] = 0;
 
-			// Create the scatter object
-			VecScatter scatter;
-			IS isTo, isFrom;
-			ierr = ISCreateBlock(PetscObjectComm((PetscObject) da), dof, 1,
-					lidxTo, PETSC_OWN_POINTER, &isTo);
-			ierr = ISCreateBlock(PetscObjectComm((PetscObject) oldDA), dof, 1,
-					lidxFrom, PETSC_OWN_POINTER, &isFrom);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"ISCreateBlock failed.");
+		// Create the scatter object
+		VecScatter scatter;
+		IS isTo, isFrom;
+		ierr = ISCreateBlock(PetscObjectComm((PetscObject) da), dof, 1, lidxTo,
+				PETSC_OWN_POINTER, &isTo);
+		ierr = ISCreateBlock(PetscObjectComm((PetscObject) oldDA), dof, 1,
+				lidxFrom, PETSC_OWN_POINTER, &isFrom);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"ISCreateBlock failed.");
 
-			// Create the scatter object
-			ierr = VecScatterCreate(oldC, isFrom, C, isTo, &scatter);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"VecScatterCreate failed.");
+		// Create the scatter object
+		ierr = VecScatterCreate(oldC, isFrom, C, isTo, &scatter);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"VecScatterCreate failed.");
 
-			// Do the scatter
-			ierr = VecScatterBegin(scatter, oldC, C, INSERT_VALUES,
-					SCATTER_FORWARD);
-			ierr = VecScatterEnd(scatter, oldC, C, INSERT_VALUES,
-					SCATTER_FORWARD);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"VecScatter failed.");
+		// Do the scatter
+		ierr = VecScatterBegin(scatter, oldC, C, INSERT_VALUES,
+				SCATTER_FORWARD);
+		ierr = VecScatterEnd(scatter, oldC, C, INSERT_VALUES, SCATTER_FORWARD);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"VecScatter failed.");
 
-			// Destroy everything we don't need anymore
-			ierr = VecScatterDestroy(&scatter);
-			ierr = ISDestroy(&isTo);
-			ierr = ISDestroy(&isFrom);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"Destroy failed.");
+		// Destroy everything we don't need anymore
+		ierr = VecScatterDestroy(&scatter);
+		ierr = ISDestroy(&isTo);
+		ierr = ISDestroy(&isFrom);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"Destroy failed.");
 
-			// Reset the offset
-			surfaceOffset = 0;
+		// Reset the offset
+		surfaceOffset = 0;
 
 //			VecView(oldC, PETSC_VIEWER_STDOUT_WORLD);
 //			VecView(C, PETSC_VIEWER_STDOUT_WORLD);
 
-			// Destroy everything we don't need anymore
-			ierr = VecDestroy(&oldC);
-			ierr = DMDestroy(&oldDA);
-			checkPetscError(ierr,
-					"PetscSolver1DHandler::initializeConcentration: "
-							"Destroy failed.");
-		}
+		// Destroy everything we don't need anymore
+		ierr = VecDestroy(&oldC);
+		ierr = DMDestroy(&oldDA);
+		checkPetscError(ierr, "PetscSolver1DHandler::initializeConcentration: "
+				"Destroy failed.");
 	}
 
 	// Set the rate for re-solution

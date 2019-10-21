@@ -327,29 +327,26 @@ protected:
 
 			// Adding grid points case
 			if (surfaceOffset > 0) {
-				// Initialize previous point
-				double previousPoint = 0.0;
-				grid.clear();
-
-				// Get the near surface step size
-				double step = oldGrid[1] - oldGrid[0];
-
-				// Add the offset
-				for (int l = 0; l < surfaceOffset; l++) {
-					// Add the previous point
-					grid.push_back(previousPoint);
-					// Update its value
-					previousPoint += step;
+				// Compute the distance between what needs to be removed
+				double step = grid[surfaceOffset] - grid[0];
+				// Check the size of the two used last steps to know if we add a grid point
+				double step1 = grid[grid.size() - 2] - grid[grid.size() - 3];
+				double step2 = grid[grid.size() - 3] - grid[grid.size() - 4];
+				// Modify grid
+				if (step1 < step2 - 1.0e-4) {
+					grid[grid.size() - 2] += step;
+					// Update the last grid point for boundary conditions
+					grid[grid.size() - 1] = 2.0 * grid[grid.size() - 2]
+							- grid[grid.size() - 3];
 				}
-				// Add the rest of the grid
-				for (int l = 1; l < oldGrid.size(); l++) {
-					// Add the previous point
-					grid.push_back(previousPoint);
-					// Update its value
-					previousPoint += oldGrid[l] - oldGrid[l - 1];
+				// Add the value at the back of the grid
+				else {
+					// Update the value of the last point
+					grid[grid.size() - 1] = grid[grid.size() - 2] + step;
+					grid.push_back(
+							2.0 * grid[grid.size() - 1]
+									- grid[grid.size() - 2]);
 				}
-				// Add the last point
-				grid.push_back(previousPoint);
 			}
 			// Removing grid points case
 			// (Work on the current grid because we want to keep the previous geometry in oldGrid)

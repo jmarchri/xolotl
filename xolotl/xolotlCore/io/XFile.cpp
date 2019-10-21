@@ -651,7 +651,7 @@ void XFile::ClusterGroup::readReactions(IReactionNetwork& network,
 		status = H5Dread(datasetId, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL,
 		H5P_DEFAULT, &combVec);
 		status = H5Dclose(datasetId);
-		// Loop on the prod vector
+		// Loop on the comb vector
 		for (int i = 0; i < dims[0]; i++) {
 			// Get pointers to the combining reactant
 			auto& firstReactant = allReactants.at(combVec[i][0]);
@@ -680,7 +680,7 @@ void XFile::ClusterGroup::readReactions(IReactionNetwork& network,
 		status = H5Dread(datasetId, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL,
 		H5P_DEFAULT, &dissoVec);
 		status = H5Dclose(datasetId);
-		// Loop on the prod vector
+		// Loop on the disso vector
 		for (int i = 0; i < dims[0]; i++) {
 			// Get pointers to the other reactants
 			auto& emittingReactant = allReactants.at(dissoVec[i][0]);
@@ -714,7 +714,7 @@ void XFile::ClusterGroup::readReactions(IReactionNetwork& network,
 		status = H5Dread(datasetId, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL,
 		H5P_DEFAULT, &emitVec);
 		status = H5Dclose(datasetId);
-		// Loop on the prod vector
+		// Loop on the emit vector
 		for (int i = 0; i < dims[0]; i++) {
 			// Get pointers to the other reactants
 			auto& firstReactant = allReactants.at(emitVec[i][0]);
@@ -741,7 +741,6 @@ void XFile::ClusterGroup::readReactions(IReactionNetwork& network,
 const fs::path XFile::ConcentrationGroup::path = "/concentrationsGroup";
 const std::string XFile::ConcentrationGroup::lastTimestepAttrName =
 		"lastTimeStep";
-const std::string XFile::ConcentrationGroup::lastLoopAttrName = "lastLoop";
 
 XFile::ConcentrationGroup::ConcentrationGroup(const XFile& file, bool create) :
 		HDF5File::Group(file, ConcentrationGroup::path, create) {
@@ -756,28 +755,20 @@ XFile::ConcentrationGroup::ConcentrationGroup(const XFile& file, bool create) :
 		Attribute<decltype(lastTimeStep)> lastTimestepAttr(*this,
 				lastTimestepAttrName, lastDSpace);
 		lastTimestepAttr.setTo(lastTimeStep);
-		// Create, write, and close the last written loop attribute
-		int lastLoop = -1;
-		Attribute<decltype(lastLoop)> lastLoopAttr(*this, lastLoopAttrName,
-				lastDSpace);
-		lastLoopAttr.setTo(lastLoop);
 	}
 }
 
 std::unique_ptr<XFile::TimestepGroup> XFile::ConcentrationGroup::addTimestepGroup(
-		int loop, int timeStep, double time, double previousTime,
+		int timeStep, double time, double previousTime,
 		double deltaTime) const {
 
 	// Create a group for the new timestep.
 	std::unique_ptr<XFile::TimestepGroup> tsGroup(
-			new TimestepGroup(*this, loop, timeStep, time, previousTime,
-					deltaTime));
+			new TimestepGroup(*this, timeStep, time, previousTime, deltaTime));
 
-	// Update our last known timestep and loop.
+	// Update our last known timestep.
 	Attribute<decltype(timeStep)> lastTimestepAttr(*this, lastTimestepAttrName);
 	lastTimestepAttr.setTo(timeStep);
-	Attribute<decltype(loop)> lastLoopAttr(*this, lastLoopAttrName);
-	lastLoopAttr.setTo(loop);
 
 	return std::move(tsGroup);
 }
@@ -788,20 +779,14 @@ int XFile::ConcentrationGroup::getLastTimeStep(void) const {
 	return lastTimestepAttr.get();
 }
 
-int XFile::ConcentrationGroup::getLastLoop(void) const {
-
-	Attribute<int> lastLoopAttr(*this, lastLoopAttrName);
-	return lastLoopAttr.get();
-}
-
 std::unique_ptr<XFile::TimestepGroup> XFile::ConcentrationGroup::getTimestepGroup(
-		int loop, int timeStep) const {
+		int timeStep) const {
 
 	std::unique_ptr<XFile::TimestepGroup> tsGroup;
 
 	try {
 		// Open the sub-group associated with the desired time step.
-		tsGroup.reset(new TimestepGroup(*this, loop, timeStep));
+		tsGroup.reset(new TimestepGroup(*this, timeStep));
 	} catch (HDF5Exception& e) {
 		// We were unable to open the group associated with the given time step.
 		assert(not tsGroup);
@@ -819,9 +804,8 @@ std::unique_ptr<XFile::TimestepGroup> XFile::ConcentrationGroup::getLastTimestep
 		// Open the sub-group associated with the last known time step,
 		// if any time steps have been written.
 		auto lastTimeStep = getLastTimeStep();
-		auto lastLoop = getLastLoop();
-		if (lastTimeStep >= 0 && lastLoop >= 0) {
-			tsGroup.reset(new TimestepGroup(*this, lastLoop, lastTimeStep));
+		if (lastTimeStep >= 0) {
+			tsGroup.reset(new TimestepGroup(*this, lastTimeStep));
 		}
 	} catch (HDF5Exception& e) {
 		// We were unable to open the group associated with the given time step.
@@ -856,19 +840,16 @@ const std::string XFile::TimestepGroup::hzAttrName = "hz";
 const std::string XFile::TimestepGroup::concDatasetName = "concs";
 
 std::string XFile::TimestepGroup::makeGroupName(
-		const XFile::ConcentrationGroup& concGroup, int loop, int timeStep) {
+		const XFile::ConcentrationGroup& concGroup, int timeStep) {
 
 	std::ostringstream namestr;
-	namestr << concGroup.getName() << '/' << groupNamePrefix << loop << "_"
-			<< timeStep;
+	namestr << concGroup.getName() << '/' << groupNamePrefix << timeStep;
 	return namestr.str();
 }
 
 XFile::TimestepGroup::TimestepGroup(const XFile::ConcentrationGroup& concGroup,
-		int loop, int timeStep, double time, double previousTime,
-		double deltaTime) :
-		HDF5File::Group(concGroup, makeGroupName(concGroup, loop, timeStep),
-				true) {
+		int timeStep, double time, double previousTime, double deltaTime) :
+		HDF5File::Group(concGroup, makeGroupName(concGroup, timeStep), true) {
 
 	// Get a dataspace for our scalar attributes.
 	XFile::ScalarDataSpace scalarDSpace;
@@ -889,9 +870,8 @@ XFile::TimestepGroup::TimestepGroup(const XFile::ConcentrationGroup& concGroup,
 }
 
 XFile::TimestepGroup::TimestepGroup(const XFile::ConcentrationGroup& concGroup,
-		int loop, int timeStep) :
-		HDF5File::Group(concGroup, makeGroupName(concGroup, loop, timeStep),
-				false) {
+		int timeStep) :
+		HDF5File::Group(concGroup, makeGroupName(concGroup, timeStep), false) {
 
 	// Base class opened the group, so nothing else to do.
 }
