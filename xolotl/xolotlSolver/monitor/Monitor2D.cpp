@@ -157,7 +157,7 @@ PetscErrorCode startStop2D(TS ts, PetscInt timestep, PetscReal time,
 	auto concGroup = checkpointFile.getGroup<
 			xolotlCore::XFile::ConcentrationGroup>();
 	assert(concGroup);
-	auto tsGroup = concGroup->addTimestepGroup(timestep, time, previousTime,
+	auto tsGroup = concGroup->addTimestepGroup(0, timestep, time, previousTime,
 			currentTimeStep);
 
 	if (solverHandler.moveSurface()) {

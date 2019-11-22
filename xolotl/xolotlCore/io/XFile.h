@@ -68,12 +68,13 @@ public:
 		 * Construct the group name for the given time step.
 		 *
 		 * @param concGroup The parent concentration group.
+		 * @param loop The solver loop in which it is.
 		 * @param timeStep The time step the group will represent.
 		 * @return A string to use for the name of the time step group for
 		 *          the given time step.
 		 */
 		static std::string makeGroupName(const ConcentrationGroup& concGroup,
-				int timeStep);
+				int loop, int timeStep);
 
 	public:
 		// Concise name for surface representations.
@@ -105,21 +106,25 @@ public:
 		 * concentration group.
 		 *
 		 * @param concGroup The concentration group
+		 * @param loop The loop number we're at
 		 * @param timeStep The number of the time step
 		 * @param time The physical time at this time step
 		 * @param previousTime The physical time at the previous time step
 		 * @param deltaTime The physical length of the time step
 		 */
-		TimestepGroup(const ConcentrationGroup& concGroup, int timeStep,
-				double time, double previousTime, double deltaTime);
+		TimestepGroup(const ConcentrationGroup& concGroup, int loop,
+				int timeStep, double time, double previousTime,
+				double deltaTime);
 
 		/**
 		 * Open a TimestepGroup within the given concentration group.
 		 *
 		 * @param concGroup The concentration group
+		 * @param loop The loop number we're at
 		 * @param timeStep The time step of the desired group.
 		 */
-		TimestepGroup(const ConcentrationGroup& concGroup, int timeStep);
+		TimestepGroup(const ConcentrationGroup& concGroup, int loop,
+				int timeStep);
 
 		/**
 		 * Save the grid information to our timestep group.
@@ -345,8 +350,9 @@ public:
 	// Our concentrations group.
 	class ConcentrationGroup: public HDF5File::Group {
 	private:
-		// Name of our last timestep attribute.
+		// Name of our last timestep and loop attributes.
 		static const std::string lastTimestepAttrName;
+		static const std::string lastLoopAttrName;
 
 	public:
 		// Path of the concentrations group within the file.
@@ -360,13 +366,21 @@ public:
 		/**
 		 * Add a concentration timestep group for the given time step.
 		 *
+		 * @param loop The loop number we're at
 		 * @param timeStep The number of the time step
 		 * @param time The physical time at this time step
 		 * @param previousTime The physical time at the previous time step
 		 * @param deltaTime The physical length of the time step
 		 */
-		std::unique_ptr<TimestepGroup> addTimestepGroup(int timeStep,
+		std::unique_ptr<TimestepGroup> addTimestepGroup(int loop, int timeStep,
 				double time, double previousTime, double deltaTime) const;
+
+		/**
+		 * Obtain the last loop known to our group.
+		 *
+		 * @return Loop of last TimestepGroup written to our group.
+		 */
+		int getLastLoop(void) const;
 
 		/**
 		 * Obtain the last timestep known to our group.
@@ -387,11 +401,13 @@ public:
 		/**
 		 * Access the TimestepGroup associated with the given time step.
 		 *
+		 * @param loop The loop number we're at
 		 * @param timeStep Time step of the desired TimestepGroup.
 		 * @return TimestepGroup associated with the given time step.  Empty
 		 *          pointer if the given time step is not known to us.
 		 */
-		std::unique_ptr<TimestepGroup> getTimestepGroup(int timeStep) const;
+		std::unique_ptr<TimestepGroup> getTimestepGroup(int loop,
+				int timeStep) const;
 
 		/**
 		 * Access the TimestepGroup associated with the last known time step.

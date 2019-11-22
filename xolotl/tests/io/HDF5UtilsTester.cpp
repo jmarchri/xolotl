@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(checkIO) {
 	// Get the size of the network
 	int networkSize = network->size();
 
-	// Set the time step number
-	int timeStep = 0;
+	// Set the time step and loop numbers
+	int timeStep = 0, loop = 0;
 
 	// Set the number of grid points and step size
 	int nGrid = 5;
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(checkIO) {
 		auto concGroup =
 				testFile.getGroup<xolotlCore::XFile::ConcentrationGroup>();
 		BOOST_REQUIRE(concGroup);
-		auto tsGroup = concGroup->addTimestepGroup(timeStep, currentTime,
+		auto tsGroup = concGroup->addTimestepGroup(loop, timeStep, currentTime,
 				previousTime, currentTimeStep);
 
 		// Write the surface position
@@ -369,14 +369,14 @@ BOOST_AUTO_TEST_CASE(checkSurface2D) {
 		xolotlCore::XFile testFile(testFileName,
 		MPI_COMM_WORLD, xolotlCore::XFile::AccessMode::OpenReadWrite);
 
-		// Set the time step number
-		int timeStep = 0;
+		// Set the time step and loop numbers
+		int timeStep = 0, loop = 0;
 
 		// Add the concentration sub group
 		auto concGroup =
 				testFile.getGroup<xolotlCore::XFile::ConcentrationGroup>();
 		BOOST_REQUIRE(concGroup);
-		auto tsGroup = concGroup->addTimestepGroup(timeStep, currentTime,
+		auto tsGroup = concGroup->addTimestepGroup(loop, timeStep, currentTime,
 				previousTime, currentTimeStep);
 		BOOST_REQUIRE(tsGroup);
 
@@ -463,15 +463,15 @@ BOOST_AUTO_TEST_CASE(checkSurface3D) {
 		xolotlCore::XFile testFile(testFileName,
 		MPI_COMM_WORLD, xolotlCore::XFile::AccessMode::OpenReadWrite);
 
-		// Set the time step number
-		int timeStep = 0;
+		// Set the time step and loop numbers
+		int timeStep = 0, loop = 0;
 
 		// Add the concentration sub group
 		auto concGroup =
 				testFile.getGroup<xolotlCore::XFile::ConcentrationGroup>();
 		BOOST_REQUIRE(concGroup);
 
-		auto tsGroup = concGroup->addTimestepGroup(timeStep, currentTime,
+		auto tsGroup = concGroup->addTimestepGroup(loop, timeStep, currentTime,
 				previousTime, currentTimeStep);
 		BOOST_REQUIRE(tsGroup);
 

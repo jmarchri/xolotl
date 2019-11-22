@@ -91,6 +91,8 @@ std::vector<double> radii1D;
 bool printMaxClusterConc1D = true;
 // The vector of depths at which bursting happens
 std::vector<int> depthPositions1D;
+// To know at which loop we are for all the names depending on the TS number
+int loopNumber = 0;
 
 // Timers
 std::shared_ptr<xperf::ITimer> initTimer;
@@ -387,8 +389,8 @@ PetscErrorCode startStop1D(TS ts, PetscInt timestep, PetscReal time,
 	auto concGroup = checkpointFile.getGroup<
 			xolotlCore::XFile::ConcentrationGroup>();
 	assert(concGroup);
-	auto tsGroup = concGroup->addTimestepGroup(timestep, time, previousTime,
-			currentTimeStep);
+	auto tsGroup = concGroup->addTimestepGroup(loopNumber, timestep, time,
+			previousTime, currentTimeStep);
 
 	// Get the physical grid
 	auto grid = solverHandler.getXGrid();
@@ -2805,7 +2807,11 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
  * @return A standard PETSc error code
  */
 PetscErrorCode setupPetsc1DMonitor(TS ts,
-		std::shared_ptr<xolotlPerf::IHandlerRegistry> handlerRegistry) {
+		std::shared_ptr<xolotlPerf::IHandlerRegistry> handlerRegistry,
+		int loop) {
+	// Save the loop number
+	loopNumber = loop;
+
 	PetscErrorCode ierr;
 
 	// Initialize the timers, including the one for this function.
@@ -2997,7 +3003,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 
 		// Compute the correct hdf5Previous1D for a restart
 		// Get the last time step written in the HDF5 file
-		if (hasConcentrations) {
+		if (hasConcentrations && loopNumber == 0) {
 
 			assert(lastTsGroup);
 
@@ -3008,7 +3014,8 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 
 		// Don't do anything if both files have the same name
 		// Or if it is not the first loop
-		if (hdf5OutputName1D != solverHandler.getNetworkName()) {
+		if (hdf5OutputName1D != solverHandler.getNetworkName()
+				&& loopNumber == 0) {
 
 			PetscInt Mx;
 			PetscErrorCode ierr;
@@ -3067,7 +3074,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 		if (solverHandler.moveSurface()) {
 
 			// Get the interstitial information at the surface if concentrations were stored
-			if (hasConcentrations) {
+			if (hasConcentrations && loopNumber == 0) {
 
 				assert(lastTsGroup);
 
@@ -3106,10 +3113,12 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 		checkPetscError(ierr,
 				"setupPetsc1DMonitor: TSSetEventHandler (eventFunction1D) failed.");
 
-		// Uncomment to clear the file where the bursting info will be written
-		std::ofstream outputFile;
-		outputFile.open("bursting.txt");
-		outputFile.close();
+		if (loopNumber == 0) {
+			// Uncomment to clear the file where the bursting info will be written
+			std::ofstream outputFile;
+			outputFile.open("bursting.txt");
+			outputFile.close();
+		}
 	}
 
 // Set the monitor to save 1D plot of xenon distribution
@@ -3252,7 +3261,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 
 // Initialize indices1D and weights1D if we want to compute the
 // retention or the cumulative value and others
-	if (flagMeanSize || flagConc || flagHeRetention) {
+	if ((flagMeanSize || flagConc || flagHeRetention) && loopNumber == 0) {
 		// Loop on the helium clusters
 		for (auto const& heMapItem : network.getAll(ReactantType::He)) {
 			auto const& cluster = *(heMapItem.second);
@@ -3284,7 +3293,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 	if (flagHeRetention) {
 
 		// Get the previous time if concentrations were stored and initialize the fluence
-		if (hasConcentrations) {
+		if (hasConcentrations && loopNumber == 0) {
 
 			assert(lastTsGroup);
 
@@ -3322,49 +3331,53 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 		checkPetscError(ierr,
 				"setupPetsc1DMonitor: TSMonitorSet (computeHeliumRetention1D) failed.");
 
-		// Uncomment to clear the file where the retention will be written
-		std::ofstream outputFile;
-		outputFile.open("retentionOut.txt");
-		outputFile.close();
+		if (loopNumber == 0) {
+			// Uncomment to clear the file where the retention will be written
+			std::ofstream outputFile;
+			outputFile.open("retentionOut.txt");
+			outputFile.close();
+		}
 	}
 
 // Set the monitor to compute the xenon fluence and the retention
 // for the retention calculation
 	if (flagXeRetention) {
-		// Loop on the xenon clusters
-		for (auto const& xeMapItem : network.getAll(ReactantType::Xe)) {
-			auto const& cluster = *(xeMapItem.second);
+		if (loopNumber == 0) {
+			// Loop on the xenon clusters
+			for (auto const& xeMapItem : network.getAll(ReactantType::Xe)) {
+				auto const& cluster = *(xeMapItem.second);
 
-			int id = cluster.getId() - 1;
-			// Add the Id to the vector
-			indices1D.push_back(id);
-			// Add the number of xenon of this cluster to the weight
-			weights1D.push_back(cluster.getSize());
-			radii1D.push_back(cluster.getReactionRadius());
+				int id = cluster.getId() - 1;
+				// Add the Id to the vector
+				indices1D.push_back(id);
+				// Add the number of xenon of this cluster to the weight
+				weights1D.push_back(cluster.getSize());
+				radii1D.push_back(cluster.getReactionRadius());
+			}
+
+			// Get the previous time if concentrations were stored and initialize the fluence
+			if (hasConcentrations) {
+
+				assert(lastTsGroup);
+
+				// Get the previous time from the HDF5 file
+				double time = lastTsGroup->readPreviousTime();
+				// Initialize the fluence
+				auto fluxHandler = solverHandler.getFluxHandler();
+				// The length of the time step
+				double dt = time;
+				// Increment the fluence with the value at this current timestep
+				fluxHandler->incrementFluence(dt);
+				// Get the previous time from the HDF5 file
+				// TODO isn't this the same as 'time' above?
+				previousTime = lastTsGroup->readPreviousTime();
+			}
+
+			// Uncomment to clear the file where the retention will be written
+			std::ofstream outputFile;
+			outputFile.open("retentionOut.txt");
+			outputFile.close();
 		}
-
-		// Get the previous time if concentrations were stored and initialize the fluence
-		if (hasConcentrations) {
-
-			assert(lastTsGroup);
-
-			// Get the previous time from the HDF5 file
-			double time = lastTsGroup->readPreviousTime();
-			// Initialize the fluence
-			auto fluxHandler = solverHandler.getFluxHandler();
-			// The length of the time step
-			double dt = time;
-			// Increment the fluence with the value at this current timestep
-			fluxHandler->incrementFluence(dt);
-			// Get the previous time from the HDF5 file
-			// TODO isn't this the same as 'time' above?
-			previousTime = lastTsGroup->readPreviousTime();
-		}
-
-		// Uncomment to clear the file where the retention will be written
-		std::ofstream outputFile;
-		outputFile.open("retentionOut.txt");
-		outputFile.close();
 
 		// computeFluence will be called at each timestep
 		ierr = TSMonitorSet(ts, computeFluence, NULL, NULL);
@@ -3437,7 +3450,7 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 	// Set the monitor to compute the temperature profile
 	if (flagTemp) {
 
-		if (procId == 0) {
+		if (procId == 0 && loopNumber == 0) {
 			// Uncomment to clear the file where the retention will be written
 			std::ofstream outputFile;
 			outputFile.open("tempProf.txt");
