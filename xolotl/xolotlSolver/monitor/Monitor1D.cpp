@@ -250,7 +250,7 @@ PetscErrorCode computeTRIDYN1D(TS ts, PetscInt timestep, PetscReal time,
 	// Everyone must create the dataset with the same shape.
 	constexpr auto numConcSpecies = 5;
 	constexpr auto numValsPerGridpoint = numConcSpecies + 2;
-	const auto firstIdxToWrite = (surfacePos + 1);
+	const auto firstIdxToWrite = (surfacePos + solverHandler.getLeftOffset());
 	const auto numGridpointsWithConcs = (Mx - firstIdxToWrite);
 	xolotlCore::HDF5File::SimpleDataSpace<2>::Dimensions concsDsetDims = {
 			(hsize_t) numGridpointsWithConcs, numValsPerGridpoint };
@@ -502,7 +502,8 @@ PetscErrorCode computeHeliumRetention1D(TS ts, PetscInt, PetscReal time,
 	for (PetscInt xi = xs; xi < xs + xm; xi++) {
 
 		// Boundary conditions
-		if (xi < surfacePos || xi == Mx - solverHandler.getRightOffset())
+		if (xi < surfacePos + solverHandler.getLeftOffset()
+				|| xi >= Mx - solverHandler.getRightOffset())
 			continue;
 
 		// Get the pointer to the beginning of the solution data for this grid point
@@ -511,13 +512,12 @@ PetscErrorCode computeHeliumRetention1D(TS ts, PetscInt, PetscReal time,
 		// Update the concentration in the network
 		network.updateConcentrationsFromArray(gridPointSolution);
 
+		double dx = grid[xi + 1] - grid[xi];
+
 		// Get the total atoms concentration at this grid point
-		heConcentration += network.getTotalAtomConcentration(0)
-				* (grid[xi + 1] - grid[xi]);
-		dConcentration += network.getTotalAtomConcentration(1)
-				* (grid[xi + 1] - grid[xi]);
-		tConcentration += network.getTotalAtomConcentration(2)
-				* (grid[xi + 1] - grid[xi]);
+		heConcentration += network.getTotalAtomConcentration(0) * dx;
+		dConcentration += network.getTotalAtomConcentration(1) * dx;
+		tConcentration += network.getTotalAtomConcentration(2) * dx;
 	}
 
 	// Get the current process ID
@@ -2399,11 +2399,14 @@ PetscErrorCode eventFunction1D(TS ts, PetscReal time, Vec solution,
 
 	// Get the delta time from the previous timestep to this timestep
 	double dt = time - previousTime;
+	int tsNumber = -1;
+	ierr = TSGetStepNumber(ts, &tsNumber);
+	CHKERRQ(ierr);
 
 	// Work of the moving surface first
 	if (solverHandler.moveSurface()) {
 		// Write the initial surface position
-		if (procId == 0 && xolotlCore::equal(time, 0.0)) {
+		if (procId == 0 && tsNumber == 0) {
 			std::ofstream outputFile;
 			outputFile.open("surface.txt", ios::app);
 			outputFile << time << " " << grid[grid.size() - 2] - grid[1]
@@ -2788,15 +2791,6 @@ PetscErrorCode postEventFunction1D(TS ts, PetscInt nevents,
 		CHKERRQ(ierr);
 	}
 
-	// Write the updated surface position
-	if (procId == 0) {
-		std::ofstream outputFile;
-		outputFile.open("surface.txt", ios::app);
-		outputFile << time << " " << grid[grid.size() - 2] - grid[2]
-				<< std::endl;
-		outputFile.close();
-	}
-
 	PetscFunctionReturn(0);
 }
 
@@ -3089,10 +3083,12 @@ PetscErrorCode setupPetsc1DMonitor(TS ts,
 			// Get the sputtering yield
 			sputteringYield1D = solverHandler.getSputteringYield();
 
-			// Clear the file where the surface will be written
-			std::ofstream outputFile;
-			outputFile.open("surface.txt");
-			outputFile.close();
+			if (loopNumber == 0) {
+				// Clear the file where the surface will be written
+				std::ofstream outputFile;
+				outputFile.open("surface.txt");
+				outputFile.close();
+			}
 		}
 
 		// Bursting
