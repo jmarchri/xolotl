@@ -5,6 +5,7 @@
 #include <iostream>
 #include <XFile.h>
 #include <MPIUtils.h>
+#include <TokenizedLineReader.h>
 
 using namespace xolotlCore;
 
@@ -26,9 +27,6 @@ using namespace xolotlCore;
  */
 
 namespace xolotlSolver {
-
-//! PETSc options object
-PetscOptions *petscOptions = nullptr;
 
 //!Timer for RHSFunction()
 std::shared_ptr<xolotlPerf::ITimer> RHSFunctionTimer;
@@ -203,24 +201,46 @@ void PetscSolver::setupMesh() {
 void PetscSolver::initialize(bool isStandalone) {
 	PetscErrorCode ierr;
 
+	// Build an input stream from the argument string.
+	int numCLIArgs;
+	char **CLIArgs;
+	xolotlCore::TokenizedLineReader<string> reader;
+	auto argSS = std::make_shared<std::istringstream>(optionsString);
+	reader.setInputStream(argSS);
+
+	// Break the argument into tokens.
+	auto tokens = reader.loadLine();
+
+	// PETSc assumes that argv[0] in the arguments it is given is the
+	// program name.  But our parsing of the PETSc arguments from
+	// the input parameter file gives us only the PETSc arguments without
+	// the program name as argv[0].  So - we adjust the arguments array.
+
+	// Construct the argv from the stream of tokens.
+	numCLIArgs = tokens.size() + 1;
+
+	// The PETSc argv is an array of pointers to C strings.
+	auto petscArgv = new char*[tokens.size() + 2];
+	// Create the fake application name
+	std::string appName = "fakeXolotlApplicationNameForPETSc";
+	petscArgv[0] = new char[appName.length() + 1];
+	strcpy(petscArgv[0], appName.c_str());
+
+	// Now loop on the actual PETSc options
+	int idx = 1;
+	for (auto iter = tokens.begin(); iter != tokens.end(); ++iter) {
+		petscArgv[idx] = new char[iter->length() + 1];
+		strcpy(petscArgv[idx], iter->c_str());
+		++idx;
+	}
+	petscArgv[idx] = 0; // null-terminate the array
+
+	// Set the petscArgv
+	CLIArgs = petscArgv;
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	 Initialize program
 	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	if (isStandalone) {
-		PetscInitialize(NULL, NULL, NULL, help);
-	}
-
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 Create the solver options
-	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	ierr = PetscOptionsCreate(&petscOptions);
-	checkPetscError(ierr,
-			"PetscSolver::initialize: PetscOptionsCreate failed.");
-	ierr = PetscOptionsInsertString(petscOptions, optionsString.c_str());
-	checkPetscError(ierr,
-			"PetscSolver::initialize: PetscOptionsInsertString failed.");
-	ierr = PetscOptionsPush(petscOptions);
-	checkPetscError(ierr, "PetscSolver::initialize: PetscOptionsPush failed.");
+	PetscInitialize(&numCLIArgs, &CLIArgs, (char*) 0, help);
 
 	// Create the solver context
 	getSolverHandler().createSolverContext(da);
@@ -322,10 +342,6 @@ void PetscSolver::initialize(bool isStandalone) {
 	// Set the output precision for std::out
 	std::cout.precision(16);
 
-	// Pop the options
-	ierr = PetscOptionsPop();
-	checkPetscError(ierr, "PetscSolver::initialize: PetscOptionsPop failed.");
-
 	return;
 }
 
@@ -407,9 +423,6 @@ void PetscSolver::solve() {
 	 Solve the ODE system
 	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 	if (ts != NULL && C != NULL) {
-		// Push the options for the solve
-		ierr = PetscOptionsPush(petscOptions);
-		checkPetscError(ierr, "PetscSolver::solve: PetscOptionsPush failed.");
 		// Reset the time step number
 		ierr = TSSetStepNumber(ts, 0);
 		checkPetscError(ierr, "PetscSolver::solve: Reset Step Number failed.");
@@ -446,10 +459,6 @@ void PetscSolver::solve() {
 
 			outputFile.close();
 		}
-
-		// Popping the option database
-		ierr = PetscOptionsPop();
-		checkPetscError(ierr, "PetscSolver::solve: PetscOptionsPop failed.");
 	} else {
 		throw std::string(
 				"PetscSolver Exception: Unable to solve! Data not configured properly.");
@@ -492,8 +501,6 @@ void PetscSolver::finalize(bool isStandalone) {
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	 Free work space.
 	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-	ierr = PetscOptionsDestroy(&petscOptions);
-	checkPetscError(ierr, "PetscSolver::solve: PetscOptionsDestroy failed.");
 	ierr = VecDestroy(&C);
 	checkPetscError(ierr, "PetscSolver::solve: VecDestroy failed.");
 	ierr = TSDestroy(&ts);
