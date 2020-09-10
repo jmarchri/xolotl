@@ -147,17 +147,34 @@ SET(LIBRARY_NAME "xolotlInter")
 file(GLOB HEADERS interface.h)
 # Grab all of the source files
 file(GLOB SRC interface.cpp)
-# Add a library 
-add_library(${LIBRARY_NAME} STATIC ${SRC})
-target_link_libraries(${LIBRARY_NAME} xolotlFactory)
 
-# Setup the library list
-set(XOLOTL_LIBS xolotlReactants xolotlSolver xolotlIO xolotlPerf xolotlViz 
-xolotlFactory xolotlCL xolotlInter ${PETSC_LIBRARIES} ${HDF5_LIBRARIES})
 
-# Add an executable for the main program
-ADD_EXECUTABLE (xolotl main.cpp)
+# Decide whether to build as a library
+option(BUILD_SHARED_LIBS "Build as a shared library")
 
-# Link the libraries
-target_link_libraries(xolotl ${XOLOTL_LIBS})
+if(BUILD_SHARED_LIBS)
+    message(STATUS "----- Building shared libraries -----")
+    # Add a library 
+    add_library(${LIBRARY_NAME} SHARED ${SRC})
+    target_link_libraries(${LIBRARY_NAME} xolotlFactory)
+    
+    #Install the xolotl header files
+    install(FILES ${HEADERS} DESTINATION ${PROJECT_BINARY_DIR}/include)
+    install(TARGETS ${LIBRARY_NAME} DESTINATION ${PROJECT_BINARY_DIR}/lib)
+    
+else(BUILD_SHARED_LIBS)
+    # Add a library 
+    add_library(${LIBRARY_NAME} STATIC ${SRC})
+    target_link_libraries(${LIBRARY_NAME} xolotlFactory)
+
+    # Setup the library list
+    set(XOLOTL_LIBS xolotlReactants xolotlSolver xolotlIO xolotlPerf xolotlViz 
+    xolotlFactory xolotlCL xolotlInter ${PETSC_LIBRARIES} ${HDF5_LIBRARIES})
+
+    # Add an executable for the main program
+    ADD_EXECUTABLE (xolotl main.cpp)
+
+    # Link the libraries
+    target_link_libraries(xolotl ${XOLOTL_LIBS})
+endif(BUILD_SHARED_LIBS)
 
