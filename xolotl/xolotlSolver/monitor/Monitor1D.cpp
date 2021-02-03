@@ -2469,6 +2469,8 @@ PetscErrorCode eventFunction1D(TS ts, PetscReal time, Vec solution,
 						+ cbrt((3.0 * tlcCubed * nV) / (8.0 * xolotlCore::pi))
 						- cbrt((3.0 * tlcCubed) / (8.0 * xolotlCore::pi));
 
+				if ((distance - radius) / distance < 0.5) continue;
+
 				// Add randomness
 				double prob = prefactor * (1.0 - (distance - radius) / distance)
 						* min(1.0,
@@ -3321,11 +3323,11 @@ PetscErrorCode setupPetsc1DMonitor(TS &ts,
 		checkPetscError(ierr,
 				"setupPetsc1DMonitor: TSSetEventHandler (eventFunction1D) failed.");
 
-		if (solverHandler.burstBubbles() && procId == 0) {
+		if (solverHandler.burstBubbles()) {
 			// First create the file for parallel file access.
 			xolotlCore::HDF5File burstingFile("bursting.h5",
 					xolotlCore::HDF5File::AccessMode::CreateOrTruncateIfExists,
-					xolotlComm, false);
+					xolotlComm, true);
 		}
 	}
 

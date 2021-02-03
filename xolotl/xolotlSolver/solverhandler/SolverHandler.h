@@ -442,7 +442,7 @@ protected:
 					nullptr), mutationHandler(nullptr), resolutionHandler(
 					nullptr), nucleationHandler(nullptr), tauBursting(10.0), minSizeBursting(
 					0), burstingFactor(0.1), rngSeed(0), heVRatio(4.0), previousTime(0.0), nXeGB(
-							0.0) {}
+							0.0), isMirror(true) {}
 
 public:
 
