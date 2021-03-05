@@ -1,0 +1,1210 @@
+diff --git a/xolotl/interface.cpp b/xolotl/interface.cpp
+index a942fbc1..e8a17cd7 100644
+--- a/xolotl/interface.cpp
++++ b/xolotl/interface.cpp
+@@ -193,8 +193,8 @@ void XolotlInterface::setLocalNE(
+ 	return;
+ }
+ 
+-void XolotlInterface::getLocalCoordinates(int &xs, int &xm, int &Mx, int &ys,
+-		int &ym, int &My, int &zs, int &zm, int &Mz) {
++void XolotlInterface::getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys,
++		long int &ym, long int &My, long int &zs, long int &zm, long int &Mz) {
+ 	try {
+ 		// Get the solver handler
+ 		auto &solverHandler = solver->getSolverHandler();
+diff --git a/xolotl/interface.h b/xolotl/interface.h
+index 94fecacd..dddd008e 100644
+--- a/xolotl/interface.h
++++ b/xolotl/interface.h
+@@ -84,8 +84,8 @@ public:
+ 	 * @param zs, zm The start and width in the Z direction on the local MPI process
+ 	 * @param Mz The total width in the Z direction
+ 	 */
+-	void getLocalCoordinates(int &xs, int &xm, int &Mx, int &ys, int &ym,
+-			int &My, int &zs, int &zm, int &Mz);
++	void getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys, long int &ym,
++			long int &My, long int &zs, long int &zm, long int &Mz);
+ 
+ 	/**
+ 	 * Set the location of one GB grid point.
+diff --git a/xolotl/tests/advection/W100AdvectionHandlerTester.cpp b/xolotl/tests/advection/W100AdvectionHandlerTester.cpp
+index 26cc9738..790a89b5 100644
+--- a/xolotl/tests/advection/W100AdvectionHandlerTester.cpp
++++ b/xolotl/tests/advection/W100AdvectionHandlerTester.cpp
+@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
+ 
+ 	// Initialize the rows, columns, and values to set in the Jacobian
+ 	int nAdvec = advectionHandler.getNumberOfAdvecting();
+-	int indices[nAdvec];
++	long int indices[nAdvec];
+ 	double val[2 * nAdvec];
+ 	// Get the pointer on them for the compute advection method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the advection a the grid point 1
+diff --git a/xolotl/tests/advection/W110AdvectionHandlerTester.cpp b/xolotl/tests/advection/W110AdvectionHandlerTester.cpp
+index ce512184..dfcf00fb 100644
+--- a/xolotl/tests/advection/W110AdvectionHandlerTester.cpp
++++ b/xolotl/tests/advection/W110AdvectionHandlerTester.cpp
+@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
+ 
+ 	// Initialize the rows, columns, and values to set in the Jacobian
+ 	int nAdvec = advectionHandler.getNumberOfAdvecting();
+-	int indices[nAdvec];
++	long int indices[nAdvec];
+ 	double val[2 * nAdvec];
+ 	// Get the pointer on them for the compute advection method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the advection a the grid point 1
+diff --git a/xolotl/tests/advection/W111AdvectionHandlerTester.cpp b/xolotl/tests/advection/W111AdvectionHandlerTester.cpp
+index 611fd562..5dc07d09 100644
+--- a/xolotl/tests/advection/W111AdvectionHandlerTester.cpp
++++ b/xolotl/tests/advection/W111AdvectionHandlerTester.cpp
+@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
+ 
+ 	// Initialize the rows, columns, and values to set in the Jacobian
+ 	int nAdvec = advectionHandler.getNumberOfAdvecting();
+-	int indices[nAdvec];
++	long int indices[nAdvec];
+ 	double val[2 * nAdvec];
+ 	// Get the pointer on them for the compute advection method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the advection a the grid point 1
+diff --git a/xolotl/tests/advection/W211AdvectionHandlerTester.cpp b/xolotl/tests/advection/W211AdvectionHandlerTester.cpp
+index 3db5a8cd..1a5ae80e 100644
+--- a/xolotl/tests/advection/W211AdvectionHandlerTester.cpp
++++ b/xolotl/tests/advection/W211AdvectionHandlerTester.cpp
+@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
+ 
+ 	// Initialize the rows, columns, and values to set in the Jacobian
+ 	int nAdvec = advectionHandler.getNumberOfAdvecting();
+-	int indices[nAdvec];
++	long int indices[nAdvec];
+ 	double val[2 * nAdvec];
+ 	// Get the pointer on them for the compute advection method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the advection a the grid point 1
+diff --git a/xolotl/tests/advection/XGBAdvectionHandlerTester.cpp b/xolotl/tests/advection/XGBAdvectionHandlerTester.cpp
+index e6cce7d1..1dfbe30d 100644
+--- a/xolotl/tests/advection/XGBAdvectionHandlerTester.cpp
++++ b/xolotl/tests/advection/XGBAdvectionHandlerTester.cpp
+@@ -132,10 +132,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
+ 
+ 	// Initialize the rows, columns, and values to set in the Jacobian
+ 	int nAdvec = advectionHandler.getNumberOfAdvecting();
+-	int indices[nAdvec];
++	long int indices[nAdvec];
+ 	double val[3 * nAdvec];
+ 	// Get the pointer on them for the compute advection method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the advection a the grid point 1
+diff --git a/xolotl/tests/advection/YGBAdvectionHandlerTester.cpp b/xolotl/tests/advection/YGBAdvectionHandlerTester.cpp
+index 938a4077..0da988dd 100644
+--- a/xolotl/tests/advection/YGBAdvectionHandlerTester.cpp
++++ b/xolotl/tests/advection/YGBAdvectionHandlerTester.cpp
+@@ -133,10 +133,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
+ 
+ 	// Initialize the rows, columns, and values to set in the Jacobian
+ 	int nAdvec = advectionHandler.getNumberOfAdvecting();
+-	int indices[nAdvec];
++	long int indices[nAdvec];
+ 	double val[2 * nAdvec];
+ 	// Get the pointer on them for the compute advection method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the advection a the grid point 1
+diff --git a/xolotl/tests/advection/ZGBAdvectionHandlerTester.cpp b/xolotl/tests/advection/ZGBAdvectionHandlerTester.cpp
+index c036ac8d..b6056f77 100644
+--- a/xolotl/tests/advection/ZGBAdvectionHandlerTester.cpp
++++ b/xolotl/tests/advection/ZGBAdvectionHandlerTester.cpp
+@@ -136,10 +136,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
+ 
+ 	// Initialize the rows, columns, and values to set in the Jacobian
+ 	int nAdvec = advectionHandler.getNumberOfAdvecting();
+-	int indices[nAdvec];
++	long int indices[nAdvec];
+ 	double val[7 * nAdvec];
+ 	// Get the pointer on them for the compute advection method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the advection a the grid point 1
+diff --git a/xolotl/tests/diffusion/Diffusion1DHandlerTester.cpp b/xolotl/tests/diffusion/Diffusion1DHandlerTester.cpp
+index aa0e5459..a5d66a90 100644
+--- a/xolotl/tests/diffusion/Diffusion1DHandlerTester.cpp
++++ b/xolotl/tests/diffusion/Diffusion1DHandlerTester.cpp
+@@ -137,10 +137,10 @@ BOOST_AUTO_TEST_CASE(checkDiffusion) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nDiff = diffusionHandler.getNumberOfDiffusing();
+-	int indices[nDiff];
++	long int indices[nDiff];
+ 	double val[3 * nDiff];
+ 	// Get the pointer on them for the compute diffusion method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the diffusion a the grid point 1
+diff --git a/xolotl/tests/diffusion/Diffusion2DHandlerTester.cpp b/xolotl/tests/diffusion/Diffusion2DHandlerTester.cpp
+index 8c8f3096..ea8d663f 100644
+--- a/xolotl/tests/diffusion/Diffusion2DHandlerTester.cpp
++++ b/xolotl/tests/diffusion/Diffusion2DHandlerTester.cpp
+@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE(checkDiffusion) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nDiff = diffusionHandler.getNumberOfDiffusing();
+-	int indices[nDiff];
++	long int indices[nDiff];
+ 	double val[5 * nDiff];
+ 	// Get the pointer on them for the compute diffusion method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the diffusion a the grid point 1
+diff --git a/xolotl/tests/diffusion/Diffusion3DHandlerTester.cpp b/xolotl/tests/diffusion/Diffusion3DHandlerTester.cpp
+index b7576732..f219fbeb 100644
+--- a/xolotl/tests/diffusion/Diffusion3DHandlerTester.cpp
++++ b/xolotl/tests/diffusion/Diffusion3DHandlerTester.cpp
+@@ -140,10 +140,10 @@ BOOST_AUTO_TEST_CASE(checkDiffusion) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nDiff = diffusionHandler.getNumberOfDiffusing();
+-	int indices[nDiff];
++	long int indices[nDiff];
+ 	double val[7 * nDiff];
+ 	// Get the pointer on them for the compute diffusion method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the diffusion a the grid point 1
+diff --git a/xolotl/tests/modifiedreaction/DummyTrapMutationHandlerTester.cpp b/xolotl/tests/modifiedreaction/DummyTrapMutationHandlerTester.cpp
+index 4da892e7..174cb378 100644
+--- a/xolotl/tests/modifiedreaction/DummyTrapMutationHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/DummyTrapMutationHandlerTester.cpp
+@@ -108,10 +108,10 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nHelium = network->getAll(ReactantType::He).size();
+-	int indices[3 * nHelium];
++	long int indices[3 * nHelium];
+ 	double val[3 * nHelium];
+ 	// Get the pointer on them for the compute modified trap-mutation method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the modified trap-mutation at the grid point 1
+diff --git a/xolotl/tests/modifiedreaction/FullReSolutionHandlerTester.cpp b/xolotl/tests/modifiedreaction/FullReSolutionHandlerTester.cpp
+index b58d70cb..5fd65abd 100644
+--- a/xolotl/tests/modifiedreaction/FullReSolutionHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/FullReSolutionHandlerTester.cpp
+@@ -106,10 +106,10 @@ BOOST_AUTO_TEST_CASE(checkReSolution) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
+-	int indices[10 * nXenon];
++	long int indices[10 * nXenon];
+ 	double val[10 * nXenon];
+ 	// Get the pointer on them for the compute re-solution method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the re-solution at the grid point 8
+diff --git a/xolotl/tests/modifiedreaction/HeterogeneousNucleationHandlerTester.cpp b/xolotl/tests/modifiedreaction/HeterogeneousNucleationHandlerTester.cpp
+index 0268856f..91707f3a 100644
+--- a/xolotl/tests/modifiedreaction/HeterogeneousNucleationHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/HeterogeneousNucleationHandlerTester.cpp
+@@ -105,10 +105,10 @@ BOOST_AUTO_TEST_CASE(checkNucleation) {
+ 	BOOST_REQUIRE_CLOSE(updatedConcOffset[1], -182408.7, 0.01); // Xe_2
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+-	int indices[2];
++	long int indices[2];
+ 	double val[2];
+ 	// Get the pointer on them for the compute heterogeneous nucleation method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the heterogeneous nucleation at the grid point 8
+diff --git a/xolotl/tests/modifiedreaction/OneReSolutionHandlerTester.cpp b/xolotl/tests/modifiedreaction/OneReSolutionHandlerTester.cpp
+index a584a083..6ba7893e 100644
+--- a/xolotl/tests/modifiedreaction/OneReSolutionHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/OneReSolutionHandlerTester.cpp
+@@ -106,10 +106,10 @@ BOOST_AUTO_TEST_CASE(checkReSolution) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
+-	int indices[10 * nXenon];
++	long int indices[10 * nXenon];
+ 	double val[10 * nXenon];
+ 	// Get the pointer on them for the compute re-solution method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the re-solution at the grid point 8
+@@ -229,10 +229,10 @@ BOOST_AUTO_TEST_CASE(checkMinimumSize) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
+-	int indices[10 * nXenon];
++	long int indices[10 * nXenon];
+ 	double val[10 * nXenon];
+ 	// Get the pointer on them for the compute re-solution method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the re-solution at the grid point 8
+@@ -343,10 +343,10 @@ BOOST_AUTO_TEST_CASE(checkDifferentFit) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
+-	int indices[10 * nXenon];
++	long int indices[10 * nXenon];
+ 	double val[10 * nXenon];
+ 	// Get the pointer on them for the compute re-solution method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the re-solution at the grid point 8
+diff --git a/xolotl/tests/modifiedreaction/PartialReSolutionHandlerTester.cpp b/xolotl/tests/modifiedreaction/PartialReSolutionHandlerTester.cpp
+index 78484c9c..b1f55047 100644
+--- a/xolotl/tests/modifiedreaction/PartialReSolutionHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/PartialReSolutionHandlerTester.cpp
+@@ -106,10 +106,10 @@ BOOST_AUTO_TEST_CASE(checkReSolution) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
+-	int indices[10 * nXenon];
++	long int indices[10 * nXenon];
+ 	double val[10 * nXenon];
+ 	// Get the pointer on them for the compute re-solution method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the re-solution at the grid point 8
+@@ -247,10 +247,10 @@ BOOST_AUTO_TEST_CASE(checkDifferentFit) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
+-	int indices[10 * nXenon];
++	long int indices[10 * nXenon];
+ 	double val[10 * nXenon];
+ 	// Get the pointer on them for the compute re-solution method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the re-solution at the grid point 8
+diff --git a/xolotl/tests/modifiedreaction/Sigma3TrapMutationHandlerTester.cpp b/xolotl/tests/modifiedreaction/Sigma3TrapMutationHandlerTester.cpp
+index 3b5a03ef..1aab7675 100644
+--- a/xolotl/tests/modifiedreaction/Sigma3TrapMutationHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/Sigma3TrapMutationHandlerTester.cpp
+@@ -136,10 +136,10 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nHelium = network->getAll(ReactantType::He).size();
+-	int indices[3 * nHelium];
++	long int indices[3 * nHelium];
+ 	double val[3 * nHelium];
+ 	// Get the pointer on them for the compute modified trap-mutation method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the modified trap-mutation at the grid point 8
+diff --git a/xolotl/tests/modifiedreaction/W100TrapMutationHandlerTester.cpp b/xolotl/tests/modifiedreaction/W100TrapMutationHandlerTester.cpp
+index 1d9dc58e..74572b7b 100644
+--- a/xolotl/tests/modifiedreaction/W100TrapMutationHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/W100TrapMutationHandlerTester.cpp
+@@ -130,10 +130,10 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nHelium = network->getAll(ReactantType::He).size();
+-	int indices[3 * nHelium];
++	long int indices[3 * nHelium];
+ 	double val[3 * nHelium];
+ 	// Get the pointer on them for the compute modified trap-mutation method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the modified trap-mutation at the grid point 8
+diff --git a/xolotl/tests/modifiedreaction/W110TrapMutationHandlerTester.cpp b/xolotl/tests/modifiedreaction/W110TrapMutationHandlerTester.cpp
+index e50c4c99..f70a91ee 100644
+--- a/xolotl/tests/modifiedreaction/W110TrapMutationHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/W110TrapMutationHandlerTester.cpp
+@@ -130,10 +130,10 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nHelium = network->getAll(ReactantType::He).size();
+-	int indices[3 * nHelium];
++	long int indices[3 * nHelium];
+ 	double val[3 * nHelium];
+ 	// Get the pointer on them for the compute modified trap-mutation method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the modified trap-mutation at the grid point 9
+diff --git a/xolotl/tests/modifiedreaction/W111TrapMutationHandlerTester.cpp b/xolotl/tests/modifiedreaction/W111TrapMutationHandlerTester.cpp
+index 206ee736..c8de0009 100644
+--- a/xolotl/tests/modifiedreaction/W111TrapMutationHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/W111TrapMutationHandlerTester.cpp
+@@ -130,10 +130,10 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nHelium = network->getAll(ReactantType::He).size();
+-	int indices[3 * nHelium];
++	long int indices[3 * nHelium];
+ 	double val[3 * nHelium];
+ 	// Get the pointer on them for the compute modified trap-mutation method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the modified trap-mutation at the grid point 11
+diff --git a/xolotl/tests/modifiedreaction/W211TrapMutationHandlerTester.cpp b/xolotl/tests/modifiedreaction/W211TrapMutationHandlerTester.cpp
+index c989783c..50ee3aa2 100644
+--- a/xolotl/tests/modifiedreaction/W211TrapMutationHandlerTester.cpp
++++ b/xolotl/tests/modifiedreaction/W211TrapMutationHandlerTester.cpp
+@@ -130,10 +130,10 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+ 	int nHelium = network->getAll(ReactantType::He).size();
+-	int indices[3 * nHelium];
++	long int indices[3 * nHelium];
+ 	double val[3 * nHelium];
+ 	// Get the pointer on them for the compute modified trap-mutation method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the modified trap-mutation at the grid point 10
+diff --git a/xolotl/tests/reactants/PSISuperClusterTester.cpp b/xolotl/tests/reactants/PSISuperClusterTester.cpp
+index 559a034e..a8f79887 100644
+--- a/xolotl/tests/reactants/PSISuperClusterTester.cpp
++++ b/xolotl/tests/reactants/PSISuperClusterTester.cpp
+@@ -217,13 +217,13 @@ BOOST_AUTO_TEST_CASE(checkPartialDerivatives) {
+ 	// Get the dof
+ 	const int dof = network->getDOF();
+ 	// Initialize the arrays for the reaction partial derivatives
+-	std::vector<int> reactionSize;
++	std::vector<long int> reactionSize;
+ 	reactionSize.resize(dof);
+ 	std::vector<size_t> reactionStartingIdx;
+ 	reactionStartingIdx.resize(dof);
+ 	auto nPartials = network->initPartialsSizes(reactionSize,
+ 			reactionStartingIdx);
+-	std::vector<int> reactionIndices;
++	std::vector<long int> reactionIndices;
+ 	reactionIndices.resize(nPartials);
+ 	network->initPartialsIndices(reactionSize, reactionStartingIdx,
+ 			reactionIndices);
+diff --git a/xolotl/tests/temperature/HeatEquationHandlerTester.cpp b/xolotl/tests/temperature/HeatEquationHandlerTester.cpp
+index 6a5e0705..6e24df9f 100644
+--- a/xolotl/tests/temperature/HeatEquationHandlerTester.cpp
++++ b/xolotl/tests/temperature/HeatEquationHandlerTester.cpp
+@@ -111,10 +111,10 @@ BOOST_AUTO_TEST_CASE(checkHeat1D) {
+ 	BOOST_REQUIRE_CLOSE(heatHandler.getTemperature(pos, 1.0), 361.0, 0.01);
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+-	int indices[1];
++	long int indices[1];
+ 	double val[3];
+ 	// Get the pointer on them for the compute diffusion method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the heat equation a the grid point
+@@ -221,10 +221,10 @@ BOOST_AUTO_TEST_CASE(checkHeat2D) {
+ 	BOOST_REQUIRE_CLOSE(heatHandler.getTemperature(pos, 1.0), 2401, 0.01);
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+-	int indices[1];
++	long int indices[1];
+ 	double val[5];
+ 	// Get the pointer on them for the compute diffusion method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the heat equation a the grid point
+@@ -338,10 +338,10 @@ BOOST_AUTO_TEST_CASE(checkHeat3D) {
+ 	BOOST_REQUIRE_CLOSE(heatHandler.getTemperature(pos, 1.0), 1932.1, 0.01);
+ 
+ 	// Initialize the indices and values to set in the Jacobian
+-	int indices[1];
++	long int indices[1];
+ 	double val[7];
+ 	// Get the pointer on them for the compute diffusion method
+-	int *indicesPointer = &indices[0];
++	long int *indicesPointer = &indices[0];
+ 	double *valPointer = &val[0];
+ 
+ 	// Compute the partial derivatives for the heat equation a the grid point
+diff --git a/xolotl/xolotlCore/advection/DummyAdvectionHandler.h b/xolotl/xolotlCore/advection/DummyAdvectionHandler.h
+index 38bba708..94e03413 100644
+--- a/xolotl/xolotlCore/advection/DummyAdvectionHandler.h
++++ b/xolotl/xolotlCore/advection/DummyAdvectionHandler.h
+@@ -81,7 +81,7 @@ public:
+ 	 * \see IAdvectionHandler.h
+ 	 */
+ 	void computePartialsForAdvection(const IReactionNetwork& network,
+-			double *val, int *indices, const NDPoint<3>& pos, double hxLeft,
++			double *val, long int *indices, const NDPoint<3>& pos, double hxLeft,
+ 			double hxRight, int ix, double hy = 0.0, int iy = 0,
+ 			double hz = 0.0, int iz = 0) const override {
+ 		// Doesn't do anything
+diff --git a/xolotl/xolotlCore/advection/IAdvectionHandler.h b/xolotl/xolotlCore/advection/IAdvectionHandler.h
+index 36969e4c..e858e251 100644
+--- a/xolotl/xolotlCore/advection/IAdvectionHandler.h
++++ b/xolotl/xolotlCore/advection/IAdvectionHandler.h
+@@ -114,7 +114,7 @@ public:
+ 	 * @param iz The position on the z grid
+ 	 */
+ 	virtual void computePartialsForAdvection(const IReactionNetwork& network,
+-			double *val, int *indices, const NDPoint<3>& pos, double hxLeft,
++			double *val, long int *indices, const NDPoint<3>& pos, double hxLeft,
+ 			double hxRight, int ix, double hy = 0.0, int iy = 0,
+ 			double hz = 0.0, int iz = 0) const = 0;
+ 
+diff --git a/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.cpp b/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.cpp
+index 6f16d3c6..917a6b49 100644
+--- a/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.cpp
++++ b/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.cpp
+@@ -129,7 +129,7 @@ void SurfaceAdvectionHandler::computeAdvection(const IReactionNetwork& network,
+ }
+ 
+ void SurfaceAdvectionHandler::computePartialsForAdvection(
+-		const IReactionNetwork& network, double *val, int *indices,
++		const IReactionNetwork& network, double *val, long int *indices,
+ 		const NDPoint<3>& pos, double hxLeft, double hxRight, int ix, double hy,
+ 		int iy, double hz, int iz) const {
+ 	// Consider each advecting cluster.
+diff --git a/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.h b/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.h
+index 999497cb..3aa726ca 100644
+--- a/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.h
++++ b/xolotl/xolotlCore/advection/SurfaceAdvectionHandler.h
+@@ -77,7 +77,7 @@ public:
+ 	 * \see IAdvectionHandler.h
+ 	 */
+ 	void computePartialsForAdvection(const IReactionNetwork& network,
+-			double *val, int *indices, const NDPoint<3>& pos, double hxLeft,
++			double *val, long int *indices, const NDPoint<3>& pos, double hxLeft,
+ 			double hxRight, int ix, double hy = 0.0, int iy = 0,
+ 			double hz = 0.0, int iz = 0) const override;
+ 
+diff --git a/xolotl/xolotlCore/advection/XGBAdvectionHandler.cpp b/xolotl/xolotlCore/advection/XGBAdvectionHandler.cpp
+index 6ebd1d56..78b6de38 100644
+--- a/xolotl/xolotlCore/advection/XGBAdvectionHandler.cpp
++++ b/xolotl/xolotlCore/advection/XGBAdvectionHandler.cpp
+@@ -138,7 +138,7 @@ void XGBAdvectionHandler::computeAdvection(const IReactionNetwork& network,
+ }
+ 
+ void XGBAdvectionHandler::computePartialsForAdvection(
+-		const IReactionNetwork& network, double *val, int *indices,
++		const IReactionNetwork& network, double *val, long int *indices,
+ 		const NDPoint<3>& pos, double hxLeft, double hxRight, int ix, double hy,
+ 		int iy, double hz, int iz) const {
+ 
+diff --git a/xolotl/xolotlCore/advection/XGBAdvectionHandler.h b/xolotl/xolotlCore/advection/XGBAdvectionHandler.h
+index 91447400..24e783d6 100644
+--- a/xolotl/xolotlCore/advection/XGBAdvectionHandler.h
++++ b/xolotl/xolotlCore/advection/XGBAdvectionHandler.h
+@@ -76,7 +76,7 @@ public:
+ 	 * \see IAdvectionHandler.h
+ 	 */
+ 	void computePartialsForAdvection(const IReactionNetwork& network,
+-			double *val, int *indices, const NDPoint<3>& pos, double hxLeft,
++			double *val, long int *indices, const NDPoint<3>& pos, double hxLeft,
+ 			double hxRight, int ix, double hy = 0.0, int iy = 0,
+ 			double hz = 0.0, int iz = 0) const override;
+ 
+diff --git a/xolotl/xolotlCore/advection/YGBAdvectionHandler.cpp b/xolotl/xolotlCore/advection/YGBAdvectionHandler.cpp
+index d80180f0..13b172cd 100644
+--- a/xolotl/xolotlCore/advection/YGBAdvectionHandler.cpp
++++ b/xolotl/xolotlCore/advection/YGBAdvectionHandler.cpp
+@@ -135,7 +135,7 @@ void YGBAdvectionHandler::computeAdvection(const IReactionNetwork& network,
+ }
+ 
+ void YGBAdvectionHandler::computePartialsForAdvection(
+-		const IReactionNetwork& network, double *val, int *indices,
++		const IReactionNetwork& network, double *val, long int *indices,
+ 		const NDPoint<3>& pos, double hxLeft, double hxRight, int ix, double hy,
+ 		int iy, double hz, int iz) const {
+ 
+diff --git a/xolotl/xolotlCore/advection/YGBAdvectionHandler.h b/xolotl/xolotlCore/advection/YGBAdvectionHandler.h
+index d218a34d..ab3a05ab 100644
+--- a/xolotl/xolotlCore/advection/YGBAdvectionHandler.h
++++ b/xolotl/xolotlCore/advection/YGBAdvectionHandler.h
+@@ -76,7 +76,7 @@ public:
+ 	 * \see IAdvectionHandler.h
+ 	 */
+ 	void computePartialsForAdvection(const IReactionNetwork& network,
+-			double *val, int *indices, const NDPoint<3>& pos, double hxLeft,
++			double *val, long int *indices, const NDPoint<3>& pos, double hxLeft,
+ 			double hxRight, int ix, double hy = 0.0, int iy = 0,
+ 			double hz = 0.0, int iz = 0) const override;
+ 
+diff --git a/xolotl/xolotlCore/advection/ZGBAdvectionHandler.cpp b/xolotl/xolotlCore/advection/ZGBAdvectionHandler.cpp
+index 1ff97639..99699f63 100644
+--- a/xolotl/xolotlCore/advection/ZGBAdvectionHandler.cpp
++++ b/xolotl/xolotlCore/advection/ZGBAdvectionHandler.cpp
+@@ -134,7 +134,7 @@ void ZGBAdvectionHandler::computeAdvection(const IReactionNetwork& network,
+ }
+ 
+ void ZGBAdvectionHandler::computePartialsForAdvection(
+-		const IReactionNetwork& network, double *val, int *indices,
++		const IReactionNetwork& network, double *val, long int *indices,
+ 		const NDPoint<3>& pos, double hxLeft, double hxRight, int ix, double hy,
+ 		int iy, double hz, int iz) const {
+ 
+diff --git a/xolotl/xolotlCore/advection/ZGBAdvectionHandler.h b/xolotl/xolotlCore/advection/ZGBAdvectionHandler.h
+index 2fa3071a..1e197544 100644
+--- a/xolotl/xolotlCore/advection/ZGBAdvectionHandler.h
++++ b/xolotl/xolotlCore/advection/ZGBAdvectionHandler.h
+@@ -76,7 +76,7 @@ public:
+ 	 * \see IAdvectionHandler.h
+ 	 */
+ 	void computePartialsForAdvection(const IReactionNetwork& network,
+-			double *val, int *indices, const NDPoint<3>& pos, double hxLeft,
++			double *val, long int *indices, const NDPoint<3>& pos, double hxLeft,
+ 			double hxRight, int ix, double hy = 0.0, int iy = 0,
+ 			double hz = 0.0, int iz = 0) const override;
+ 
+diff --git a/xolotl/xolotlCore/diffusion/Diffusion1DHandler.cpp b/xolotl/xolotlCore/diffusion/Diffusion1DHandler.cpp
+index 1d2cbf46..c5b4b521 100644
+--- a/xolotl/xolotlCore/diffusion/Diffusion1DHandler.cpp
++++ b/xolotl/xolotlCore/diffusion/Diffusion1DHandler.cpp
+@@ -104,7 +104,7 @@ void Diffusion1DHandler::computeDiffusion(const IReactionNetwork &network,
+ }
+ 
+ void Diffusion1DHandler::computePartialsForDiffusion(
+-		const IReactionNetwork &network, double *val, int *indices,
++		const IReactionNetwork &network, double *val, long int *indices,
+ 		double hxLeft, double hxRight, int ix, double, int, double, int) const {
+ 
+ 	// Loop on them
+diff --git a/xolotl/xolotlCore/diffusion/Diffusion1DHandler.h b/xolotl/xolotlCore/diffusion/Diffusion1DHandler.h
+index b26a8a15..9efd908c 100644
+--- a/xolotl/xolotlCore/diffusion/Diffusion1DHandler.h
++++ b/xolotl/xolotlCore/diffusion/Diffusion1DHandler.h
+@@ -108,7 +108,7 @@ public:
+ 	 * @param iz The position on the z grid
+ 	 */
+ 	void computePartialsForDiffusion(const IReactionNetwork &network,
+-			double *val, int *indices, double hxLeft, double hxRight, int ix,
++			double *val, long int *indices, double hxLeft, double hxRight, int ix,
+ 			double sy = 0.0, int iy = 0, double sz = 0.0, int iz = 0) const
+ 					override;
+ 
+diff --git a/xolotl/xolotlCore/diffusion/Diffusion2DHandler.cpp b/xolotl/xolotlCore/diffusion/Diffusion2DHandler.cpp
+index 63360f78..098295a1 100644
+--- a/xolotl/xolotlCore/diffusion/Diffusion2DHandler.cpp
++++ b/xolotl/xolotlCore/diffusion/Diffusion2DHandler.cpp
+@@ -116,7 +116,7 @@ void Diffusion2DHandler::computeDiffusion(const IReactionNetwork& network,
+ }
+ 
+ void Diffusion2DHandler::computePartialsForDiffusion(
+-		const IReactionNetwork& network, double *val, int *indices,
++		const IReactionNetwork& network, double *val, long int *indices,
+ 		double hxLeft, double hxRight, int ix, double sy, int iy, double,
+ 		int) const {
+ 
+diff --git a/xolotl/xolotlCore/diffusion/Diffusion2DHandler.h b/xolotl/xolotlCore/diffusion/Diffusion2DHandler.h
+index 56300619..f489dd31 100644
+--- a/xolotl/xolotlCore/diffusion/Diffusion2DHandler.h
++++ b/xolotl/xolotlCore/diffusion/Diffusion2DHandler.h
+@@ -117,7 +117,7 @@ public:
+ 	 * @param iz The position on the z grid
+ 	 */
+ 	void computePartialsForDiffusion(const IReactionNetwork &network,
+-			double *val, int *indices, double hxLeft, double hxRight, int ix,
++			double *val, long int *indices, double hxLeft, double hxRight, int ix,
+ 			double sy = 0.0, int iy = 0, double sz = 0.0, int iz = 0) const
+ 					override;
+ 
+diff --git a/xolotl/xolotlCore/diffusion/Diffusion3DHandler.cpp b/xolotl/xolotlCore/diffusion/Diffusion3DHandler.cpp
+index 7c904dca..d1d144fe 100644
+--- a/xolotl/xolotlCore/diffusion/Diffusion3DHandler.cpp
++++ b/xolotl/xolotlCore/diffusion/Diffusion3DHandler.cpp
+@@ -129,7 +129,7 @@ void Diffusion3DHandler::computeDiffusion(const IReactionNetwork& network,
+ }
+ 
+ void Diffusion3DHandler::computePartialsForDiffusion(
+-		const IReactionNetwork& network, double *val, int *indices,
++		const IReactionNetwork& network, double *val, long int *indices,
+ 		double hxLeft, double hxRight, int ix, double sy, int iy, double sz,
+ 		int iz) const {
+ 
+diff --git a/xolotl/xolotlCore/diffusion/Diffusion3DHandler.h b/xolotl/xolotlCore/diffusion/Diffusion3DHandler.h
+index 24a5951f..30981d4f 100644
+--- a/xolotl/xolotlCore/diffusion/Diffusion3DHandler.h
++++ b/xolotl/xolotlCore/diffusion/Diffusion3DHandler.h
+@@ -119,7 +119,7 @@ public:
+ 	 * @param iz The position on the z grid
+ 	 */
+ 	void computePartialsForDiffusion(const IReactionNetwork &network,
+-			double *val, int *indices, double hxLeft, double hxRight, int ix,
++			double *val, long int *indices, double hxLeft, double hxRight, int ix,
+ 			double sy = 0.0, int iy = 0, double sz = 0.0, int iz = 0) const
+ 					override;
+ 
+diff --git a/xolotl/xolotlCore/diffusion/DummyDiffusionHandler.h b/xolotl/xolotlCore/diffusion/DummyDiffusionHandler.h
+index 175a92ea..60901c1f 100644
+--- a/xolotl/xolotlCore/diffusion/DummyDiffusionHandler.h
++++ b/xolotl/xolotlCore/diffusion/DummyDiffusionHandler.h
+@@ -114,7 +114,7 @@ public:
+ 	 * @param iz The position on the z grid
+ 	 */
+ 	void computePartialsForDiffusion(const IReactionNetwork &network,
+-			double *val, int *indices, double hxLeft, double hxRight, int ix,
++			double *val, long int *indices, double hxLeft, double hxRight, int ix,
+ 			double sy = 0.0, int iy = 0, double sz = 0.0, int iz = 0) const
+ 					override {
+ 		return;
+diff --git a/xolotl/xolotlCore/diffusion/IDiffusionHandler.h b/xolotl/xolotlCore/diffusion/IDiffusionHandler.h
+index aec5130e..d291ce9a 100644
+--- a/xolotl/xolotlCore/diffusion/IDiffusionHandler.h
++++ b/xolotl/xolotlCore/diffusion/IDiffusionHandler.h
+@@ -95,7 +95,7 @@ public:
+ 	 * @param iz The position on the z grid
+ 	 */
+ 	virtual void computePartialsForDiffusion(const IReactionNetwork& network,
+-			double *val, int *indices, double hxLeft, double hxRight, int ix,
++			double *val, long int *indices, double hxLeft, double hxRight, int ix,
+ 			double sy = 0.0, int iy = 0, double sz = 0.0,
+ 			int iz = 0) const = 0;
+ 
+diff --git a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/DummyNucleationHandler.h b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/DummyNucleationHandler.h
+index 7362daad..d8fa82dd 100644
+--- a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/DummyNucleationHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/DummyNucleationHandler.h
+@@ -84,7 +84,7 @@ public:
+ 	 * \see IHeterogeneousNucleationHandler.h
+ 	 */
+ 	bool computePartialsForHeterogeneousNucleation(
+-			const IReactionNetwork& network, double *val, int *indices, int xi,
++			const IReactionNetwork& network, double *val, long int *indices, int xi,
+ 			int xs, int yj = 0, int zk = 0) {
+ 		// Doesn't do anything
+ 		return false;
+diff --git a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.cpp b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.cpp
+index 9529e320..da11aeb7 100644
+--- a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.cpp
++++ b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.cpp
+@@ -72,7 +72,7 @@ void HeterogeneousNucleationHandler::computeHeterogeneousNucleation(
+ }
+ 
+ bool HeterogeneousNucleationHandler::computePartialsForHeterogeneousNucleation(
+-		const IReactionNetwork& network, double *val, int *indices, int xi,
++		const IReactionNetwork& network, double *val, long int *indices, int xi,
+ 		int xs, int yj, int zk) {
+ 	// Get the single and double xenon
+ 	auto singleXenon = network.get(Species::Xe, 1), doubleXenon = network.get(
+diff --git a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.h b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.h
+index 51efe0a8..62b810bd 100644
+--- a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/HeterogeneousNucleationHandler.h
+@@ -87,7 +87,7 @@ public:
+ 	 * \see IHeterogeneousNucleationHandler.h
+ 	 */
+ 	virtual bool computePartialsForHeterogeneousNucleation(
+-			const IReactionNetwork& network, double *val, int *indices, int xi,
++			const IReactionNetwork& network, double *val, long int *indices, int xi,
+ 			int xs, int yj = 0, int zk = 0);
+ 
+ };
+diff --git a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/IHeterogeneousNucleationHandler.h b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/IHeterogeneousNucleationHandler.h
+index 49b4fc37..1e656fe5 100644
+--- a/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/IHeterogeneousNucleationHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/heterogeneousnucleation/IHeterogeneousNucleationHandler.h
+@@ -83,7 +83,7 @@ public:
+ 	 * @return true if nucleation is happening
+ 	 */
+ 	virtual bool computePartialsForHeterogeneousNucleation(const IReactionNetwork& network,
+-			double *val, int *indices, int xi, int xs, int yj = 0,
++			double *val, long int *indices, int xi, int xs, int yj = 0,
+ 			int zk = 0) = 0;
+ 
+ };
+diff --git a/xolotl/xolotlCore/modifiedreaction/resolution/DummyReSolutionHandler.h b/xolotl/xolotlCore/modifiedreaction/resolution/DummyReSolutionHandler.h
+index de62caf9..10f2bf87 100644
+--- a/xolotl/xolotlCore/modifiedreaction/resolution/DummyReSolutionHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/resolution/DummyReSolutionHandler.h
+@@ -89,7 +89,7 @@ public:
+ 	 * \see IReSolutionHandler.h
+ 	 */
+ 	int computePartialsForReSolution(const IReactionNetwork& network,
+-			double *val, int *indices, int xi, int xs, int yj = 0, int zk = 0) {
++			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0) {
+ 		return 0;
+ 	}
+ 
+diff --git a/xolotl/xolotlCore/modifiedreaction/resolution/FullReSolutionHandler.h b/xolotl/xolotlCore/modifiedreaction/resolution/FullReSolutionHandler.h
+index 8228e8f7..a83505f7 100644
+--- a/xolotl/xolotlCore/modifiedreaction/resolution/FullReSolutionHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/resolution/FullReSolutionHandler.h
+@@ -213,7 +213,7 @@ public:
+ 	 * \see IReSolutionHandler.h
+ 	 */
+ 	int computePartialsForReSolution(const IReactionNetwork &network,
+-			double *val, int *indices, int xi, int xs, int yj = 0, int zk = 0) {
++			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0) {
+ 		// Get the single xenon which connects to every cluster
+ 		auto singleXenon = network.get(Species::Xe, 1);
+ 		int xenonId = singleXenon->getId() - 1;
+diff --git a/xolotl/xolotlCore/modifiedreaction/resolution/IReSolutionHandler.h b/xolotl/xolotlCore/modifiedreaction/resolution/IReSolutionHandler.h
+index 17507c71..ba2856d2 100644
+--- a/xolotl/xolotlCore/modifiedreaction/resolution/IReSolutionHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/resolution/IReSolutionHandler.h
+@@ -87,7 +87,7 @@ public:
+ 	 * at this grid point
+ 	 */
+ 	virtual int computePartialsForReSolution(const IReactionNetwork& network,
+-			double *val, int *indices, int xi, int xs, int yj = 0,
++			double *val, long int *indices, int xi, int xs, int yj = 0,
+ 			int zk = 0) = 0;
+ 
+ 	/**
+diff --git a/xolotl/xolotlCore/modifiedreaction/resolution/OneReSolutionHandler.h b/xolotl/xolotlCore/modifiedreaction/resolution/OneReSolutionHandler.h
+index 01d3a801..a895fba6 100644
+--- a/xolotl/xolotlCore/modifiedreaction/resolution/OneReSolutionHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/resolution/OneReSolutionHandler.h
+@@ -359,7 +359,7 @@ public:
+ 	 * \see IReSolutionHandler.h
+ 	 */
+ 	int computePartialsForReSolution(const IReactionNetwork &network,
+-			double *val, int *indices, int xi, int xs, int yj = 0, int zk = 0) {
++			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0) {
+ 		// Get the single xenon which connects to every cluster
+ 		auto singleXenon = network.get(Species::Xe, 1);
+ 		int xenonId = singleXenon->getId() - 1;
+diff --git a/xolotl/xolotlCore/modifiedreaction/resolution/PartialReSolutionHandler.h b/xolotl/xolotlCore/modifiedreaction/resolution/PartialReSolutionHandler.h
+index 1e70474f..b223df01 100644
+--- a/xolotl/xolotlCore/modifiedreaction/resolution/PartialReSolutionHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/resolution/PartialReSolutionHandler.h
+@@ -447,7 +447,7 @@ public:
+ 	 * \see IReSolutionHandler.h
+ 	 */
+ 	int computePartialsForReSolution(const IReactionNetwork &network,
+-			double *val, int *indices, int xi, int xs, int yj = 0, int zk = 0) {
++			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0) {
+ 		// Get the single xenon which connects to every cluster
+ 		auto singleXenon = network.get(Species::Xe, 1);
+ 		int xenonId = singleXenon->getId() - 1;
+diff --git a/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.cpp b/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.cpp
+index 43aa4d6f..fc1b1024 100644
+--- a/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.cpp
++++ b/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.cpp
+@@ -27,7 +27,7 @@ void ReSolutionHandler::computeReSolution(const IReactionNetwork& network,
+ }
+ 
+ int ReSolutionHandler::computePartialsForReSolution(
+-		const IReactionNetwork& network, double *val, int *indices, int xi,
++		const IReactionNetwork& network, double *val, long int *indices, int xi,
+ 		int xs, int yj, int zk) {
+ 	return 0;
+ }
+diff --git a/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.h b/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.h
+index df9690fd..69712071 100644
+--- a/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/resolution/ReSolutionHandler.h
+@@ -143,7 +143,7 @@ public:
+ 	 * \see IReSolutionHandler.h
+ 	 */
+ 	virtual int computePartialsForReSolution(const IReactionNetwork& network,
+-			double *val, int *indices, int xi, int xs, int yj = 0, int zk = 0);
++			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0);
+ 
+ 	/**
+ 	 * Get the total number of clusters in the network that can undergo re-solution.
+diff --git a/xolotl/xolotlCore/modifiedreaction/trapmutation/ITrapMutationHandler.h b/xolotl/xolotlCore/modifiedreaction/trapmutation/ITrapMutationHandler.h
+index 4d578623..9c1ca5e2 100644
+--- a/xolotl/xolotlCore/modifiedreaction/trapmutation/ITrapMutationHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/trapmutation/ITrapMutationHandler.h
+@@ -155,7 +155,7 @@ public:
+ 	 * at this grid point
+ 	 */
+ 	virtual int computePartialsForTrapMutation(const IReactionNetwork& network,
+-			double *val, int *indices, int xi, int yj = 0, int zk = 0) = 0;
++			double *val, long int *indices, int xi, int yj = 0, int zk = 0) = 0;
+ 
+ 	/**
+ 	 * Get the total number of clusters in the network that can undergo trap mutation.
+diff --git a/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.cpp b/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.cpp
+index 152390fa..c7ecfb58 100644
+--- a/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.cpp
++++ b/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.cpp
+@@ -545,7 +545,7 @@ void TrapMutationHandler::computeTrapMutation(const IReactionNetwork& network,
+ }
+ 
+ int TrapMutationHandler::computePartialsForTrapMutation(
+-		const IReactionNetwork& network, double *val, int *indices, int xi,
++		const IReactionNetwork& network, double *val, long int *indices, int xi,
+ 		int yj, int zk) {
+ 
+ 	// Initialize the rate of the reaction
+diff --git a/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.h b/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.h
+index b9f27a66..59407b57 100644
+--- a/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.h
++++ b/xolotl/xolotlCore/modifiedreaction/trapmutation/TrapMutationHandler.h
+@@ -201,7 +201,7 @@ public:
+ 	 * \see ITrapMutationHandler.h
+ 	 */
+ 	int computePartialsForTrapMutation(const IReactionNetwork& network,
+-			double *val, int *indices, int xi, int yj = 0, int zk = 0);
++			double *val, long int *indices, int xi, int yj = 0, int zk = 0);
+ 
+ 	/**
+ 	 * Get the total number of clusters in the network that can undergo trap mutation.
+diff --git a/xolotl/xolotlCore/reactants/IReactionNetwork.h b/xolotl/xolotlCore/reactants/IReactionNetwork.h
+index 239cb22d..873d7db9 100644
+--- a/xolotl/xolotlCore/reactants/IReactionNetwork.h
++++ b/xolotl/xolotlCore/reactants/IReactionNetwork.h
+@@ -321,7 +321,7 @@ public:
+ 	 *      within the partials values array and the indices array.
+ 	 * @return Total number of partials for all clusters.
+ 	 */
+-	virtual size_t initPartialsSizes(std::vector<int>& size,
++	virtual size_t initPartialsSizes(std::vector<long int>& size,
+ 			std::vector<size_t>& startingIdx) const = 0;
+ 
+ 	/**
+@@ -333,9 +333,9 @@ public:
+ 	 *      within the partials values array and the indices array.
+ 	 * @param indices The indices of the clusters for the partial derivatives.
+ 	 */
+-	virtual void initPartialsIndices(const std::vector<int>& size,
++	virtual void initPartialsIndices(const std::vector<long int>& size,
+ 			const std::vector<size_t>& startingIdx,
+-			std::vector<int>& indices) const = 0;
++			std::vector<long int>& indices) const = 0;
+ 
+ 	/**
+ 	 * Compute the partial derivatives generated by all the reactions
+@@ -348,7 +348,7 @@ public:
+ 	 * @param vals The values of partials for the reactions
+ 	 */
+ 	virtual void computeAllPartials(const std::vector<size_t>& startingIdx,
+-			const std::vector<int>& indices, std::vector<double>& vals, int i =
++			const std::vector<long int>& indices, std::vector<double>& vals, int i =
+ 					0) const = 0;
+ 
+ 	/**
+diff --git a/xolotl/xolotlCore/reactants/ReactionNetwork.cpp b/xolotl/xolotlCore/reactants/ReactionNetwork.cpp
+index 36d2600e..3dede5c7 100644
+--- a/xolotl/xolotlCore/reactants/ReactionNetwork.cpp
++++ b/xolotl/xolotlCore/reactants/ReactionNetwork.cpp
+@@ -307,7 +307,7 @@ void ReactionNetwork::addGridPoints(int i) {
+ 	return;
+ }
+ 
+-size_t ReactionNetwork::initPartialsSizes(std::vector<int>& size,
++size_t ReactionNetwork::initPartialsSizes(std::vector<long int>& size,
+ 		std::vector<size_t>& startingIdx) const {
+ 
+ 	size_t currStartingIdx = 0;
+@@ -337,9 +337,9 @@ size_t ReactionNetwork::initPartialsSizes(std::vector<int>& size,
+ 	return currStartingIdx;
+ }
+ 
+-void ReactionNetwork::initPartialsIndices(const std::vector<int>& size,
++void ReactionNetwork::initPartialsIndices(const std::vector<long int>& size,
+ 		const std::vector<size_t>& startingIdx,
+-		std::vector<int>& indices) const {
++		std::vector<long int>& indices) const {
+ 	// Determine the number of items owned by each reactant.
+ 	for (auto idx = 0; idx < getDOF(); ++idx) {
+ 		if (size[idx] > 0) {
+diff --git a/xolotl/xolotlCore/reactants/ReactionNetwork.h b/xolotl/xolotlCore/reactants/ReactionNetwork.h
+index 35da02ae..e38f7c83 100644
+--- a/xolotl/xolotlCore/reactants/ReactionNetwork.h
++++ b/xolotl/xolotlCore/reactants/ReactionNetwork.h
+@@ -806,7 +806,7 @@ public:
+ 	 * @param i The location on the grid in the depth direction
+ 	 * @return Total number of partials for all clusters.
+ 	 */
+-	size_t initPartialsSizes(std::vector<int>& size,
++	size_t initPartialsSizes(std::vector<long int>& size,
+ 			std::vector<size_t>& startingIdx) const override;
+ 
+ 	/**
+@@ -818,9 +818,9 @@ public:
+ 	 *      within the partials values array and the indices array.
+ 	 * @param indices The indices of the clusters for the partial derivatives.
+ 	 */
+-	void initPartialsIndices(const std::vector<int>& size,
++	void initPartialsIndices(const std::vector<long int>& size,
+ 			const std::vector<size_t>& startingIdx,
+-			std::vector<int>& indices) const override;
++			std::vector<long int>& indices) const override;
+ 
+ };
+ 
+diff --git a/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.cpp b/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.cpp
+index f715cb8a..d9e8a35e 100644
+--- a/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.cpp
++++ b/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.cpp
+@@ -538,7 +538,7 @@ void AlloyClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
+ }
+ 
+ void AlloyClusterReactionNetwork::computeAllPartials(
+-		const std::vector<size_t>& startingIdx, const std::vector<int>& indices,
++		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
+ 		std::vector<double>& vals, int i) const {
+ 
+ 	// Initial declarations
+diff --git a/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.h b/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.h
+index fb24f09d..cfc1a878 100644
+--- a/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.h
++++ b/xolotl/xolotlCore/reactants/alloyclusters/AlloyClusterReactionNetwork.h
+@@ -255,7 +255,7 @@ public:
+ 	 * @param i The location on the grid in the depth direction
+ 	 */
+ 	void computeAllPartials(const std::vector<size_t>& startingIdx,
+-			const std::vector<int>& indices, std::vector<double>& vals,
++			const std::vector<long int>& indices, std::vector<double>& vals,
+ 			int i) const override;
+ 
+ };
+diff --git a/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.cpp b/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.cpp
+index 717ff4d8..7248a061 100644
+--- a/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.cpp
++++ b/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.cpp
+@@ -879,7 +879,7 @@ void FeClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
+ }
+ 
+ void FeClusterReactionNetwork::computeAllPartials(
+-		const std::vector<size_t>& startingIdx, const std::vector<int>& indices,
++		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
+ 		std::vector<double>& vals, int i) const {
+ 	// Initial declarations
+ 	const int dof = getDOF();
+diff --git a/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.h b/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.h
+index 74e20694..2381abc9 100644
+--- a/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.h
++++ b/xolotl/xolotlCore/reactants/feclusters/FeClusterReactionNetwork.h
+@@ -348,7 +348,7 @@ public:
+ 	 * @param i The location on the grid in the depth direction
+ 	 */
+ 	void computeAllPartials(const std::vector<size_t>& startingIdx,
+-			const std::vector<int>& indices, std::vector<double>& vals,
++			const std::vector<long int>& indices, std::vector<double>& vals,
+ 			int i) const override;
+ 
+ 	/**
+diff --git a/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.cpp b/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.cpp
+index a82451cc..d217e06b 100644
+--- a/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.cpp
++++ b/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.cpp
+@@ -399,7 +399,7 @@ void NEClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
+ }
+ 
+ void NEClusterReactionNetwork::computeAllPartials(
+-		const std::vector<size_t>& startingIdx, const std::vector<int>& indices,
++		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
+ 		std::vector<double>& vals, int i) const {
+ 
+ 	// Initial declarations
+diff --git a/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.h b/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.h
+index 724f7785..994d24d3 100644
+--- a/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.h
++++ b/xolotl/xolotlCore/reactants/neclusters/NEClusterReactionNetwork.h
+@@ -286,7 +286,7 @@ public:
+ 	 * @param i The location on the grid in the depth direction
+ 	 */
+ 	void computeAllPartials(const std::vector<size_t>& startingIdx,
+-			const std::vector<int>& indices, std::vector<double>& vals,
++			const std::vector<long int>& indices, std::vector<double>& vals,
+ 			int i) const override;
+ };
+ 
+diff --git a/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.cpp b/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.cpp
+index bf0c9a61..74f2e53b 100644
+--- a/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.cpp
++++ b/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.cpp
+@@ -1784,7 +1784,7 @@ void PSIClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
+ }
+ 
+ void PSIClusterReactionNetwork::computeAllPartials(
+-		const std::vector<size_t>& startingIdx, const std::vector<int>& indices,
++		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
+ 		std::vector<double>& vals, int xi) const {
+ 
+ 	// Because we accumulate partials and we don't know which
+diff --git a/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.h b/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.h
+index c85e8858..fc6060b4 100644
+--- a/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.h
++++ b/xolotl/xolotlCore/reactants/psiclusters/PSIClusterReactionNetwork.h
+@@ -512,7 +512,7 @@ public:
+ 	 * @param i The location on the grid in the depth direction
+ 	 */
+ 	void computeAllPartials(const std::vector<size_t>& startingIdx,
+-			const std::vector<int>& indices, std::vector<double>& vals,
++			const std::vector<long int>& indices, std::vector<double>& vals,
+ 			int i) const override;
+ 
+ 	/**
+diff --git a/xolotl/xolotlCore/temperature/HeatEquation1DHandler.h b/xolotl/xolotlCore/temperature/HeatEquation1DHandler.h
+index e4797b00..e87234b5 100644
+--- a/xolotl/xolotlCore/temperature/HeatEquation1DHandler.h
++++ b/xolotl/xolotlCore/temperature/HeatEquation1DHandler.h
+@@ -190,7 +190,7 @@ public:
+ 	 *
+ 	 * \see ITemperatureHandler.h
+ 	 */
+-	virtual void computePartialsForTemperature(double *val, int *indices,
++	virtual void computePartialsForTemperature(double *val, long int *indices,
+ 			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
+ 			double sz = 0.0, int iz = 0) {
+ 		// Set the cluster index, the PetscSolver will use it to compute
+diff --git a/xolotl/xolotlCore/temperature/HeatEquation2DHandler.h b/xolotl/xolotlCore/temperature/HeatEquation2DHandler.h
+index e40cb77f..0fc951b3 100644
+--- a/xolotl/xolotlCore/temperature/HeatEquation2DHandler.h
++++ b/xolotl/xolotlCore/temperature/HeatEquation2DHandler.h
+@@ -199,7 +199,7 @@ public:
+ 	 *
+ 	 * \see ITemperatureHandler.h
+ 	 */
+-	virtual void computePartialsForTemperature(double *val, int *indices,
++	virtual void computePartialsForTemperature(double *val, long int *indices,
+ 			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
+ 			double sz = 0.0, int iz = 0) {
+ 		// Set the cluster index, the PetscSolver will use it to compute
+diff --git a/xolotl/xolotlCore/temperature/HeatEquation3DHandler.h b/xolotl/xolotlCore/temperature/HeatEquation3DHandler.h
+index ef631a44..23f3575f 100644
+--- a/xolotl/xolotlCore/temperature/HeatEquation3DHandler.h
++++ b/xolotl/xolotlCore/temperature/HeatEquation3DHandler.h
+@@ -205,7 +205,7 @@ public:
+ 	 *
+ 	 * \see ITemperatureHandler.h
+ 	 */
+-	virtual void computePartialsForTemperature(double *val, int *indices,
++	virtual void computePartialsForTemperature(double *val, long int *indices,
+ 			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
+ 			double sz = 0.0, int iz = 0) {
+ 		// Set the cluster index, the PetscSolver will use it to compute
+diff --git a/xolotl/xolotlCore/temperature/ITemperatureHandler.h b/xolotl/xolotlCore/temperature/ITemperatureHandler.h
+index 399a6a90..99834e7e 100644
+--- a/xolotl/xolotlCore/temperature/ITemperatureHandler.h
++++ b/xolotl/xolotlCore/temperature/ITemperatureHandler.h
+@@ -108,7 +108,7 @@ public:
+ 	 * @param sz The space parameter, depending on the grid step size in the z direction
+ 	 * @param iz The position on the z grid
+ 	 */
+-	virtual void computePartialsForTemperature(double *val, int *indices,
++	virtual void computePartialsForTemperature(double *val, long int *indices,
+ 			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
+ 			double sz = 0.0, int iz = 0) = 0;
+ 
+diff --git a/xolotl/xolotlCore/temperature/TemperatureGradientHandler.h b/xolotl/xolotlCore/temperature/TemperatureGradientHandler.h
+index 03f21259..64766286 100644
+--- a/xolotl/xolotlCore/temperature/TemperatureGradientHandler.h
++++ b/xolotl/xolotlCore/temperature/TemperatureGradientHandler.h
+@@ -145,7 +145,7 @@ public:
+ 	 *
+ 	 * \see ITemperatureHandler.h
+ 	 */
+-	virtual void computePartialsForTemperature(double *val, int *indices,
++	virtual void computePartialsForTemperature(double *val, long int *indices,
+ 			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
+ 			double sz = 0.0, int iz = 0) {
+ 		// Set the cluster index, the PetscSolver will use it to compute
+diff --git a/xolotl/xolotlCore/temperature/TemperatureHandler.h b/xolotl/xolotlCore/temperature/TemperatureHandler.h
+index f11bfea5..fb40f3ab 100644
+--- a/xolotl/xolotlCore/temperature/TemperatureHandler.h
++++ b/xolotl/xolotlCore/temperature/TemperatureHandler.h
+@@ -139,7 +139,7 @@ public:
+ 	 *
+ 	 * \see ITemperatureHandler.h
+ 	 */
+-	virtual void computePartialsForTemperature(double *val, int *indices,
++	virtual void computePartialsForTemperature(double *val, long int *indices,
+ 			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
+ 			double sz = 0.0, int iz = 0) {
+ 		// Set the cluster index, the PetscSolver will use it to compute
+diff --git a/xolotl/xolotlCore/temperature/TemperatureProfileHandler.h b/xolotl/xolotlCore/temperature/TemperatureProfileHandler.h
+index 8fd0c9c9..2637eac5 100644
+--- a/xolotl/xolotlCore/temperature/TemperatureProfileHandler.h
++++ b/xolotl/xolotlCore/temperature/TemperatureProfileHandler.h
+@@ -198,7 +198,7 @@ public:
+ 	 *
+ 	 * \see ITemperatureHandler.h
+ 	 */
+-	virtual void computePartialsForTemperature(double *val, int *indices,
++	virtual void computePartialsForTemperature(double *val, long int *indices,
+ 			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
+ 			double sz = 0.0, int iz = 0) {
+ 		// Set the cluster index, the PetscSolver will use it to compute
+diff --git a/xolotl/xolotlSolver/ISolverHandler.h b/xolotl/xolotlSolver/ISolverHandler.h
+index ac2e8ab7..797bec6c 100644
+--- a/xolotl/xolotlSolver/ISolverHandler.h
++++ b/xolotl/xolotlSolver/ISolverHandler.h
+@@ -351,8 +351,8 @@ public:
+ 	 * @param zs, zm The start and width in the Z direction on the local MPI process
+ 	 * @param Mz The total width in the Z direction
+ 	 */
+-	virtual void getLocalCoordinates(int &xs, int &xm, int &Mx, int &ys,
+-			int &ym, int &My, int &zs, int &zm, int &Mz) = 0;
++	virtual void getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys,
++			long int &ym, long int &My, long int &zs, long int &zm, long int &Mz) = 0;
+ 
+ 	/**
+ 	 * To know if the surface should be able to move.
+diff --git a/xolotl/xolotlSolver/monitor/Monitor1D.cpp b/xolotl/xolotlSolver/monitor/Monitor1D.cpp
+index 807a2182..45da2b4c 100644
+--- a/xolotl/xolotlSolver/monitor/Monitor1D.cpp
++++ b/xolotl/xolotlSolver/monitor/Monitor1D.cpp
+@@ -304,7 +304,7 @@ PetscErrorCode computeTRIDYN1D(TS ts, PetscInt timestep, PetscReal time,
+ 	// Everyone must create the dataset with the same shape.
+ 	constexpr auto numConcSpecies = 5;
+ 	constexpr auto numValsPerGridpoint = numConcSpecies + 2;
+-	const auto firstIdxToWrite = (surfacePos + solverHandler.getLeftOffset());
++	const long int firstIdxToWrite = (surfacePos + solverHandler.getLeftOffset());
+ 	const auto numGridpointsWithConcs = (Mx - firstIdxToWrite);
+ 	xolotlCore::HDF5File::SimpleDataSpace<2>::Dimensions concsDsetDims = {
+ 			(hsize_t) numGridpointsWithConcs, numValsPerGridpoint };
+diff --git a/xolotl/xolotlSolver/solverhandler/SolverHandler.h b/xolotl/xolotlSolver/solverhandler/SolverHandler.h
+index ea0ca242..8617d6da 100644
+--- a/xolotl/xolotlSolver/solverhandler/SolverHandler.h
++++ b/xolotl/xolotlSolver/solverhandler/SolverHandler.h
+@@ -835,8 +835,8 @@ public:
+ 	 * Get the coordinates covered by the local grid.
+ 	 * \see ISolverHandler.h
+ 	 */
+-	void getLocalCoordinates(int &xs, int &xm, int &Mx, int &ys, int &ym,
+-			int &My, int &zs, int &zm, int &Mz) override {
++	void getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys, long int &ym,
++			long int &My, long int &zs, long int &zm, long int &Mz) override {
+ 		xs = localXS;
+ 		xm = localXM;
+ 		Mx = nX;
