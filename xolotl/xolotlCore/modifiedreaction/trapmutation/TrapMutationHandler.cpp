@@ -545,7 +545,7 @@ void TrapMutationHandler::computeTrapMutation(const IReactionNetwork& network,
 }
 
 int TrapMutationHandler::computePartialsForTrapMutation(
-		const IReactionNetwork& network, double *val, int *indices, int xi,
+		const IReactionNetwork& network, double *val, long int *indices, int xi,
 		int yj, int zk) {
 
 	// Initialize the rate of the reaction

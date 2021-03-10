@@ -1784,7 +1784,7 @@ void PSIClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 }
 
 void PSIClusterReactionNetwork::computeAllPartials(
-		const std::vector<size_t>& startingIdx, const std::vector<int>& indices,
+		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
 		std::vector<double>& vals, int xi) const {
 
 	// Because we accumulate partials and we don't know which

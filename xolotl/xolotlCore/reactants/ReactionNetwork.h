@@ -806,7 +806,7 @@ public:
 	 * @param i The location on the grid in the depth direction
 	 * @return Total number of partials for all clusters.
 	 */
-	size_t initPartialsSizes(std::vector<int>& size,
+	size_t initPartialsSizes(std::vector<long int>& size,
 			std::vector<size_t>& startingIdx) const override;
 
 	/**
@@ -818,9 +818,9 @@ public:
 	 *      within the partials values array and the indices array.
 	 * @param indices The indices of the clusters for the partial derivatives.
 	 */
-	void initPartialsIndices(const std::vector<int>& size,
+	void initPartialsIndices(const std::vector<long int>& size,
 			const std::vector<size_t>& startingIdx,
-			std::vector<int>& indices) const override;
+			std::vector<long int>& indices) const override;
 
 };
 

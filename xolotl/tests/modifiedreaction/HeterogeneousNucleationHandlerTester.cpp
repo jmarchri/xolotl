@@ -105,10 +105,10 @@ BOOST_AUTO_TEST_CASE(checkNucleation) {
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[1], -182408.7, 0.01); // Xe_2
 
 	// Initialize the indices and values to set in the Jacobian
-	int indices[2];
+	long int indices[2];
 	double val[2];
 	// Get the pointer on them for the compute heterogeneous nucleation method
-	int *indicesPointer = &indices[0];
+	long int *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the heterogeneous nucleation at the grid point 8

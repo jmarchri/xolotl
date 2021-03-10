@@ -351,8 +351,8 @@ public:
 	 * @param zs, zm The start and width in the Z direction on the local MPI process
 	 * @param Mz The total width in the Z direction
 	 */
-	virtual void getLocalCoordinates(int &xs, int &xm, int &Mx, int &ys,
-			int &ym, int &My, int &zs, int &zm, int &Mz) = 0;
+	virtual void getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys,
+			long int &ym, long int &My, long int &zs, long int &zm, long int &Mz) = 0;
 
 	/**
 	 * To know if the surface should be able to move.

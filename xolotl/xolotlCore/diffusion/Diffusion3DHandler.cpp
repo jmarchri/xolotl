@@ -129,7 +129,7 @@ void Diffusion3DHandler::computeDiffusion(const IReactionNetwork& network,
 }
 
 void Diffusion3DHandler::computePartialsForDiffusion(
-		const IReactionNetwork& network, double *val, int *indices,
+		const IReactionNetwork& network, double *val, long int *indices,
 		double hxLeft, double hxRight, int ix, double sy, int iy, double sz,
 		int iz) const {
 

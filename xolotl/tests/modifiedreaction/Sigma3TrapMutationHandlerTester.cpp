@@ -136,10 +136,10 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
 
 	// Initialize the indices and values to set in the Jacobian
 	int nHelium = network->getAll(ReactantType::He).size();
-	int indices[3 * nHelium];
+	long int indices[3 * nHelium];
 	double val[3 * nHelium];
 	// Get the pointer on them for the compute modified trap-mutation method
-	int *indicesPointer = &indices[0];
+	long int *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the modified trap-mutation at the grid point 8

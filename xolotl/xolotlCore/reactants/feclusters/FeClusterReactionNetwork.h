@@ -348,7 +348,7 @@ public:
 	 * @param i The location on the grid in the depth direction
 	 */
 	void computeAllPartials(const std::vector<size_t>& startingIdx,
-			const std::vector<int>& indices, std::vector<double>& vals,
+			const std::vector<long int>& indices, std::vector<double>& vals,
 			int i) const override;
 
 	/**

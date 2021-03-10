@@ -835,8 +835,8 @@ public:
 	 * Get the coordinates covered by the local grid.
 	 * \see ISolverHandler.h
 	 */
-	void getLocalCoordinates(int &xs, int &xm, int &Mx, int &ys, int &ym,
-			int &My, int &zs, int &zm, int &Mz) override {
+	void getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys, long int &ym,
+			long int &My, long int &zs, long int &zm, long int &Mz) override {
 		xs = localXS;
 		xm = localXM;
 		Mx = nX;

@@ -27,7 +27,7 @@ void ReSolutionHandler::computeReSolution(const IReactionNetwork& network,
 }
 
 int ReSolutionHandler::computePartialsForReSolution(
-		const IReactionNetwork& network, double *val, int *indices, int xi,
+		const IReactionNetwork& network, double *val, long int *indices, int xi,
 		int xs, int yj, int zk) {
 	return 0;
 }

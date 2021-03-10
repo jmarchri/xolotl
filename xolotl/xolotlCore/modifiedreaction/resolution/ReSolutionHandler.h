@@ -143,7 +143,7 @@ public:
 	 * \see IReSolutionHandler.h
 	 */
 	virtual int computePartialsForReSolution(const IReactionNetwork& network,
-			double *val, int *indices, int xi, int xs, int yj = 0, int zk = 0);
+			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0);
 
 	/**
 	 * Get the total number of clusters in the network that can undergo re-solution.

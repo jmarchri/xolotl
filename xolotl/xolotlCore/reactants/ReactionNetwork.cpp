@@ -307,7 +307,7 @@ void ReactionNetwork::addGridPoints(int i) {
 	return;
 }
 
-size_t ReactionNetwork::initPartialsSizes(std::vector<int>& size,
+size_t ReactionNetwork::initPartialsSizes(std::vector<long int>& size,
 		std::vector<size_t>& startingIdx) const {
 
 	size_t currStartingIdx = 0;
@@ -337,9 +337,9 @@ size_t ReactionNetwork::initPartialsSizes(std::vector<int>& size,
 	return currStartingIdx;
 }
 
-void ReactionNetwork::initPartialsIndices(const std::vector<int>& size,
+void ReactionNetwork::initPartialsIndices(const std::vector<long int>& size,
 		const std::vector<size_t>& startingIdx,
-		std::vector<int>& indices) const {
+		std::vector<long int>& indices) const {
 	// Determine the number of items owned by each reactant.
 	for (auto idx = 0; idx < getDOF(); ++idx) {
 		if (size[idx] > 0) {

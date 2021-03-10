@@ -104,7 +104,7 @@ void Diffusion1DHandler::computeDiffusion(const IReactionNetwork &network,
 }
 
 void Diffusion1DHandler::computePartialsForDiffusion(
-		const IReactionNetwork &network, double *val, int *indices,
+		const IReactionNetwork &network, double *val, long int *indices,
 		double hxLeft, double hxRight, int ix, double, int, double, int) const {
 
 	// Loop on them

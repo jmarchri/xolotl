@@ -399,7 +399,7 @@ void NEClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 }
 
 void NEClusterReactionNetwork::computeAllPartials(
-		const std::vector<size_t>& startingIdx, const std::vector<int>& indices,
+		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
 		std::vector<double>& vals, int i) const {
 
 	// Initial declarations

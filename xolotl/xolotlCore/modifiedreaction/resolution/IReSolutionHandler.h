@@ -87,7 +87,7 @@ public:
 	 * at this grid point
 	 */
 	virtual int computePartialsForReSolution(const IReactionNetwork& network,
-			double *val, int *indices, int xi, int xs, int yj = 0,
+			double *val, long int *indices, int xi, int xs, int yj = 0,
 			int zk = 0) = 0;
 
 	/**

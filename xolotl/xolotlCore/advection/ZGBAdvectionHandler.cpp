@@ -134,7 +134,7 @@ void ZGBAdvectionHandler::computeAdvection(const IReactionNetwork& network,
 }
 
 void ZGBAdvectionHandler::computePartialsForAdvection(
-		const IReactionNetwork& network, double *val, int *indices,
+		const IReactionNetwork& network, double *val, long int *indices,
 		const NDPoint<3>& pos, double hxLeft, double hxRight, int ix, double hy,
 		int iy, double hz, int iz) const {
 

@@ -72,7 +72,7 @@ void HeterogeneousNucleationHandler::computeHeterogeneousNucleation(
 }
 
 bool HeterogeneousNucleationHandler::computePartialsForHeterogeneousNucleation(
-		const IReactionNetwork& network, double *val, int *indices, int xi,
+		const IReactionNetwork& network, double *val, long int *indices, int xi,
 		int xs, int yj, int zk) {
 	// Get the single and double xenon
 	auto singleXenon = network.get(Species::Xe, 1), doubleXenon = network.get(
