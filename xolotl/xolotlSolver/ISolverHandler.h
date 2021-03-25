@@ -93,7 +93,7 @@ public:
 	virtual void setConcVector(DM &da, Vec &C,
 			std::vector<
 					std::vector<
-							std::vector<std::vector<std::pair<int, double> > > > > & concVector) = 0;
+							std::vector<std::vector<std::pair<int, double> > > > > &concVector) = 0;
 
 	/**
 	 * Get the previous time.
@@ -296,7 +296,7 @@ public:
 	 * @return The vector of rates
 	 */
 	virtual std::vector<
-			std::vector<std::vector<std::tuple<double, double, double, double> > > > & getLocalNE() = 0;
+			std::vector<std::vector<std::tuple<double, double, double, double> > > >& getLocalNE() = 0;
 
 	/**
 	 * Set the latest value of the Xe flux.
@@ -317,8 +317,7 @@ public:
 	 * @param j The y coordinate of the location
 	 * @param z The z coordinate of the location
 	 */
-	virtual void setMonomerConc(double conc, int i, int j = 0,
-			int k = 0) = 0;
+	virtual void setMonomerConc(double conc, int i, int j = 0, int k = 0) = 0;
 
 	/**
 	 * Set the latest value of the volume fraction.
@@ -351,8 +350,10 @@ public:
 	 * @param zs, zm The start and width in the Z direction on the local MPI process
 	 * @param Mz The total width in the Z direction
 	 */
-	virtual void getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys,
-			long int &ym, long int &My, long int &zs, long int &zm, long int &Mz) = 0;
+	virtual void getLocalCoordinates(xolotl::IdType &xs, xolotl::IdType &xm,
+			xolotl::IdType &Mx, xolotl::IdType &ys, xolotl::IdType &ym,
+			xolotl::IdType &My, xolotl::IdType &zs, xolotl::IdType &zm,
+			xolotl::IdType &Mz) = 0;
 
 	/**
 	 * To know if the surface should be able to move.
@@ -380,56 +381,56 @@ public:
 	 *
 	 * @return The flux handler
 	 */
-	virtual xolotlCore::IFluxHandler *getFluxHandler() const = 0;
+	virtual xolotlCore::IFluxHandler* getFluxHandler() const = 0;
 
 	/**
 	 * Get the temperature handler.
 	 *
 	 * @return The temperature handler
 	 */
-	virtual xolotlCore::ITemperatureHandler *getTemperatureHandler() const = 0;
+	virtual xolotlCore::ITemperatureHandler* getTemperatureHandler() const = 0;
 
 	/**
 	 * Get the diffusion handler.
 	 *
 	 * @return The diffusion handler
 	 */
-	virtual xolotlCore::IDiffusionHandler *getDiffusionHandler() const = 0;
+	virtual xolotlCore::IDiffusionHandler* getDiffusionHandler() const = 0;
 
 	/**
 	 * Get the advection handler.
 	 *
 	 * @return The first advection handler
 	 */
-	virtual xolotlCore::IAdvectionHandler *getAdvectionHandler() const = 0;
+	virtual xolotlCore::IAdvectionHandler* getAdvectionHandler() const = 0;
 
 	/**
 	 * Get the advection handlers.
 	 *
 	 * @return The first advection handlers
 	 */
-	virtual std::vector<xolotlCore::IAdvectionHandler *> getAdvectionHandlers() const = 0;
+	virtual std::vector<xolotlCore::IAdvectionHandler*> getAdvectionHandlers() const = 0;
 
 	/**
 	 * Get the modified trap-mutation handler.
 	 *
 	 * @return The modified trap-mutation handler
 	 */
-	virtual xolotlCore::ITrapMutationHandler *getMutationHandler() const = 0;
+	virtual xolotlCore::ITrapMutationHandler* getMutationHandler() const = 0;
 
 	/**
 	 * Get the re-solution handler.
 	 *
 	 * @return The re-solution handler
 	 */
-	virtual xolotlCore::IReSolutionHandler *getReSolutionHandler() const = 0;
+	virtual xolotlCore::IReSolutionHandler* getReSolutionHandler() const = 0;
 
 	/**
 	 * Get the heterogeneous nucleation handler.
 	 *
 	 * @return The heterogeneous nucleation handler
 	 */
-	virtual xolotlCore::IHeterogeneousNucleationHandler *getHeterogeneousNucleationHandler() const = 0;
+	virtual xolotlCore::IHeterogeneousNucleationHandler* getHeterogeneousNucleationHandler() const = 0;
 
 	/**
 	 * Get the network.
@@ -479,42 +480,42 @@ public:
 	 */
 	virtual void resetGBVector() = 0;
 
-        /** 
-         * Get the coordinates covered by the local grid using copying method.
-         *
-         * @param xs, xm The start and width in the X direction on the local MPI process
-         * @param Mx The total width in the X direction
-         * @param ys, ym The start and width in the Y direction on the local MPI process
-         * @param My The total width in the Y direction
-         * @param zs, zm The start and width in the Z direction on the local MPI process
-         * @param Mz The total width in the Z direction
-         */
-        virtual void getLocalCoordinatesCpy(int *xs, int *xm, int *Mx, int *ys,
-                        int *ym, int *My, int *zs, int *zm, int *Mz) = 0;
+	/**
+	 * Get the coordinates covered by the local grid using copying method.
+	 *
+	 * @param xs, xm The start and width in the X direction on the local MPI process
+	 * @param Mx The total width in the X direction
+	 * @param ys, ym The start and width in the Y direction on the local MPI process
+	 * @param My The total width in the Y direction
+	 * @param zs, zm The start and width in the Z direction on the local MPI process
+	 * @param Mz The total width in the Z direction
+	 */
+	virtual void getLocalCoordinatesCpy(int *xs, int *xm, int *Mx, int *ys,
+			int *ym, int *My, int *zs, int *zm, int *Mz) = 0;
 
-        /** 
-         * Passing the XeRate at i,j,k point.
-         * \see ISolverHandler.h
-         */
-        virtual double getXeRatePoint(int i, int j, int k) = 0;
+	/**
+	 * Passing the XeRate at i,j,k point.
+	 * \see ISolverHandler.h
+	 */
+	virtual double getXeRatePoint(int i, int j, int k) = 0;
 
-        /** 
-         * Passing the XeFlux at i,j,k point.
-         * \see ISolverHandler.h
-         */
-        virtual double getXeFluxPoint(int i, int j, int k) = 0;
+	/**
+	 * Passing the XeFlux at i,j,k point.
+	 * \see ISolverHandler.h
+	 */
+	virtual double getXeFluxPoint(int i, int j, int k) = 0;
 
-        /** 
-         * Passing the XeConc at i,j,k point.
-         * \see ISolverHandler.h
-         */
-        virtual double getXeConcPoint(int i, int j, int k) = 0;
+	/**
+	 * Passing the XeConc at i,j,k point.
+	 * \see ISolverHandler.h
+	 */
+	virtual double getXeConcPoint(int i, int j, int k) = 0;
 
-        /** 
-         * Passing the XeVolFrac at i,j,k point.
-         * \see ISolverHandler.h
-         */
-        virtual double getXeVolFracPoint(int i, int j, int k) = 0;
+	/**
+	 * Passing the XeVolFrac at i,j,k point.
+	 * \see ISolverHandler.h
+	 */
+	virtual double getXeVolFracPoint(int i, int j, int k) = 0;
 
 };
 //end class ISolverHandler

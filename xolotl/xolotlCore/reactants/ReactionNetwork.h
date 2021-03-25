@@ -23,7 +23,7 @@ namespace std {
 
 template<>
 struct hash<ReactantSizePair> {
-	size_t operator()(const ReactantSizePair& pr) const {
+	size_t operator()(const ReactantSizePair &pr) const {
 		return (pr.first << 16) + (pr.second);
 	}
 };
@@ -68,8 +68,8 @@ protected:
 		 * Build a ReactantMatcher.
 		 * @param reactants The collection of reactants we are to recognize.
 		 */
-		ReactantMatcher(const IReactionNetwork::ReactantVector& reactants) {
-			for (IReactant const& reactant : reactants) {
+		ReactantMatcher(const IReactionNetwork::ReactantVector &reactants) {
+			for (IReactant const &reactant : reactants) {
 				comps.insert(reactant.getComposition());
 			}
 		}
@@ -80,7 +80,7 @@ protected:
 		 * @return true iff the reactant's composition's canonical
 		 * representation is in our set.
 		 */
-		bool operator()(const IReactant* testReactant) const {
+		bool operator()(const IReactant *testReactant) const {
 			auto iter = comps.find(testReactant->getComposition());
 			return (iter != comps.end());
 		}
@@ -91,7 +91,7 @@ protected:
 		 * @return true iff the reactant's composition's canonical
 		 * representation is in our set.
 		 */
-		bool operator()(const IReactant& testReactant) const {
+		bool operator()(const IReactant &testReactant) const {
 			auto iter = comps.find(testReactant.getComposition());
 			return (iter != comps.end());
 		}
@@ -102,7 +102,7 @@ protected:
 		 * @return true iff the reactant's composition's canonical 
 		 * representation is in our set of doomed reactants.
 		 */
-		bool operator()(const std::unique_ptr<IReactant>& testReactant) const {
+		bool operator()(const std::unique_ptr<IReactant> &testReactant) const {
 			return this->operator()(testReactant.get());
 		}
 
@@ -112,8 +112,8 @@ protected:
 		 * @return true iff the reactant composition's representation
 		 * is in our set of doomed reactants.
 		 */
-		bool operator()(const ReactantMap::value_type& testMapItem) const {
-			auto const& testReactant = testMapItem.second;
+		bool operator()(const ReactantMap::value_type &testMapItem) const {
+			auto const &testReactant = testMapItem.second;
 			return this->operator()(*testReactant);
 		}
 	};
@@ -215,7 +215,7 @@ protected:
 	 * @return The rate
 	 */
 	virtual double calculateReactionRateConstant(
-			const ProductionReaction& reaction, int i) const;
+			const ProductionReaction &reaction, int i) const;
 
 	/**
 	 * Calculate the dissociation constant of the first cluster with respect to
@@ -229,7 +229,7 @@ protected:
 	 * @return The dissociation constant
 	 */
 	virtual double calculateDissociationConstant(
-			const DissociationReaction& reaction, int i) = 0;
+			const DissociationReaction &reaction, int i) = 0;
 
 	/**
 	 * Calculate the binding energy for the dissociation cluster to emit the single
@@ -239,7 +239,7 @@ protected:
 	 * @return The binding energy corresponding to this dissociation
 	 */
 	virtual double computeBindingEnergy(
-			const DissociationReaction& reaction) const = 0;
+			const DissociationReaction &reaction) const = 0;
 
 	/**
 	 * Find index of interval in boundVector that contains a value.
@@ -283,13 +283,13 @@ public:
 	 * @param _knownReactantTypes Reactant types that we support.
 	 * @param _registry The performance handler registry
 	 */
-	ReactionNetwork(const std::set<ReactantType>& _knownReactantTypes,
+	ReactionNetwork(const std::set<ReactantType> &_knownReactantTypes,
 			std::shared_ptr<xolotlPerf::IHandlerRegistry> _registry);
 
 	/**
 	 * Copy constructor, deleted to prevent use.
 	 */
-	ReactionNetwork(const ReactionNetwork& other) = delete;
+	ReactionNetwork(const ReactionNetwork &other) = delete;
 
 	/**
 	 * The destructor.
@@ -328,7 +328,7 @@ public:
 	 * @return A pointer to the reactant, or nullptr if it does not 
 	 * exist in the network.
 	 */
-	IReactant * get(Species species, IReactant::SizeType size) const override {
+	IReactant* get(Species species, IReactant::SizeType size) const override {
 		IReactant::Composition comp;
 		comp[toCompIdx(species)] = size;
 		return get(toReactantType(species), comp);
@@ -343,7 +343,7 @@ public:
 	 * @return A pointer to the reactant of type 'type' and with composition
 	 * 'comp.' nullptr if no such reactant exists.
 	 */
-	IReactant * get(ReactantType type, const IReactant::Composition& comp) const
+	IReactant* get(ReactantType type, const IReactant::Composition &comp) const
 			override;
 
 	/**
@@ -469,7 +469,7 @@ public:
 	 * @return The super cluster representing the cluster with nHe helium
 	 * and nV vacancies, or nullptr if no such cluster exists.
 	 */
-	virtual IReactant * getSuperFromComp(IReactant::SizeType nHe,
+	virtual IReactant* getSuperFromComp(IReactant::SizeType nHe,
 			IReactant::SizeType nD, IReactant::SizeType nT,
 			IReactant::SizeType nV) const override {
 		return nullptr;
@@ -502,7 +502,7 @@ public:
 	 * array. If the array is too small to hold the concentrations, SIGSEGV will
 	 * be thrown.
 	 */
-	void fillConcentrationsArray(double * concentrations) override;
+	void fillConcentrationsArray(double *concentrations) override;
 
 	/**
 	 * This operation updates the concentrations for all reactants in the
@@ -513,8 +513,7 @@ public:
 	 * array. Properly aligning the array in memory so that this operation
 	 * does not overrun is up to the caller.
 	 */
-	virtual void updateConcentrationsFromArray(double * concentrations)
-			override;
+	virtual void updateConcentrationsFromArray(double *concentrations) override;
 
 	/**
 	 * Get the diagonal fill for the Jacobian, corresponding to the reactions.
@@ -524,7 +523,7 @@ public:
 	 *
 	 * @param sfm Connectivity map.
 	 */
-	virtual void getDiagonalFill(SparseFillMap& sfm) override {
+	virtual void getDiagonalFill(SparseFillMap &sfm) override {
 		return;
 	}
 
@@ -775,14 +774,14 @@ public:
 	 *
 	 * @param reactants The reactants that should be removed.
 	 */
-	void removeReactants(const ReactantVector& reactants) override;
+	void removeReactants(const ReactantVector &reactants) override;
 
 	/**
 	 * Dump a representation of the network to the given output stream.
 	 *
 	 * @param os Output stream on which to write network description.
 	 */
-	void dumpTo(std::ostream& os) const override;
+	void dumpTo(std::ostream &os) const override;
 
 	/**
 	 * Obtain reactant types supported by our network.
@@ -806,8 +805,8 @@ public:
 	 * @param i The location on the grid in the depth direction
 	 * @return Total number of partials for all clusters.
 	 */
-	size_t initPartialsSizes(std::vector<long int>& size,
-			std::vector<size_t>& startingIdx) const override;
+	size_t initPartialsSizes(std::vector<xolotl::IdType> &size,
+			std::vector<size_t> &startingIdx) const override;
 
 	/**
 	 * Initialize the indexing used for computing partial derivatives
@@ -818,9 +817,9 @@ public:
 	 *      within the partials values array and the indices array.
 	 * @param indices The indices of the clusters for the partial derivatives.
 	 */
-	void initPartialsIndices(const std::vector<long int>& size,
-			const std::vector<size_t>& startingIdx,
-			std::vector<long int>& indices) const override;
+	void initPartialsIndices(const std::vector<xolotl::IdType> &size,
+			const std::vector<size_t> &startingIdx,
+			std::vector<xolotl::IdType> &indices) const override;
 
 };
 

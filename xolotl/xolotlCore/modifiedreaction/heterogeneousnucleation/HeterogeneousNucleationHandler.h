@@ -41,7 +41,7 @@ public:
 	 *
 	 * \see IHeterogeneousNucleationHandler.h
 	 */
-	virtual void initialize(const IReactionNetwork& network);
+	virtual void initialize(const IReactionNetwork &network);
 
 	/**
 	 * This method update the rate for the heterogeneous nucleation if the fission rate
@@ -70,7 +70,7 @@ public:
 	 *
 	 * \see IHeterogeneousNucleationHandler.h
 	 */
-	virtual void computeHeterogeneousNucleation(const IReactionNetwork& network,
+	virtual void computeHeterogeneousNucleation(const IReactionNetwork &network,
 			double *concOffset, double *updatedConcOffset, int xi, int xs,
 			int yj = 0, int zk = 0);
 
@@ -87,8 +87,8 @@ public:
 	 * \see IHeterogeneousNucleationHandler.h
 	 */
 	virtual bool computePartialsForHeterogeneousNucleation(
-			const IReactionNetwork& network, double *val, long int *indices, int xi,
-			int xs, int yj = 0, int zk = 0);
+			const IReactionNetwork &network, double *val,
+			xolotl::IdType *indices, int xi, int xs, int yj = 0, int zk = 0);
 
 };
 //end class HeterogeneousNucleationHandler

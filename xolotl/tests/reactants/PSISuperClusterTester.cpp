@@ -217,13 +217,13 @@ BOOST_AUTO_TEST_CASE(checkPartialDerivatives) {
 	// Get the dof
 	const int dof = network->getDOF();
 	// Initialize the arrays for the reaction partial derivatives
-	std::vector<long int> reactionSize;
+	std::vector<xolotl::IdType> reactionSize;
 	reactionSize.resize(dof);
 	std::vector<size_t> reactionStartingIdx;
 	reactionStartingIdx.resize(dof);
 	auto nPartials = network->initPartialsSizes(reactionSize,
 			reactionStartingIdx);
-	std::vector<long int> reactionIndices;
+	std::vector<xolotl::IdType> reactionIndices;
 	reactionIndices.resize(nPartials);
 	network->initPartialsIndices(reactionSize, reactionStartingIdx,
 			reactionIndices);

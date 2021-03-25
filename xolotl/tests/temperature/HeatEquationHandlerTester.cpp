@@ -111,10 +111,10 @@ BOOST_AUTO_TEST_CASE(checkHeat1D) {
 	BOOST_REQUIRE_CLOSE(heatHandler.getTemperature(pos, 1.0), 361.0, 0.01);
 
 	// Initialize the indices and values to set in the Jacobian
-	long int indices[1];
+	xolotl::IdType indices[1];
 	double val[3];
 	// Get the pointer on them for the compute diffusion method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the heat equation a the grid point
@@ -221,10 +221,10 @@ BOOST_AUTO_TEST_CASE(checkHeat2D) {
 	BOOST_REQUIRE_CLOSE(heatHandler.getTemperature(pos, 1.0), 2401, 0.01);
 
 	// Initialize the indices and values to set in the Jacobian
-	long int indices[1];
+	xolotl::IdType indices[1];
 	double val[5];
 	// Get the pointer on them for the compute diffusion method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the heat equation a the grid point
@@ -338,10 +338,10 @@ BOOST_AUTO_TEST_CASE(checkHeat3D) {
 	BOOST_REQUIRE_CLOSE(heatHandler.getTemperature(pos, 1.0), 1932.1, 0.01);
 
 	// Initialize the indices and values to set in the Jacobian
-	long int indices[1];
+	xolotl::IdType indices[1];
 	double val[7];
 	// Get the pointer on them for the compute diffusion method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the heat equation a the grid point

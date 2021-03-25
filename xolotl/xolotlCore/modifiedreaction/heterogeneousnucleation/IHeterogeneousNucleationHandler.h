@@ -28,7 +28,7 @@ public:
 	 *
 	 * @param network The network
 	 */
-	virtual void initialize(const IReactionNetwork& network) = 0;
+	virtual void initialize(const IReactionNetwork &network) = 0;
 
 	/**
 	 * This method update the rate for the heterogeneous nucleation if the fission rate
@@ -61,7 +61,7 @@ public:
 	 * @param yj The index of the position on the grid in the Y direction
 	 * @param zk The index of the position on the grid in the Z direction
 	 */
-	virtual void computeHeterogeneousNucleation(const IReactionNetwork& network,
+	virtual void computeHeterogeneousNucleation(const IReactionNetwork &network,
 			double *concOffset, double *updatedConcOffset, int xi, int xs,
 			int yj = 0, int zk = 0) = 0;
 
@@ -82,8 +82,9 @@ public:
 	 *
 	 * @return true if nucleation is happening
 	 */
-	virtual bool computePartialsForHeterogeneousNucleation(const IReactionNetwork& network,
-			double *val, long int *indices, int xi, int xs, int yj = 0,
+	virtual bool computePartialsForHeterogeneousNucleation(
+			const IReactionNetwork &network, double *val,
+			xolotl::IdType *indices, int xi, int xs, int yj = 0,
 			int zk = 0) = 0;
 
 };

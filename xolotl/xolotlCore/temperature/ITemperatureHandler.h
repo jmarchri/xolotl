@@ -29,9 +29,9 @@ public:
 	 * @param ofillMap Map indicating row/column of diffusing variables in off-diagonal fill map.
 	 * @param dfillMap Map indicating row/column of diffusing variables in diagonal fill map.
 	 */
-	virtual void initializeTemperature(const IReactionNetwork& network,
-			IReactionNetwork::SparseFillMap& ofillMap,
-			IReactionNetwork::SparseFillMap& dfillMap) = 0;
+	virtual void initializeTemperature(const IReactionNetwork &network,
+			IReactionNetwork::SparseFillMap &ofillMap,
+			IReactionNetwork::SparseFillMap &dfillMap) = 0;
 
 	/**
 	 * This operation returns the temperature at the given position
@@ -41,7 +41,7 @@ public:
 	 * @param currentTime The time
 	 * @return The temperature
 	 */
-	virtual double getTemperature(const NDPoint<3>& fraction,
+	virtual double getTemperature(const NDPoint<3> &fraction,
 			double currentTime) const = 0;
 
 	/**
@@ -49,7 +49,7 @@ public:
 	 *
 	 * @param solution The pointer to the array of solutions
 	 */
-	virtual void setTemperature(double * solution) = 0;
+	virtual void setTemperature(double *solution) = 0;
 
 	/**
 	 * This operation sets the heat coefficient to use in the equation.
@@ -108,9 +108,9 @@ public:
 	 * @param sz The space parameter, depending on the grid step size in the z direction
 	 * @param iz The position on the z grid
 	 */
-	virtual void computePartialsForTemperature(double *val, long int *indices,
-			double hxLeft, double hxRight, int xi, double sy = 0.0, int iy = 0,
-			double sz = 0.0, int iz = 0) = 0;
+	virtual void computePartialsForTemperature(double *val,
+			xolotl::IdType *indices, double hxLeft, double hxRight, int xi,
+			double sy = 0.0, int iy = 0, double sz = 0.0, int iz = 0) = 0;
 
 };
 //end class ITemperatureHandler

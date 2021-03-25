@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE(checkDiffusion) {
 
 	// Initialize the indices and values to set in the Jacobian
 	int nDiff = diffusionHandler.getNumberOfDiffusing();
-	long int indices[nDiff];
+	xolotl::IdType indices[nDiff];
 	double val[5 * nDiff];
 	// Get the pointer on them for the compute diffusion method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the diffusion a the grid point 1

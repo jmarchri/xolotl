@@ -96,8 +96,8 @@ BOOST_AUTO_TEST_CASE(checkReSolution) {
 	network->updateConcentrationsFromArray(concOffset);
 
 	// Compute the modified trap mutation at the sixth grid point
-	reSolutionHandler.computeReSolution(*network, concOffset,
-			updatedConcOffset, 1, 0);
+	reSolutionHandler.computeReSolution(*network, concOffset, updatedConcOffset,
+			1, 0);
 
 	// Check the new values of updatedConcOffset
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 6.5039236e+16, 0.01); // Create Xe
@@ -106,10 +106,10 @@ BOOST_AUTO_TEST_CASE(checkReSolution) {
 
 	// Initialize the indices and values to set in the Jacobian
 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
-	long int indices[10 * nXenon];
+	xolotl::IdType indices[10 * nXenon];
 	double val[10 * nXenon];
 	// Get the pointer on them for the compute re-solution method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the re-solution at the grid point 8
@@ -219,8 +219,8 @@ BOOST_AUTO_TEST_CASE(checkMinimumSize) {
 	network->updateConcentrationsFromArray(concOffset);
 
 	// Compute the modified trap mutation at the sixth grid point
-	reSolutionHandler.computeReSolution(*network, concOffset,
-			updatedConcOffset, 1, 0);
+	reSolutionHandler.computeReSolution(*network, concOffset, updatedConcOffset,
+			1, 0);
 
 	// Check the new values of updatedConcOffset
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 6.503923568e+16, 0.01); // Create Xe
@@ -229,10 +229,10 @@ BOOST_AUTO_TEST_CASE(checkMinimumSize) {
 
 	// Initialize the indices and values to set in the Jacobian
 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
-	long int indices[10 * nXenon];
+	xolotl::IdType indices[10 * nXenon];
 	double val[10 * nXenon];
 	// Get the pointer on them for the compute re-solution method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the re-solution at the grid point 8
@@ -333,8 +333,8 @@ BOOST_AUTO_TEST_CASE(checkDifferentFit) {
 	network->updateConcentrationsFromArray(concOffset);
 
 	// Compute the modified trap mutation at the sixth grid point
-	reSolutionHandler.computeReSolution(*network, concOffset,
-			updatedConcOffset, 1, 0);
+	reSolutionHandler.computeReSolution(*network, concOffset, updatedConcOffset,
+			1, 0);
 
 	// Check the new values of updatedConcOffset
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 1.2634756e+17, 0.01); // Create Xe
@@ -343,10 +343,10 @@ BOOST_AUTO_TEST_CASE(checkDifferentFit) {
 
 	// Initialize the indices and values to set in the Jacobian
 	int nXenon = reSolutionHandler.getNumberOfReSoluting();
-	long int indices[10 * nXenon];
+	xolotl::IdType indices[10 * nXenon];
 	double val[10 * nXenon];
 	// Get the pointer on them for the compute re-solution method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the re-solution at the grid point 8

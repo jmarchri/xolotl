@@ -193,8 +193,10 @@ void XolotlInterface::setLocalNE(
 	return;
 }
 
-void XolotlInterface::getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys,
-		long int &ym, long int &My, long int &zs, long int &zm, long int &Mz) {
+void XolotlInterface::getLocalCoordinates(xolotl::IdType &xs,
+		xolotl::IdType &xm, xolotl::IdType &Mx, xolotl::IdType &ys,
+		xolotl::IdType &ym, xolotl::IdType &My, xolotl::IdType &zs,
+		xolotl::IdType &zm, xolotl::IdType &Mz) {
 	try {
 		// Get the solver handler
 		auto &solverHandler = solver->getSolverHandler();

@@ -30,8 +30,8 @@ public:
 	 * @param network The network
 	 * @param ofill Map of connectivity for diffusing clusters.
 	 */
-	virtual void initializeOFill(const IReactionNetwork& network,
-			IReactionNetwork::SparseFillMap& ofillMap) = 0;
+	virtual void initializeOFill(const IReactionNetwork &network,
+			IReactionNetwork::SparseFillMap &ofillMap) = 0;
 
 	/**
 	 * Initialize an array of the dimension of the physical domain times the number of diffusion
@@ -49,9 +49,10 @@ public:
 	 * @param zs The beginning of the grid on this process
 	 */
 	virtual void initializeDiffusionGrid(
-			std::vector<IAdvectionHandler *> advectionHandlers,
-			std::vector<double> grid, int nx, int xs, int ny = 0, double hy = 0.0,
-			int ys = 0, int nz = 0, double hz = 0.0, int zs = 0) = 0;
+			std::vector<IAdvectionHandler*> advectionHandlers,
+			std::vector<double> grid, int nx, int xs, int ny = 0, double hy =
+					0.0, int ys = 0, int nz = 0, double hz = 0.0,
+			int zs = 0) = 0;
 
 	/**
 	 * Compute the flux due to the diffusion for all the cluster that are diffusing,
@@ -71,7 +72,7 @@ public:
 	 * @param sz The space parameter, depending on the grid step size in the z direction
 	 * @param iz The position on the z grid
 	 */
-	virtual void computeDiffusion(const IReactionNetwork& network,
+	virtual void computeDiffusion(const IReactionNetwork &network,
 			double **concVector, double *updatedConcOffset, double hxLeft,
 			double hxRight, int ix, double sy = 0.0, int iy = 0,
 			double sz = 0.0, int iz = 0) const = 0;
@@ -94,9 +95,9 @@ public:
 	 * @param sz The space parameter, depending on the grid step size in the z direction
 	 * @param iz The position on the z grid
 	 */
-	virtual void computePartialsForDiffusion(const IReactionNetwork& network,
-			double *val, long int *indices, double hxLeft, double hxRight, int ix,
-			double sy = 0.0, int iy = 0, double sz = 0.0,
+	virtual void computePartialsForDiffusion(const IReactionNetwork &network,
+			double *val, xolotl::IdType *indices, double hxLeft, double hxRight,
+			int ix, double sy = 0.0, int iy = 0, double sz = 0.0,
 			int iz = 0) const = 0;
 
 	/**

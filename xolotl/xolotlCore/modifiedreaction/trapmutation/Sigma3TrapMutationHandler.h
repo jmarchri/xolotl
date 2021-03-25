@@ -13,32 +13,38 @@ private:
 	/** The vector containing the different distances for the modified trap-mutation
 	 * associated with the GB
 	 */
-	std::vector<double> distanceVec = {0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5};
+	std::vector<double> distanceVec = { 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5 };
 
 	//! The vector containing the different vacancy size for the modified trap-mutation
-	std::vector<int> sizeVec = {0, 0, 0, 1, 1, 1, 1};
+	std::vector<int> sizeVec = { 0, 0, 0, 1, 1, 1, 1 };
 
 public:
 
 	/**
 	 * The constructor
 	 */
-	Sigma3TrapMutationHandler() {}
+	Sigma3TrapMutationHandler() {
+	}
 
 	/**
 	 * The Destructor
 	 */
-	~Sigma3TrapMutationHandler() {}
+	~Sigma3TrapMutationHandler() {
+	}
 
 	/**
 	 * Returns the distance vector.
 	 */
-	std::vector<double> getDistanceVector() {return distanceVec;}
+	std::vector<double> getDistanceVector() {
+		return distanceVec;
+	}
 
 	/**
 	 * Returns the size vector.
 	 */
-	std::vector<int> getSizeVector() {return sizeVec;}
+	std::vector<int> getSizeVector() {
+		return sizeVec;
+	}
 
 };
 //end class Sigma3TrapMutationHandler

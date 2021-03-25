@@ -304,7 +304,8 @@ PetscErrorCode computeTRIDYN1D(TS ts, PetscInt timestep, PetscReal time,
 	// Everyone must create the dataset with the same shape.
 	constexpr auto numConcSpecies = 5;
 	constexpr auto numValsPerGridpoint = numConcSpecies + 2;
-	const long int firstIdxToWrite = (surfacePos + solverHandler.getLeftOffset());
+	const xolotl::IdType firstIdxToWrite = (surfacePos
+			+ solverHandler.getLeftOffset());
 	const auto numGridpointsWithConcs = (Mx - firstIdxToWrite);
 	xolotlCore::HDF5File::SimpleDataSpace<2>::Dimensions concsDsetDims = {
 			(hsize_t) numGridpointsWithConcs, numValsPerGridpoint };

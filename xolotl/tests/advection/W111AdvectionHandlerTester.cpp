@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
 	xolotlCore::IReactionNetwork::SparseFillMap ofill;
 
 	// Create a collection of advection handlers
-	std::vector<IAdvectionHandler *> advectionHandlers;
+	std::vector<IAdvectionHandler*> advectionHandlers;
 
 	// Create the advection handler and initialize it
 	W111AdvectionHandler advectionHandler;
@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE(checkAdvection) {
 
 	// Initialize the rows, columns, and values to set in the Jacobian
 	int nAdvec = advectionHandler.getNumberOfAdvecting();
-	long int indices[nAdvec];
+	xolotl::IdType indices[nAdvec];
 	double val[2 * nAdvec];
 	// Get the pointer on them for the compute advection method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the advection a the grid point 1

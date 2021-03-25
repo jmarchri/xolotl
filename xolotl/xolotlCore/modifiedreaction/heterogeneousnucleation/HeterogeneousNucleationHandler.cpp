@@ -5,7 +5,7 @@
 namespace xolotlCore {
 
 void HeterogeneousNucleationHandler::initialize(
-		const IReactionNetwork& network) {
+		const IReactionNetwork &network) {
 	// Get the two smallest xenon clusters because they are the only ones involved
 	auto singleXenon = network.get(Species::Xe, 1);
 	auto doubleXenon = network.get(Species::Xe, 2);
@@ -40,7 +40,7 @@ void HeterogeneousNucleationHandler::setFissionYield(double yield) {
 }
 
 void HeterogeneousNucleationHandler::computeHeterogeneousNucleation(
-		const IReactionNetwork& network, double *concOffset,
+		const IReactionNetwork &network, double *concOffset,
 		double *updatedConcOffset, int xi, int xs, int yj, int zk) {
 	// Get the single and double xenon
 	auto singleXenon = network.get(Species::Xe, 1), doubleXenon = network.get(
@@ -72,8 +72,8 @@ void HeterogeneousNucleationHandler::computeHeterogeneousNucleation(
 }
 
 bool HeterogeneousNucleationHandler::computePartialsForHeterogeneousNucleation(
-		const IReactionNetwork& network, double *val, long int *indices, int xi,
-		int xs, int yj, int zk) {
+		const IReactionNetwork &network, double *val, xolotl::IdType *indices,
+		int xi, int xs, int yj, int zk) {
 	// Get the single and double xenon
 	auto singleXenon = network.get(Species::Xe, 1), doubleXenon = network.get(
 			Species::Xe, 2);

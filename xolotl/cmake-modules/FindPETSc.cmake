@@ -327,6 +327,13 @@ int main(int argc,char *argv[]) {
   mark_as_advanced (PETSC_INCLUDES PETSC_LIBRARIES PETSC_COMPILER PETSC_DEFINITIONS PETSC_MPIEXEC PETSC_EXECUTABLE_RUNS)
 endif ()
 
+file(READ ${PETSC_INCLUDE_CONF}/petscconf.h _petsc_conf)
+set(PETSc_USE_64BIT_INDICES FALSE)
+string(FIND ${_petsc_conf} "#define PETSC_USE_64BIT_INDICES 1" _id)
+if(${_id} GREATER -1)
+    set(PETSc_USE_64BIT_INDICES TRUE)
+endif()
+
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (PETSc
   REQUIRED_VARS PETSC_INCLUDES PETSC_LIBRARIES PETSC_EXECUTABLE_RUNS

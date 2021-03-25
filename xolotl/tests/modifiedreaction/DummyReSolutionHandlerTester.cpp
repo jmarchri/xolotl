@@ -68,7 +68,6 @@ BOOST_AUTO_TEST_CASE(checkDummyReSolution) {
 	// Create the re-solution handler
 	DummyReSolutionHandler reSolutionHandler;
 
-
 	// Initialize it
 	reSolutionHandler.initialize(*network, 0.73);
 	reSolutionHandler.updateReSolutionRate(1.0);
@@ -96,8 +95,8 @@ BOOST_AUTO_TEST_CASE(checkDummyReSolution) {
 	network->updateConcentrationsFromArray(concOffset);
 
 	// Compute the modified trap mutation at the sixth grid point
-	reSolutionHandler.computeReSolution(*network, concOffset,
-			updatedConcOffset, 1, 0);
+	reSolutionHandler.computeReSolution(*network, concOffset, updatedConcOffset,
+			1, 0);
 
 	// Check the new values of updatedConcOffset
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 0.0, 0.01); // Create Xe

@@ -3,7 +3,7 @@
 
 namespace xolotlCore {
 
-void ReSolutionHandler::initialize(const IReactionNetwork& network,
+void ReSolutionHandler::initialize(const IReactionNetwork &network,
 		double electronicStoppingPower) {
 	// The daughter class will do this part
 	return;
@@ -20,15 +20,15 @@ void ReSolutionHandler::setFissionYield(double yield) {
 	return;
 }
 
-void ReSolutionHandler::computeReSolution(const IReactionNetwork& network,
+void ReSolutionHandler::computeReSolution(const IReactionNetwork &network,
 		double *concOffset, double *updatedConcOffset, int xi, int xs, int yj,
 		int zk) {
 	return;
 }
 
 int ReSolutionHandler::computePartialsForReSolution(
-		const IReactionNetwork& network, double *val, long int *indices, int xi,
-		int xs, int yj, int zk) {
+		const IReactionNetwork &network, double *val, xolotl::IdType *indices,
+		int xi, int xs, int yj, int zk) {
 	return 0;
 }
 

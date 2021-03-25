@@ -6,21 +6,21 @@
 namespace xolotlCore {
 
 ReactionNetwork::ReactionNetwork(
-		const std::set<ReactantType>& _knownReactantTypes,
+		const std::set<ReactantType> &_knownReactantTypes,
 		std::shared_ptr<xolotlPerf::IHandlerRegistry> _registry) :
 		knownReactantTypes(_knownReactantTypes), handlerRegistry(_registry), temperature(
 				0.0), biggestRate(0.0), dissociationsEnabled(true) {
 
 	// Ensure our per-type cluster map can store Reactants of the types
 	// we support.
-	for (auto const& currType : knownReactantTypes) {
+	for (auto const &currType : knownReactantTypes) {
 		clusterTypeMap.emplace(
 				std::make_pair(currType, IReactionNetwork::ReactantMap()));
 	}
 
 	// Ensure we have a baseline for determining max cluster size for
 	// the types we support.
-	for (auto const& currType : knownReactantTypes) {
+	for (auto const &currType : knownReactantTypes) {
 		maxClusterSizeMap.insert( { currType, 0 });
 	}
 	return;
@@ -32,10 +32,10 @@ void ReactionNetwork::add(std::unique_ptr<IReactant> reactant) {
 	assert(reactant);
 
 	// Get the composition
-	auto& composition = reactant->getComposition();
+	auto &composition = reactant->getComposition();
 
 	// Check if we already know about this reactant.
-	auto& currTypeMap = clusterTypeMap[reactant->getType()];
+	auto &currTypeMap = clusterTypeMap[reactant->getType()];
 	auto iter = currTypeMap.find(composition);
 	if (iter == currTypeMap.end()) {
 
@@ -74,13 +74,13 @@ void ReactionNetwork::add(std::unique_ptr<IReactant> reactant) {
 // we found it.  That would be (slightly?) faster since now caller
 // has to test return for nullptr anyway, and we're already testing
 // against end() of the appropriate map.
-IReactant * ReactionNetwork::get(ReactantType type,
-		const IReactant::Composition& comp) const {
+IReactant* ReactionNetwork::get(ReactantType type,
+		const IReactant::Composition &comp) const {
 
-	IReactant* ret = nullptr;
+	IReactant *ret = nullptr;
 
 	// Check if the reactant is in the map
-	auto const& currTypeMap = clusterTypeMap.at(type);
+	auto const &currTypeMap = clusterTypeMap.at(type);
 	auto iter = currTypeMap.find(comp);
 	if (iter != currTypeMap.end()) {
 		ret = iter->second.get();
@@ -90,7 +90,7 @@ IReactant * ReactionNetwork::get(ReactantType type,
 }
 
 double ReactionNetwork::calculateReactionRateConstant(
-		const ProductionReaction& reaction, int i) const {
+		const ProductionReaction &reaction, int i) const {
 	// Get the reaction radii
 	double r_first = reaction.first.getReactionRadius();
 	double r_second = reaction.second.getReactionRadius();
@@ -106,11 +106,11 @@ double ReactionNetwork::calculateReactionRateConstant(
 	return k_plus;
 }
 
-void ReactionNetwork::fillConcentrationsArray(double * concentrations) {
+void ReactionNetwork::fillConcentrationsArray(double *concentrations) {
 
 	// Fill the array
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&concentrations](const IReactant& currReactant) {
+			[&concentrations](const IReactant &currReactant) {
 				auto id = currReactant.getId() - 1;
 				concentrations[id] = currReactant.getConcentration();
 			});
@@ -118,10 +118,10 @@ void ReactionNetwork::fillConcentrationsArray(double * concentrations) {
 	return;
 }
 
-void ReactionNetwork::updateConcentrationsFromArray(double * concentrations) {
+void ReactionNetwork::updateConcentrationsFromArray(double *concentrations) {
 
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&concentrations](IReactant& currReactant) {
+			[&concentrations](IReactant &currReactant) {
 				auto id = currReactant.getId() - 1;
 				currReactant.setConcentration(concentrations[id]);
 			});
@@ -135,7 +135,7 @@ void ReactionNetwork::setTemperature(double temp, int i) {
 
 	// Update the temperature for all of the clusters
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&temp,&i](IReactant& currReactant) {
+			[&temp, &i](IReactant &currReactant) {
 
 				// This part will set the temperature in each reactant
 				// and recompute the diffusion coefficient
@@ -185,7 +185,7 @@ DissociationReaction& ReactionNetwork::add(
 }
 
 void ReactionNetwork::removeReactants(
-		const IReactionNetwork::ReactantVector& doomedReactants) {
+		const IReactionNetwork::ReactantVector &doomedReactants) {
 
 	// Build a ReactantMatcher functor for the doomed reactants.
 	// Doing this here allows us to construct the canonical composition
@@ -198,7 +198,7 @@ void ReactionNetwork::removeReactants(
 	// First, determine all cluster types used by clusters in the collection
 	// of doomed reactants...
 	std::set<ReactantType> typesUsed;
-	for (IReactant const& reactant : doomedReactants) {
+	for (IReactant const &reactant : doomedReactants) {
 		typesUsed.insert(reactant.getType());
 	}
 
@@ -206,7 +206,7 @@ void ReactionNetwork::removeReactants(
 	auto last = allReactants.end();
 	auto result = first;
 	while (first != last) {
-		IReactant& reactant = (*first);
+		IReactant &reactant = (*first);
 		if (!(doomedReactantMatcher(reactant)
 				&& typesUsed.find(reactant.getType()) != typesUsed.end())) {
 			*result = move(*first);
@@ -220,9 +220,9 @@ void ReactionNetwork::removeReactants(
 	// ...Next, examine each type's collection of clusters and remove the
 	// doomed reactants.
 	for (auto currType : typesUsed) {
-		auto& clusters = clusterTypeMap[currType];
+		auto &clusters = clusterTypeMap[currType];
 
-		for (IReactant const& currDoomedReactant : doomedReactants) {
+		for (IReactant const &currDoomedReactant : doomedReactants) {
 			auto iter = clusters.find(currDoomedReactant.getComposition());
 			assert(iter != clusters.end());
 			clusters.erase(iter);
@@ -239,9 +239,9 @@ void ReactionNetwork::computeRateConstants(int i) {
 	double biggestProductionRate = 0.0;
 
 	// Loop on all the production reactions
-	for (auto& currReactionInfo : productionReactionMap) {
+	for (auto &currReactionInfo : productionReactionMap) {
 
-		auto& currReaction = currReactionInfo.second;
+		auto &currReaction = currReactionInfo.second;
 
 		// Compute the rate
 		rate = calculateReactionRateConstant(*currReaction, i);
@@ -254,9 +254,9 @@ void ReactionNetwork::computeRateConstants(int i) {
 	}
 
 	// Loop on all the dissociation reactions
-	for (auto& currReactionInfo : dissociationReactionMap) {
+	for (auto &currReactionInfo : dissociationReactionMap) {
 
-		auto& currReaction = currReactionInfo.second;
+		auto &currReaction = currReactionInfo.second;
 
 		// Compute the rate
 		rate = calculateDissociationConstant(*currReaction, i);
@@ -273,31 +273,31 @@ void ReactionNetwork::computeRateConstants(int i) {
 
 void ReactionNetwork::addGridPoints(int i) {
 	// Add grid points to the diffusing clusters first
-	for (IReactant& currReactant : allReactants) {
+	for (IReactant &currReactant : allReactants) {
 		currReactant.addGridPoints(i);
 	}
 
 	// Add grid points
 	if (i > 0) {
 		// Loop on all the production reactions
-		for (auto& currReactionInfo : productionReactionMap) {
+		for (auto &currReactionInfo : productionReactionMap) {
 			int size = currReactionInfo.second->kConstant.size();
 			currReactionInfo.second->kConstant.resize(size + i, 0.0);
 		}
 		// Loop on all the dissociation reactions
-		for (auto& currReactionInfo : dissociationReactionMap) {
+		for (auto &currReactionInfo : dissociationReactionMap) {
 			int size = currReactionInfo.second->kConstant.size();
 			currReactionInfo.second->kConstant.resize(size + i, 0.0);
 		}
 	} else {
 		// Loop on all the production reactions
-		for (auto& currReactionInfo : productionReactionMap) {
+		for (auto &currReactionInfo : productionReactionMap) {
 			currReactionInfo.second->kConstant.erase(
 					currReactionInfo.second->kConstant.begin(),
 					currReactionInfo.second->kConstant.begin() - i);
 		}
 		// Loop on all the dissociation reactions
-		for (auto& currReactionInfo : dissociationReactionMap) {
+		for (auto &currReactionInfo : dissociationReactionMap) {
 			currReactionInfo.second->kConstant.erase(
 					currReactionInfo.second->kConstant.begin(),
 					currReactionInfo.second->kConstant.begin() - i);
@@ -307,8 +307,8 @@ void ReactionNetwork::addGridPoints(int i) {
 	return;
 }
 
-size_t ReactionNetwork::initPartialsSizes(std::vector<long int>& size,
-		std::vector<size_t>& startingIdx) const {
+size_t ReactionNetwork::initPartialsSizes(std::vector<xolotl::IdType> &size,
+		std::vector<size_t> &startingIdx) const {
 
 	size_t currStartingIdx = 0;
 
@@ -337,14 +337,15 @@ size_t ReactionNetwork::initPartialsSizes(std::vector<long int>& size,
 	return currStartingIdx;
 }
 
-void ReactionNetwork::initPartialsIndices(const std::vector<long int>& size,
-		const std::vector<size_t>& startingIdx,
-		std::vector<long int>& indices) const {
+void ReactionNetwork::initPartialsIndices(
+		const std::vector<xolotl::IdType> &size,
+		const std::vector<size_t> &startingIdx,
+		std::vector<xolotl::IdType> &indices) const {
 	// Determine the number of items owned by each reactant.
 	for (auto idx = 0; idx < getDOF(); ++idx) {
 		if (size[idx] > 0) {
 			// Determine column ids of needed partial derivatives.
-			auto const& pdColIdsVector = dFillMap.at(idx);
+			auto const &pdColIdsVector = dFillMap.at(idx);
 
 			// Place the column ids in our location(s) in the indices array.
 			auto myStartingIdx = startingIdx[idx];
@@ -355,29 +356,29 @@ void ReactionNetwork::initPartialsIndices(const std::vector<long int>& size,
 	}
 }
 
-void ReactionNetwork::dumpTo(std::ostream& os) const {
+void ReactionNetwork::dumpTo(std::ostream &os) const {
 	// Dump flat view of reactants.
 	os << size() << " reactants:\n";
-	for (auto const& currReactant : allReactants) {
+	for (auto const &currReactant : allReactants) {
 		os << currReactant << '\n';
 	}
 
 	// Dump ProductionReactions.
 	os << productionReactionMap.size() << " production reactions:\n";
-	for (auto const& currMapItem : productionReactionMap) {
+	for (auto const &currMapItem : productionReactionMap) {
 		os << *(currMapItem.second) << '\n';
 	}
 
 	// Dump DissociationReactions.
 	os << dissociationReactionMap.size() << " dissociation reactions:\n";
-	for (auto const& currMapItem : dissociationReactionMap) {
+	for (auto const &currMapItem : dissociationReactionMap) {
 		os << *(currMapItem.second) << '\n';
 	}
 
 	// For each reactant, dump coefficients it uses for reactions it
 	// participates in.
 	os << size() << " reactant coefficients:\n";
-	for (IReactant const& currReactant : allReactants) {
+	for (IReactant const &currReactant : allReactants) {
 		currReactant.outputCoefficientsTo(os);
 	}
 }

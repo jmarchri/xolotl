@@ -21,8 +21,8 @@ private:
 	 */
 	void initializeDepthSize(double temp) {
 		// Initialize the vectors
-		depthVec = {-0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1};
-		sizeVec = {0, 0, 0, 0, 0, 0, 0};
+		depthVec = { -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1 };
+		sizeVec = { 0, 0, 0, 0, 0, 0, 0 };
 
 		// And don't do anything else
 		return;
@@ -33,12 +33,14 @@ public:
 	/**
 	 * The constructor
 	 */
-	DummyTrapMutationHandler() {}
+	DummyTrapMutationHandler() {
+	}
 
 	/**
 	 * The Destructor
 	 */
-	~DummyTrapMutationHandler() {}
+	~DummyTrapMutationHandler() {
+	}
 
 };
 //end class DummyTrapMutationHandler

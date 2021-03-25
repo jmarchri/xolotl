@@ -19,12 +19,12 @@ protected:
 		/**
 		 * The larger cluster in the pair
 		 */
-		IReactant* larger;
+		IReactant *larger;
 
 		/**
 		 * The smaller cluster in the pair
 		 */
-		IReactant* smaller;
+		IReactant *smaller;
 
 		/**
 		 * The fraction rate at this size
@@ -42,7 +42,7 @@ protected:
 		Array<double, 11> coefs;
 
 		//! The constructor
-		ReSolutionBase(IReactant* _larger, IReactant* _smaller, double _rate,
+		ReSolutionBase(IReactant *_larger, IReactant *_smaller, double _rate,
 				Array<double, 11> _coefs) :
 				larger(_larger), smaller(_smaller), fractionRate(_rate) {
 			for (int i = 0; i < 11; i++) {
@@ -54,7 +54,7 @@ protected:
 		 * Default constructor disallowed.
 		 */
 		ReSolutionBase() = delete;
-		ReSolutionBase(const ReSolutionBase& other) :
+		ReSolutionBase(const ReSolutionBase &other) :
 				larger(other.larger), smaller(other.smaller), fractionRate(
 						other.fractionRate) {
 			for (int i = 0; i < 11; i++) {
@@ -96,7 +96,7 @@ public:
 	 *
 	 * \see IReSolutionHandler.h
 	 */
-	virtual void initialize(const IReactionNetwork& network,
+	virtual void initialize(const IReactionNetwork &network,
 			double electronicStoppingPower);
 
 	/**
@@ -125,7 +125,7 @@ public:
 	 *
 	 * \see IReSolutionHandler.h
 	 */
-	virtual void computeReSolution(const IReactionNetwork& network,
+	virtual void computeReSolution(const IReactionNetwork &network,
 			double *concOffset, double *updatedConcOffset, int xi, int xs,
 			int yj = 0, int zk = 0);
 
@@ -142,8 +142,9 @@ public:
 	 *
 	 * \see IReSolutionHandler.h
 	 */
-	virtual int computePartialsForReSolution(const IReactionNetwork& network,
-			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0);
+	virtual int computePartialsForReSolution(const IReactionNetwork &network,
+			double *val, xolotl::IdType *indices, int xi, int xs, int yj = 0,
+			int zk = 0);
 
 	/**
 	 * Get the total number of clusters in the network that can undergo re-solution.

@@ -213,7 +213,8 @@ public:
 	 * \see IReSolutionHandler.h
 	 */
 	int computePartialsForReSolution(const IReactionNetwork &network,
-			double *val, long int *indices, int xi, int xs, int yj = 0, int zk = 0) {
+			double *val, xolotl::IdType *indices, int xi, int xs, int yj = 0,
+			int zk = 0) {
 		// Get the single xenon which connects to every cluster
 		auto singleXenon = network.get(Species::Xe, 1);
 		int xenonId = singleXenon->getId() - 1;

@@ -19,7 +19,7 @@ NEClusterReactionNetwork::NEClusterReactionNetwork(
 }
 
 double NEClusterReactionNetwork::calculateDissociationConstant(
-		const DissociationReaction& reaction, int i) {
+		const DissociationReaction &reaction, int i) {
 
 	// If the dissociations are not allowed
 	if (!dissociationsEnabled)
@@ -51,16 +51,16 @@ void NEClusterReactionNetwork::createReactionConnectivity() {
 	// We know here that only Xe_1 can cluster so we simplify the search
 	// Xe_(a-i) + Xe_i --> Xe_a
 	firstSize = 1;
-	auto& singleXeCluster = static_cast<NECluster&>(*(get(Species::Xe,
+	auto &singleXeCluster = static_cast<NECluster&>(*(get(Species::Xe,
 			firstSize)));
 	// Consider each Xe super cluster.
-	for (auto const& currMapItem : getAll(ReactantType::Xe)) {
+	for (auto const &currMapItem : getAll(ReactantType::Xe)) {
 
-		auto& xeReactant = static_cast<NECluster&>(*(currMapItem.second));
+		auto &xeReactant = static_cast<NECluster&>(*(currMapItem.second));
 		// Consider each potential product in normal clusters
-		for (auto const& currMapItemBis : getAll(ReactantType::Xe)) {
+		for (auto const &currMapItemBis : getAll(ReactantType::Xe)) {
 
-			auto& product = static_cast<NECluster&>(*(currMapItemBis.second));
+			auto &product = static_cast<NECluster&>(*(currMapItemBis.second));
 			// Check that the reaction can occur
 			if (singleXeCluster.getDiffusionFactor() > 0.0
 					|| xeReactant.getDiffusionFactor() > 0.0) {
@@ -69,7 +69,7 @@ void NEClusterReactionNetwork::createReactionConnectivity() {
 					std::unique_ptr<ProductionReaction> reaction(
 							new ProductionReaction(singleXeCluster,
 									xeReactant));
-					auto& prref = add(std::move(reaction));
+					auto &prref = add(std::move(reaction));
 					// Tell the reactants that they are in this reaction
 					singleXeCluster.participateIn(prref, product);
 					xeReactant.participateIn(prref, product);
@@ -81,9 +81,9 @@ void NEClusterReactionNetwork::createReactionConnectivity() {
 			}
 		}
 		// Consider each potential product in super clusters
-		for (auto const& currMapItemBis : getAll(ReactantType::NESuper)) {
+		for (auto const &currMapItemBis : getAll(ReactantType::NESuper)) {
 
-			auto& product = static_cast<NECluster&>(*(currMapItemBis.second));
+			auto &product = static_cast<NECluster&>(*(currMapItemBis.second));
 			// Check that the reaction can occur
 			if (singleXeCluster.getDiffusionFactor() > 0.0
 					|| xeReactant.getDiffusionFactor() > 0.0) {
@@ -92,7 +92,7 @@ void NEClusterReactionNetwork::createReactionConnectivity() {
 					std::unique_ptr<ProductionReaction> reaction(
 							new ProductionReaction(singleXeCluster,
 									xeReactant));
-					auto& prref = add(std::move(reaction));
+					auto &prref = add(std::move(reaction));
 					// Tell the reactants that they are in this reaction
 					singleXeCluster.participateIn(prref, product);
 					xeReactant.participateIn(prref, product);
@@ -105,13 +105,13 @@ void NEClusterReactionNetwork::createReactionConnectivity() {
 		}
 	}
 	// Consider each Xe super cluster.
-	for (auto const& currMapItem : getAll(ReactantType::NESuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::NESuper)) {
 
-		auto& xeReactant = static_cast<NECluster&>(*(currMapItem.second));
+		auto &xeReactant = static_cast<NECluster&>(*(currMapItem.second));
 		// Consider each potential product
-		for (auto const& currMapItemBis : getAll(ReactantType::NESuper)) {
+		for (auto const &currMapItemBis : getAll(ReactantType::NESuper)) {
 
-			auto& product = static_cast<NECluster&>(*(currMapItemBis.second));
+			auto &product = static_cast<NECluster&>(*(currMapItemBis.second));
 			// Check that the reaction can occur
 			if (singleXeCluster.getDiffusionFactor() > 0.0
 					|| xeReactant.getDiffusionFactor() > 0.0) {
@@ -120,7 +120,7 @@ void NEClusterReactionNetwork::createReactionConnectivity() {
 					std::unique_ptr<ProductionReaction> reaction(
 							new ProductionReaction(singleXeCluster,
 									xeReactant));
-					auto& prref = add(std::move(reaction));
+					auto &prref = add(std::move(reaction));
 					// Tell the reactants that they are in this reaction
 					singleXeCluster.participateIn(prref, product);
 					xeReactant.participateIn(prref, product);
@@ -136,8 +136,8 @@ void NEClusterReactionNetwork::createReactionConnectivity() {
 	return;
 }
 
-void NEClusterReactionNetwork::checkForDissociation(
-		IReactant * emittingReactant, ProductionReaction& reaction) {
+void NEClusterReactionNetwork::checkForDissociation(IReactant *emittingReactant,
+		ProductionReaction &reaction) {
 	// Check if at least one of the potentially emitted cluster is size one
 	if (reaction.first.getSize() != 1 && reaction.second.getSize() != 1) {
 		// Don't add the reverse reaction
@@ -152,7 +152,7 @@ void NEClusterReactionNetwork::checkForDissociation(
 					reaction.second));
 	// Set the reverse reaction
 	dissociationReaction->reverseReaction = &reaction;
-	auto& drref = add(std::move(dissociationReaction));
+	auto &drref = add(std::move(dissociationReaction));
 	// Tell the reactants that their are in this reaction
 	reaction.first.participateIn(drref, *emittingReactant);
 	reaction.second.participateIn(drref, *emittingReactant);
@@ -173,7 +173,7 @@ void NEClusterReactionNetwork::reinitializeNetwork() {
 	// Reset the Ids
 	int id = 0;
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&id](IReactant& currReactant) {
+			[&id](IReactant &currReactant) {
 				id++;
 				currReactant.setId(id);
 				currReactant.setMomentId(id);
@@ -182,16 +182,19 @@ void NEClusterReactionNetwork::reinitializeNetwork() {
 	// Get all the super clusters and loop on them
 	// Have to use allReactants again to be sure the ordering is the same across plateforms
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&id, this](IReactant& currReactant) {
+			[&id, this](IReactant &currReactant) {
 
 				if (currReactant.getType() == ReactantType::NESuper) {
-					auto& currCluster = static_cast<NESuperCluster&>(currReactant);
+					auto &currCluster =
+							static_cast<NESuperCluster&>(currReactant);
 					id++;
 					currCluster.setMomentId(id);
 
 					// Update the size
-					IReactant::SizeType clusterSize = (double)currCluster.getAverage()
-					+ (double)(currCluster.getNTot() - 1) / 2.0;
+					IReactant::SizeType clusterSize =
+							(double) currCluster.getAverage()
+									+ (double) (currCluster.getNTot() - 1)
+											/ 2.0;
 					if (clusterSize > maxClusterSizeMap[ReactantType::Xe]) {
 						maxClusterSizeMap[ReactantType::Xe] = clusterSize;
 					}
@@ -204,7 +207,7 @@ void NEClusterReactionNetwork::reinitializeNetwork() {
 void NEClusterReactionNetwork::reinitializeConnectivities() {
 	// Loop on all the reactants to reset their connectivities
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[](IReactant& currReactant) {
+			[](IReactant &currReactant) {
 				currReactant.resetConnectivities();
 			});
 
@@ -212,20 +215,21 @@ void NEClusterReactionNetwork::reinitializeConnectivities() {
 }
 
 void NEClusterReactionNetwork::updateConcentrationsFromArray(
-		double * concentrations) {
+		double *concentrations) {
 
 	// Set the concentration on each reactant.
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&concentrations](IReactant& currReactant) {
+			[&concentrations](IReactant &currReactant) {
 				auto id = currReactant.getId() - 1;
 				currReactant.setConcentration(concentrations[id]);
 			});
 
 	// Set the moments
-	auto const& superTypeMap = getAll(ReactantType::NESuper);
+	auto const &superTypeMap = getAll(ReactantType::NESuper);
 	std::for_each(superTypeMap.begin(), superTypeMap.end(),
-			[&concentrations](const ReactantMap::value_type& currMapItem) {
-				auto& cluster = static_cast<NESuperCluster&>(*(currMapItem.second));
+			[&concentrations](const ReactantMap::value_type &currMapItem) {
+				auto &cluster =
+						static_cast<NESuperCluster&>(*(currMapItem.second));
 				cluster.setZerothMoment(concentrations[cluster.getId() - 1]);
 				cluster.setMoment(concentrations[cluster.getMomentId() - 1]);
 			});
@@ -239,10 +243,10 @@ std::vector<std::vector<int> > NEClusterReactionNetwork::getCompositionList() co
 
 	// Loop on all the reactants
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&compList](IReactant& currReactant) {
+			[&compList](IReactant &currReactant) {
 				// Get the composition
 				auto comp = currReactant.getComposition();
-				std::vector <int> compVec;
+				std::vector<int> compVec;
 				compVec.push_back(comp[toCompIdx(Species::Xe)]);
 
 				// Save the composition in the list
@@ -252,24 +256,24 @@ std::vector<std::vector<int> > NEClusterReactionNetwork::getCompositionList() co
 	return compList;
 }
 
-IReactant * NEClusterReactionNetwork::getSuperFromComp(IReactant::SizeType nXe,
+IReactant* NEClusterReactionNetwork::getSuperFromComp(IReactant::SizeType nXe,
 		IReactant::SizeType nD, IReactant::SizeType nT,
 		IReactant::SizeType nV) const {
 
 	// Requests for finding a particular supercluster have high locality.
 	// See if the last supercluster we were asked to find is the right
 	// one for this request.
-	static IReactant* lastRet;
+	static IReactant *lastRet;
 	if (lastRet and static_cast<NESuperCluster*>(lastRet)->isIn(nXe)) {
 		return lastRet;
 	}
 
 	// We didn't find the last supercluster in our cache, so do a full lookup.
-	IReactant* ret = nullptr;
+	IReactant *ret = nullptr;
 
-	for (auto const& superMapItem : getAll(ReactantType::NESuper)) {
+	for (auto const &superMapItem : getAll(ReactantType::NESuper)) {
 
-		auto const& reactant =
+		auto const &reactant =
 				static_cast<NESuperCluster&>(*(superMapItem.second));
 		if (reactant.isIn(nXe)) {
 			lastRet = superMapItem.second.get();
@@ -280,13 +284,13 @@ IReactant * NEClusterReactionNetwork::getSuperFromComp(IReactant::SizeType nXe,
 	return ret;
 }
 
-void NEClusterReactionNetwork::getDiagonalFill(SparseFillMap& fillMap) {
+void NEClusterReactionNetwork::getDiagonalFill(SparseFillMap &fillMap) {
 
 	// Get the connectivity for each reactant
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&fillMap, this](const IReactant& reactant) {
+			[&fillMap, this](const IReactant &reactant) {
 				// Get the reactant and its connectivity
-				auto const& connectivity = reactant.getConnectivity();
+				auto const &connectivity = reactant.getConnectivity();
 				auto connectivityLength = connectivity.size();
 				// Get the reactant id so that the connectivity can be lined up in
 				// the proper column
@@ -306,13 +310,13 @@ void NEClusterReactionNetwork::getDiagonalFill(SparseFillMap& fillMap) {
 			});
 
 	// Get the connectivity for each moment
-	for (auto const& currMapItem : getAll(ReactantType::NESuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::NESuper)) {
 
 		// Get the reactant and its connectivity
-		auto const& reactant =
+		auto const &reactant =
 				static_cast<NESuperCluster&>(*(currMapItem.second));
 
-		auto const& connectivity = reactant.getConnectivity();
+		auto const &connectivity = reactant.getConnectivity();
 		auto connectivityLength = connectivity.size();
 		// Get the xenon moment id so that the connectivity can be lined up in
 		// the proper column
@@ -344,10 +348,10 @@ double NEClusterReactionNetwork::getTotalAtomConcentration(int i, int minSize) {
 	double atomConc = 0.0;
 
 	// Sum over all He clusters.
-	for (auto const& currMapItem : getAll(ReactantType::Xe)) {
+	for (auto const &currMapItem : getAll(ReactantType::Xe)) {
 
 		// Get the cluster and its composition
-		auto const& cluster = *(currMapItem.second);
+		auto const &cluster = *(currMapItem.second);
 		double size = cluster.getSize();
 
 		// Add the concentration times the He content to the total helium concentration
@@ -356,10 +360,10 @@ double NEClusterReactionNetwork::getTotalAtomConcentration(int i, int minSize) {
 	}
 
 	// Sum over all super clusters.
-	for (auto const& currMapItem : getAll(ReactantType::NESuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::NESuper)) {
 
 		// Get the cluster
-		auto const& cluster =
+		auto const &cluster =
 				static_cast<NESuperCluster&>(*(currMapItem.second));
 
 		// Add its total atom concentration
@@ -374,7 +378,7 @@ void NEClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 
 	// ----- Compute all of the new fluxes -----
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&updatedConcOffset,&i](IReactant& cluster) {
+			[&updatedConcOffset, &i](IReactant &cluster) {
 
 				// Compute the flux
 				auto flux = cluster.getTotalFlux(i);
@@ -384,9 +388,9 @@ void NEClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 			});
 
 	// ---- Moments ----
-	for (auto const& currMapItem : getAll(ReactantType::NESuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::NESuper)) {
 
-		auto& superCluster = static_cast<NESuperCluster&>(*(currMapItem.second));
+		auto &superCluster = static_cast<NESuperCluster&>(*(currMapItem.second));
 
 		// Compute the xenon moment flux
 		auto flux = superCluster.getMomentFlux();
@@ -399,16 +403,17 @@ void NEClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 }
 
 void NEClusterReactionNetwork::computeAllPartials(
-		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
-		std::vector<double>& vals, int i) const {
+		const std::vector<size_t> &startingIdx,
+		const std::vector<xolotl::IdType> &indices, std::vector<double> &vals,
+		int i) const {
 
 	// Initial declarations
 	const int dof = getDOF();
 	std::vector<double> clusterPartials(dof, 0.0);
 
 	// Update the column in the Jacobian that represents each normal reactant
-	for (auto const& superMapItem : getAll(ReactantType::Xe)) {
-		auto const& reactant = *(superMapItem.second);
+	for (auto const &superMapItem : getAll(ReactantType::Xe)) {
+		auto const &reactant = *(superMapItem.second);
 
 		// Get the reactant index
 		auto reactantIndex = reactant.getId() - 1;
@@ -416,7 +421,7 @@ void NEClusterReactionNetwork::computeAllPartials(
 		// Get the partial derivatives
 		reactant.getPartialDerivatives(clusterPartials, i);
 		// Get the list of column ids from the map
-		auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+		auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 		// Loop over the list of column ids
 		auto myStartingIdx = startingIdx[reactantIndex];
@@ -431,11 +436,11 @@ void NEClusterReactionNetwork::computeAllPartials(
 	}
 
 	// Get the super clusters
-	auto const& superClusters = getAll(ReactantType::NESuper);
+	auto const &superClusters = getAll(ReactantType::NESuper);
 
 	// Update the column in the Jacobian that represents the moment for the super clusters
-	for (auto const& currMapItem : superClusters) {
-		auto const& reactant =
+	for (auto const &currMapItem : superClusters) {
+		auto const &reactant =
 				static_cast<NESuperCluster&>(*(currMapItem.second));
 
 		// Get the super cluster index
@@ -446,7 +451,7 @@ void NEClusterReactionNetwork::computeAllPartials(
 
 		{
 			// Get the list of column ids from the map
-			auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+			auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 			// Loop over the list of column ids
 			auto myStartingIdx = startingIdx[reactantIndex];
@@ -466,7 +471,7 @@ void NEClusterReactionNetwork::computeAllPartials(
 			// Get the partial derivatives
 			reactant.getMomentPartialDerivatives(clusterPartials);
 			// Get the list of column ids from the map
-			auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+			auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 			// Loop over the list of column ids
 			auto myStartingIdx = startingIdx[reactantIndex];

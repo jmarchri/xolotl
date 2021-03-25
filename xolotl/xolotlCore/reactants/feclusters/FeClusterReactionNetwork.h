@@ -63,8 +63,8 @@ private:
 	 * @param i The location on the grid in the depth direction
 	 * @return The dissociation constant
 	 */
-	double calculateDissociationConstant(
-			const DissociationReaction& reaction, int i) override;
+	double calculateDissociationConstant(const DissociationReaction &reaction,
+			int i) override;
 
 	/**
 	 * Calculate the binding energy for the dissociation cluster to emit the single
@@ -73,7 +73,7 @@ private:
 	 * @param reaction The reaction
 	 * @return The binding energy corresponding to this dissociation
 	 */
-	double computeBindingEnergy(const DissociationReaction& reaction) const
+	double computeBindingEnergy(const DissociationReaction &reaction) const
 			override;
 
 	/**
@@ -85,16 +85,16 @@ private:
 	 * @return The super cluster representing the cluster with nHe helium
 	 * and nV vacancies, or nullptr if no such cluster exists.
 	 */
-	IReactant * getSuperFromComp(IReactant::SizeType nHe,
+	IReactant* getSuperFromComp(IReactant::SizeType nHe,
 			IReactant::SizeType nV);
 
-	ProductionReaction& defineReactionBase(IReactant& r1, IReactant& r2,
+	ProductionReaction& defineReactionBase(IReactant &r1, IReactant &r2,
 			int a[4] = { }) __attribute__((always_inline)) {
 
 		// Add a production reaction to our network.
 		std::unique_ptr<ProductionReaction> reaction(
 				new ProductionReaction(r1, r2));
-		auto& prref = add(std::move(reaction));
+		auto &prref = add(std::move(reaction));
 
 		// Tell the reactants that they are involved in this reaction
 		r1.participateIn(prref, a);
@@ -103,17 +103,17 @@ private:
 		return prref;
 	}
 
-	void defineAnnihilationReaction(IReactant& r1, IReactant& r2,
-			IReactant& product) {
+	void defineAnnihilationReaction(IReactant &r1, IReactant &r2,
+			IReactant &product) {
 
 		// Define the basic reaction.
-		auto& reaction = defineReactionBase(r1, r2);
+		auto &reaction = defineReactionBase(r1, r2);
 
 		// Tell the product it results from the reaction.
 		product.resultFrom(reaction);
 	}
 
-	void defineCompleteAnnihilationReaction(IReactant& r1, IReactant& r2) {
+	void defineCompleteAnnihilationReaction(IReactant &r1, IReactant &r2) {
 
 		// Define the basic reaction
 		defineReactionBase(r1, r2);
@@ -121,11 +121,11 @@ private:
 		// Nothing else to do since there is no product.
 	}
 
-	void defineProductionReaction(IReactant& r1, IReactant& super,
-			IReactant& product, int a[4] = { }, int b[4] = { }) {
+	void defineProductionReaction(IReactant &r1, IReactant &super,
+			IReactant &product, int a[4] = { }, int b[4] = { }) {
 
 		// Define the basic production reaction.
-		auto& reaction = defineReactionBase(r1, super, b);
+		auto &reaction = defineReactionBase(r1, super, b);
 
 		// Tell product it is a product of this reaction.
 		product.resultFrom(reaction, a, b);
@@ -142,17 +142,17 @@ private:
 	 * @param r2 The super reactant involved in a production reaction.
 	 * @param product The cluster created by the reaction.
 	 */
-	void defineProductionReactions(IReactant& r1, IReactant& super,
-			IReactant& product);
+	void defineProductionReactions(IReactant &r1, IReactant &super,
+			IReactant &product);
 
 	// TODO should we default a, b, c, d to 0?
-	void defineDissociationReaction(ProductionReaction& forwardReaction,
-			IReactant& emitting, int a[4] = { }, int b[4] = { }) {
+	void defineDissociationReaction(ProductionReaction &forwardReaction,
+			IReactant &emitting, int a[4] = { }, int b[4] = { }) {
 
 		std::unique_ptr<DissociationReaction> dissociationReaction(
 				new DissociationReaction(emitting, forwardReaction.first,
 						forwardReaction.second, &forwardReaction));
-		auto& drref = add(std::move(dissociationReaction));
+		auto &drref = add(std::move(dissociationReaction));
 
 		// Tell the reactants that they are in this reaction
 		forwardReaction.first.participateIn(drref, a, b);
@@ -171,8 +171,8 @@ private:
 	using ProductToProductionMap =
 	std::unordered_map<IReactant*, std::vector<PendingProductionReactionInfo> >;
 
-	void defineDissociationReactions(ProductionReaction& forwardReaction,
-			IReactant& disso);
+	void defineDissociationReactions(ProductionReaction &forwardReaction,
+			IReactant &disso);
 
 	/**
 	 * Check whether dissociation reaction is allowed for
@@ -181,7 +181,7 @@ private:
 	 * @param reaction The reaction to test.
 	 * @return true iff dissociation for the given reaction is allowed.
 	 */
-	bool canDissociate(ProductionReaction& reaction) const;
+	bool canDissociate(ProductionReaction &reaction) const;
 
 	/**
 	 * Add the dissociation connectivity for the reverse reaction if it is allowed.
@@ -194,8 +194,8 @@ private:
 	 * @param d The vacancy number for the emitted superCluster
 	 *
 	 */
-	void checkForDissociation(IReactant& emittingReactant,
-			ProductionReaction& reaction, int a[4] = { }, int b[4] = { });
+	void checkForDissociation(IReactant &emittingReactant,
+			ProductionReaction &reaction, int a[4] = { }, int b[4] = { });
 
 public:
 
@@ -215,7 +215,7 @@ public:
 	/**
 	 * Copy constructor, deleted to prevent use.
 	 */
-	FeClusterReactionNetwork(const FeClusterReactionNetwork& other) = delete;
+	FeClusterReactionNetwork(const FeClusterReactionNetwork &other) = delete;
 
 	/**
 	 * Computes the full reaction connectivity matrix for this network.
@@ -256,7 +256,7 @@ public:
 	 * array. Properly aligning the array in memory so that this operation
 	 * does not overrun is up to the caller.
 	 */
-	void updateConcentrationsFromArray(double * concentrations) override;
+	void updateConcentrationsFromArray(double *concentrations) override;
 
 	/**
 	 * This operation returns the number of super reactants in the network.
@@ -288,7 +288,7 @@ public:
 	 *
 	 * @param sfm Connectivity map.
 	 */
-	void getDiagonalFill(SparseFillMap& sfm) override;
+	void getDiagonalFill(SparseFillMap &sfm) override;
 
 	/**
 	 * Get the total concentration of atoms contained in the network.
@@ -347,9 +347,9 @@ public:
 	 * @param vals The values of partials for the reactions
 	 * @param i The location on the grid in the depth direction
 	 */
-	void computeAllPartials(const std::vector<size_t>& startingIdx,
-			const std::vector<long int>& indices, std::vector<double>& vals,
-			int i) const override;
+	void computeAllPartials(const std::vector<size_t> &startingIdx,
+			const std::vector<xolotl::IdType> &indices,
+			std::vector<double> &vals, int i) const override;
 
 	/**
 	 * Construct the super cluster lookup map, keyed by number of He atoms
@@ -361,7 +361,7 @@ public:
 	 *               last element is one past the last interval's largest
 	 *               allowed value.
 	 */
-	void buildSuperClusterMap(const std::vector<IReactant::SizeType>& bounds);
+	void buildSuperClusterMap(const std::vector<IReactant::SizeType> &bounds);
 };
 
 } // namespace xolotlCore

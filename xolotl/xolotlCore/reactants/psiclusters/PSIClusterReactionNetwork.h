@@ -69,8 +69,8 @@ private:
 	 * @param i The location on the grid in the depth direction
 	 * @return The dissociation constant
 	 */
-	double calculateDissociationConstant(
-			const DissociationReaction& reaction, int i) override;
+	double calculateDissociationConstant(const DissociationReaction &reaction,
+			int i) override;
 
 	/**
 	 * Calculate the binding energy for the dissociation cluster to emit the single
@@ -80,7 +80,7 @@ private:
 	 * @param i The location on the grid in the depth direction
 	 * @return The binding energy corresponding to this dissociation
 	 */
-	double computeBindingEnergy(const DissociationReaction& reaction) const
+	double computeBindingEnergy(const DissociationReaction &reaction) const
 			override;
 
 	/**
@@ -94,18 +94,17 @@ private:
 	 * @return The super cluster representing the cluster with nHe helium
 	 * and nV vacancies, or nullptr if no such cluster exists.
 	 */
-	IReactant * getSuperFromComp(IReactant::SizeType nHe,
-			IReactant::SizeType nD, IReactant::SizeType nT,
-			IReactant::SizeType nV) const override;
+	IReactant* getSuperFromComp(IReactant::SizeType nHe, IReactant::SizeType nD,
+			IReactant::SizeType nT, IReactant::SizeType nV) const override;
 
-	ProductionReaction& defineReactionBase(IReactant& r1, IReactant& r2,
+	ProductionReaction& defineReactionBase(IReactant &r1, IReactant &r2,
 			int a[4] = defaultInit, bool secondProduct = false)
 					__attribute__((always_inline)) {
 
 		// Add a production reaction to our network.
 		std::unique_ptr<ProductionReaction> reaction(
 				new ProductionReaction(r1, r2));
-		auto& prref = add(std::move(reaction));
+		auto &prref = add(std::move(reaction));
 
 		// Tell the reactants that they are involved in this reaction
 		// if this is not the second product
@@ -118,17 +117,17 @@ private:
 		return prref;
 	}
 
-	void defineAnnihilationReaction(IReactant& r1, IReactant& r2,
-			IReactant& product) {
+	void defineAnnihilationReaction(IReactant &r1, IReactant &r2,
+			IReactant &product) {
 
 		// Define the basic reaction.
-		auto& reaction = defineReactionBase(r1, r2);
+		auto &reaction = defineReactionBase(r1, r2);
 
 		// Tell the product it results from the reaction.
 		product.resultFrom(reaction);
 	}
 
-	void defineCompleteAnnihilationReaction(IReactant& r1, IReactant& r2) {
+	void defineCompleteAnnihilationReaction(IReactant &r1, IReactant &r2) {
 
 		// Define the basic reaction
 		defineReactionBase(r1, r2);
@@ -136,11 +135,11 @@ private:
 		// Nothing else to do since there is no product.
 	}
 
-	void defineProductionReaction(IReactant& r1, IReactant& super,
-			IReactant& product, int a[4] = defaultInit, int b[4] = defaultInit,
+	void defineProductionReaction(IReactant &r1, IReactant &super,
+			IReactant &product, int a[4] = defaultInit, int b[4] = defaultInit,
 			bool secondProduct = false) {
 		// Define the basic production reaction.
-		auto& reaction = defineReactionBase(r1, super, b, secondProduct);
+		auto &reaction = defineReactionBase(r1, super, b, secondProduct);
 
 		// Tell product it is a product of this reaction.
 		product.resultFrom(reaction, a, b);
@@ -161,8 +160,8 @@ private:
 	 * @param pris Information about reactants are involved with each reaction.
 	 * @param secondProduct If we are setting the reaction for the second product.
 	 */
-	void defineProductionReactions(IReactant& r1, IReactant& super,
-			const std::vector<PendingProductionReactionInfo>& pris,
+	void defineProductionReactions(IReactant &r1, IReactant &super,
+			const std::vector<PendingProductionReactionInfo> &pris,
 			bool secondProduct = false);
 
 	/**
@@ -174,18 +173,18 @@ private:
 	 * @param product The cluster created by the reaction.
 	 * @param secondProduct If we are setting the reaction for the second product.
 	 */
-	void defineAnaProductionReactions(IReactant& r1, IReactant& super,
-			IReactant& product, bool secondProduct = false);
+	void defineAnaProductionReactions(IReactant &r1, IReactant &super,
+			IReactant &product, bool secondProduct = false);
 
 	// TODO should we default a, b, c, d to 0?
-	void defineDissociationReaction(ProductionReaction& forwardReaction,
-			IReactant& emitting, int a[4] = defaultInit,
+	void defineDissociationReaction(ProductionReaction &forwardReaction,
+			IReactant &emitting, int a[4] = defaultInit,
 			int b[4] = defaultInit) {
 
 		std::unique_ptr<DissociationReaction> dissociationReaction(
 				new DissociationReaction(emitting, forwardReaction.first,
 						forwardReaction.second, &forwardReaction));
-		auto& drref = add(std::move(dissociationReaction));
+		auto &drref = add(std::move(dissociationReaction));
 
 		// Tell the reactants that they are in this reaction
 		forwardReaction.first.participateIn(drref, a, b);
@@ -205,8 +204,8 @@ private:
 	using ProductToProductionMap =
 	std::unordered_map<IReactant*, std::vector<PendingProductionReactionInfo> >;
 
-	void defineDissociationReactions(ProductionReaction& forwardReaction,
-			const ProductToProductionMap& prodMap);
+	void defineDissociationReactions(ProductionReaction &forwardReaction,
+			const ProductToProductionMap &prodMap);
 
 	/**
 	 * Define a batch of production dissociation reactions for the given
@@ -215,8 +214,8 @@ private:
 	 * @param forwardReaction The forward reaction in question.
 	 * @param emitting The cluster emitting.
 	 */
-	void defineAnaDissociationReactions(ProductionReaction& forwardReaction,
-			IReactant& emitting);
+	void defineAnaDissociationReactions(ProductionReaction &forwardReaction,
+			IReactant &emitting);
 
 	/**
 	 * Check whether dissociation reaction is allowed for
@@ -226,8 +225,8 @@ private:
 	 * @param reaction The reaction to test.
 	 * @return true iff dissociation for the given reaction is allowed.
 	 */
-	bool canDissociate(IReactant& emittingReactant,
-			ProductionReaction& reaction) const;
+	bool canDissociate(IReactant &emittingReactant,
+			ProductionReaction &reaction) const;
 
 	/**
 	 * Add the dissociation connectivity for the reverse reaction if it is allowed.
@@ -238,8 +237,8 @@ private:
 	 * @param b The vacancy number for the emitting superCluster
 	 *
 	 */
-	void checkForDissociation(IReactant& emittingReactant,
-			ProductionReaction& reaction, int a[4] = defaultInit, int b[4] =
+	void checkForDissociation(IReactant &emittingReactant,
+			ProductionReaction &reaction, int a[4] = defaultInit, int b[4] =
 					defaultInit);
 
 	/**
@@ -252,8 +251,8 @@ private:
 	 * @param indices Array containing the indices of the valid partials
 	 *      for the given reactant.
 	 */
-	void FindPartialsColumnIndices(size_t reactantIndex, std::vector<int>& size,
-			int* indices) const;
+	void FindPartialsColumnIndices(size_t reactantIndex, std::vector<int> &size,
+			int *indices) const;
 
 	/**
 	 * Determine if the reaction is possible given then reactants and product
@@ -262,7 +261,7 @@ private:
 	 * @param r2 Second reactant.
 	 * @param prod Potential product.
 	 */
-	bool checkOverlap(PSICluster& r1, PSICluster& r2, PSICluster& prod) {
+	bool checkOverlap(PSICluster &r1, PSICluster &r2, PSICluster &prod) {
 		// Check if an interstitial cluster is involved
 		int iSize = 0;
 		if (r1.getType() == ReactantType::I) {
@@ -274,11 +273,11 @@ private:
 		// Loop on the different type of clusters in grouping
 		for (int i = 1; i < 5; i++) {
 			// Check the boundaries in all the directions
-			auto const& bounds = prod.getBounds(i - 1);
+			auto const &bounds = prod.getBounds(i - 1);
 			int productLo = *(bounds.begin()), productHi = *(bounds.end()) - 1;
-			auto const& r1Bounds = r1.getBounds(i - 1);
+			auto const &r1Bounds = r1.getBounds(i - 1);
 			int r1Lo = *(r1Bounds.begin()), r1Hi = *(r1Bounds.end()) - 1;
-			auto const& r2Bounds = r2.getBounds(i - 1);
+			auto const &r2Bounds = r2.getBounds(i - 1);
 			int r2Lo = *(r2Bounds.begin()), r2Hi = *(r2Bounds.end()) - 1;
 
 			// Compute the corresponding overlap width
@@ -306,7 +305,7 @@ private:
 	 * @param prod Potential product.
 	 * @param prod Potential product.
 	 */
-	int checkOverlap(PSICluster& r1, PSICluster& r2, PSICluster& prod,
+	int checkOverlap(PSICluster &r1, PSICluster &r2, PSICluster &prod,
 			int maxI) {
 		// Initial declaration
 		int iSizeToReturn = 0;
@@ -317,12 +316,12 @@ private:
 			// Loop on the different type of clusters in grouping
 			for (int i = 1; i < psDim; i++) {
 				// Check the boundaries in all the directions
-				auto const& bounds = prod.getBounds(indexList[i] - 1);
+				auto const &bounds = prod.getBounds(indexList[i] - 1);
 				int productLo = *(bounds.begin()), productHi = *(bounds.end())
 						- 1;
-				auto const& r1Bounds = r1.getBounds(indexList[i] - 1);
+				auto const &r1Bounds = r1.getBounds(indexList[i] - 1);
 				int r1Lo = *(r1Bounds.begin()), r1Hi = *(r1Bounds.end()) - 1;
-				auto const& r2Bounds = r2.getBounds(indexList[i] - 1);
+				auto const &r2Bounds = r2.getBounds(indexList[i] - 1);
 				int r2Lo = *(r2Bounds.begin()), r2Hi = *(r2Bounds.end()) - 1;
 
 				// Compute the corresponding overlap width
@@ -364,7 +363,7 @@ public:
 	/**
 	 * Copy constructor, deleted to prevent use.
 	 */
-	PSIClusterReactionNetwork(const PSIClusterReactionNetwork& other) = delete;
+	PSIClusterReactionNetwork(const PSIClusterReactionNetwork &other) = delete;
 
 	/**
 	 * Computes the full reaction connectivity matrix for this network.
@@ -405,7 +404,7 @@ public:
 	 * array. Properly aligning the array in memory so that this operation
 	 * does not overrun is up to the caller.
 	 */
-	void updateConcentrationsFromArray(double * concentrations) override;
+	void updateConcentrationsFromArray(double *concentrations) override;
 
 	/**
 	 * This operation returns the number of super reactants in the network.
@@ -437,7 +436,7 @@ public:
 	 *
 	 * @param sfm Connectivity map.
 	 */
-	void getDiagonalFill(SparseFillMap& sfm) override;
+	void getDiagonalFill(SparseFillMap &sfm) override;
 
 	/**
 	 * Get the total concentration of atoms contained in the network.
@@ -488,8 +487,7 @@ public:
 	 * @param minSize The minimum size to take into account
 	 * @return The total concentration
 	 */
-	double getTotalBubbleConcentration(int minSize = 0)
-			override;
+	double getTotalBubbleConcentration(int minSize = 0) override;
 
 	/**
 	 * Compute the fluxes generated by all the reactions
@@ -511,9 +509,9 @@ public:
 	 * @param vals The values of partials for the reactions
 	 * @param i The location on the grid in the depth direction
 	 */
-	void computeAllPartials(const std::vector<size_t>& startingIdx,
-			const std::vector<long int>& indices, std::vector<double>& vals,
-			int i) const override;
+	void computeAllPartials(const std::vector<size_t> &startingIdx,
+			const std::vector<xolotl::IdType> &indices,
+			std::vector<double> &vals, int i) const override;
 
 	/**
 	 * Set the phase space to save time and memory
@@ -532,8 +530,8 @@ public:
 
 		// Set the phase space in each reactant
 		std::for_each(allReactants.begin(), allReactants.end(),
-				[&dim,&list](IReactant& currReactant) {
-					auto& currCluster = static_cast<PSICluster&>(currReactant);
+				[&dim, &list](IReactant &currReactant) {
+					auto &currCluster = static_cast<PSICluster&>(currReactant);
 					currCluster.setPhaseSpace(dim, list);
 				});
 	}

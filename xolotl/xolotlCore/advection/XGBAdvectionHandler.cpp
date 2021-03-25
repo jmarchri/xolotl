@@ -3,16 +3,16 @@
 
 namespace xolotlCore {
 
-void XGBAdvectionHandler::initialize(const IReactionNetwork& network,
-		IReactionNetwork::SparseFillMap& ofillMap) {
+void XGBAdvectionHandler::initialize(const IReactionNetwork &network,
+		IReactionNetwork::SparseFillMap &ofillMap) {
 	// Clear the index and sink strength vectors
 	advectingClusters.clear();
 	sinkStrengthVector.clear();
 
 	// Consider each reactant.
-	for (IReactant const& currReactant : network.getAll()) {
+	for (IReactant const &currReactant : network.getAll()) {
 
-		auto const& cluster = static_cast<IReactant const&>(currReactant);
+		auto const &cluster = static_cast<IReactant const&>(currReactant);
 		// Get its diffusion coefficient
 		double diffFactor = cluster.getDiffusionFactor();
 
@@ -73,8 +73,8 @@ void XGBAdvectionHandler::initialize(const IReactionNetwork& network,
 	return;
 }
 
-void XGBAdvectionHandler::computeAdvection(const IReactionNetwork& network,
-		const NDPoint<3>& pos, double **concVector, double *updatedConcOffset,
+void XGBAdvectionHandler::computeAdvection(const IReactionNetwork &network,
+		const NDPoint<3> &pos, double **concVector, double *updatedConcOffset,
 		double hxLeft, double hxRight, int ix, double hy, int iy, double hz,
 		int iz) const {
 
@@ -86,9 +86,9 @@ void XGBAdvectionHandler::computeAdvection(const IReactionNetwork& network,
 	// advecting clusters in any order (so that we can parallelize).
 	// Maybe with a zip? or a std::transform?
 	int advClusterIdx = 0;
-	for (IReactant const& currReactant : advectingClusters) {
+	for (IReactant const &currReactant : advectingClusters) {
 
-		auto const& cluster = static_cast<IReactant const&>(currReactant);
+		auto const &cluster = static_cast<IReactant const&>(currReactant);
 
 		int index = cluster.getId() - 1;
 
@@ -138,8 +138,8 @@ void XGBAdvectionHandler::computeAdvection(const IReactionNetwork& network,
 }
 
 void XGBAdvectionHandler::computePartialsForAdvection(
-		const IReactionNetwork& network, double *val, long int *indices,
-		const NDPoint<3>& pos, double hxLeft, double hxRight, int ix, double hy,
+		const IReactionNetwork &network, double *val, xolotl::IdType *indices,
+		const NDPoint<3> &pos, double hxLeft, double hxRight, int ix, double hy,
 		int iy, double hz, int iz) const {
 
 	// Consider each advecting cluster.
@@ -150,9 +150,9 @@ void XGBAdvectionHandler::computePartialsForAdvection(
 	// advecting clusters in any order (so that we can parallelize).
 	// Maybe with a zip? or a std::transform?
 	int advClusterIdx = 0;
-	for (IReactant const& currReactant : advectingClusters) {
+	for (IReactant const &currReactant : advectingClusters) {
 
-		auto const& cluster = static_cast<IReactant const&>(currReactant);
+		auto const &cluster = static_cast<IReactant const&>(currReactant);
 
 		int index = cluster.getId() - 1;
 		// Get the diffusion coefficient of the cluster
@@ -207,7 +207,7 @@ void XGBAdvectionHandler::computePartialsForAdvection(
 }
 
 std::array<int, 3> XGBAdvectionHandler::getStencilForAdvection(
-		const NDPoint<3>& pos) const {
+		const NDPoint<3> &pos) const {
 
 	// The first index is positive by convention if we are on the sink
 	if (isPointOnSink(pos))

@@ -1,1 +1,16 @@
 #define XolotlSourceDirectory "${PROJECT_SOURCE_DIR}"
+
+#pragma once
+
+#cmakedefine XOLOTL_USE_64BIT_INDEX_TYPE
+
+namespace xolotl
+{
+#if defined(XOLOTL_USE_64BIT_INDEX_TYPE)
+using IdType = std::int64_t;
+// using IdType = std::uint64_t;
+#else
+using IdType = std::int32_t;
+// using IdType = std::uint32_t;
+#endif
+} // namespace xolotl

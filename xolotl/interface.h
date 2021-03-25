@@ -1,6 +1,7 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 #include <PetscSolver.h>
+#include "XolotlConfig.h"
 
 /**
  * Class defining the method to be coupled to another code through MOOSEApps
@@ -84,8 +85,10 @@ public:
 	 * @param zs, zm The start and width in the Z direction on the local MPI process
 	 * @param Mz The total width in the Z direction
 	 */
-	void getLocalCoordinates(long int &xs, long int &xm, long int &Mx, long int &ys, long int &ym,
-			long int &My, long int &zs, long int &zm, long int &Mz);
+	void getLocalCoordinates(xolotl::IdType &xs, xolotl::IdType &xm,
+			xolotl::IdType &Mx, xolotl::IdType &ys, xolotl::IdType &ym,
+			xolotl::IdType &My, xolotl::IdType &zs, xolotl::IdType &zm,
+			xolotl::IdType &Mz);
 
 	/**
 	 * Set the location of one GB grid point.

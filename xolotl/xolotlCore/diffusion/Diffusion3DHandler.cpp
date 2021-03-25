@@ -4,7 +4,7 @@
 namespace xolotlCore {
 
 void Diffusion3DHandler::initializeDiffusionGrid(
-		std::vector<IAdvectionHandler *> advectionHandlers,
+		std::vector<IAdvectionHandler*> advectionHandlers,
 		std::vector<double> grid, int nx, int xs, int ny, double hy, int ys,
 		int nz, double hz, int zs) {
 	// Get the number of diffusing clusters
@@ -29,9 +29,9 @@ void Diffusion3DHandler::initializeDiffusionGrid(
 	NDPoint<3> gridPosition { 0.0, 0.0, 0.0 };
 
 	// Consider each advection handler.
-	for (auto const& currAdvectionHandler : advectionHandlers) {
+	for (auto const &currAdvectionHandler : advectionHandlers) {
 		// Access collection of advecting clusters
-		auto const& advecClusters =
+		auto const &advecClusters =
 				currAdvectionHandler->getAdvectingClusters();
 
 		// Loop on the spatial grid
@@ -50,12 +50,12 @@ void Diffusion3DHandler::initializeDiffusionGrid(
 					if (currAdvectionHandler->isPointOnSink(gridPosition)) {
 						// We have to find the corresponding reactant in the diffusion
 						// cluster collection.
-						for (IReactant const& currAdvCluster : advecClusters) {
+						for (IReactant const &currAdvCluster : advecClusters) {
 							// Initialize n the index in the diffusion index vector
 							// TODO use std::find or std::find_if?
 							int n = 0;
 							while (n < nDiff) {
-								IReactant const& currDiffCluster =
+								IReactant const &currDiffCluster =
 										diffusingClusters[n];
 								if (&currDiffCluster == &currAdvCluster) {
 									break;
@@ -74,7 +74,7 @@ void Diffusion3DHandler::initializeDiffusionGrid(
 	return;
 }
 
-void Diffusion3DHandler::computeDiffusion(const IReactionNetwork& network,
+void Diffusion3DHandler::computeDiffusion(const IReactionNetwork &network,
 		double **concVector, double *updatedConcOffset, double hxLeft,
 		double hxRight, int ix, double sy, int iy, double sz, int iz) const {
 
@@ -85,9 +85,9 @@ void Diffusion3DHandler::computeDiffusion(const IReactionNetwork& network,
 	// diffusing clusters in any order (so that we can parallelize).
 	// Maybe with a zip? or a std::transform?
 	int diffClusterIdx = 0;
-	for (IReactant const& currReactant : diffusingClusters) {
+	for (IReactant const &currReactant : diffusingClusters) {
 		// Get the diffusing cluster and its index
-		auto const& cluster = static_cast<IReactant const&>(currReactant);
+		auto const &cluster = static_cast<IReactant const&>(currReactant);
 		int index = cluster.getId() - 1;
 
 		// Get the initial concentrations
@@ -129,7 +129,7 @@ void Diffusion3DHandler::computeDiffusion(const IReactionNetwork& network,
 }
 
 void Diffusion3DHandler::computePartialsForDiffusion(
-		const IReactionNetwork& network, double *val, long int *indices,
+		const IReactionNetwork &network, double *val, xolotl::IdType *indices,
 		double hxLeft, double hxRight, int ix, double sy, int iy, double sz,
 		int iz) const {
 
@@ -140,9 +140,9 @@ void Diffusion3DHandler::computePartialsForDiffusion(
 	// diffusing clusters in any order (so that we can parallelize).
 	// Maybe with a zip? or a std::transform?
 	int diffClusterIdx = 0;
-	for (IReactant const& currReactant : diffusingClusters) {
+	for (IReactant const &currReactant : diffusingClusters) {
 		// Get the diffusing cluster and its index
-		auto const& cluster = static_cast<IReactant const&>(currReactant);
+		auto const &cluster = static_cast<IReactant const&>(currReactant);
 		int index = cluster.getId() - 1;
 		// Get the diffusion coefficient of the cluster
 		double diffCoeff = cluster.getDiffusionCoefficient(ix + 1);

@@ -8,20 +8,20 @@
 
 namespace xolotlCore {
 
-void TrapMutationHandler::initialize(const IReactionNetwork& network, int nx,
+void TrapMutationHandler::initialize(const IReactionNetwork &network, int nx,
 		int ny, int nz) {
 	// Add the needed reaction (dissociation) connectivity
 	// Each (He_i)(V) cluster and I clusters are connected to He_i
 
 	// Get the single interstitial cluster
-	auto singleInterstitial = (IReactant *) network.get(Species::I, 1);
+	auto singleInterstitial = (IReactant*) network.get(Species::I, 1);
 	// Get the double interstitial cluster
-	auto doubleInterstitial = (IReactant *) network.get(Species::I, 2);
+	auto doubleInterstitial = (IReactant*) network.get(Species::I, 2);
 	// Get the triple interstitial cluster
-	auto tripleInterstitial = (IReactant *) network.get(Species::I, 3);
+	auto tripleInterstitial = (IReactant*) network.get(Species::I, 3);
 
 	// Check He cluster is a type in the network
-	auto& knownType = network.getKnownReactantTypes();
+	auto &knownType = network.getKnownReactantTypes();
 
 	// If the I clusters are not in the network,
 	// there is no trap-mutation
@@ -81,10 +81,10 @@ void TrapMutationHandler::initialize(const IReactionNetwork& network, int nx,
 	}
 
 	// Loop on the He clusters
-	for (const auto& heMapItem : network.getAll(ReactantType::He)) {
+	for (const auto &heMapItem : network.getAll(ReactantType::He)) {
 
 		// Get the cluster and its size
-		auto& cluster = static_cast<IReactant&>(*(heMapItem.second));
+		auto &cluster = static_cast<IReactant&>(*(heMapItem.second));
 		int heSize = cluster.getSize();
 
 		// The helium cluster is connected to itself
@@ -96,11 +96,11 @@ void TrapMutationHandler::initialize(const IReactionNetwork& network, int nx,
 		tripleInterstitial->setDissociationConnectivity(cluster.getId());
 
 		// Loop on the bubbles
-		for (const auto& hevMapItem : network.getAll(ReactantType::PSIMixed)) {
+		for (const auto &hevMapItem : network.getAll(ReactantType::PSIMixed)) {
 
 			// Get the bubble and its composition
-			auto& bubble = static_cast<IReactant&>(*(hevMapItem.second));
-			auto& comp = bubble.getComposition();
+			auto &bubble = static_cast<IReactant&>(*(hevMapItem.second));
+			auto &comp = bubble.getComposition();
 
 			// We are only interested in bubbles with one, two, or three vacancies
 			if (comp[toCompIdx(Species::V)] > 3)
@@ -129,8 +129,8 @@ void TrapMutationHandler::initialize(const IReactionNetwork& network, int nx,
 }
 
 void TrapMutationHandler::initializeIndex1D(int surfacePos,
-		const IReactionNetwork& network,
-		std::vector<IAdvectionHandler *> advectionHandlers,
+		const IReactionNetwork &network,
+		std::vector<IAdvectionHandler*> advectionHandlers,
 		std::vector<double> grid, int nx, int xs) {
 	// Clear the vector of HeV indices created by He undergoing trap-mutation
 	// at each grid point
@@ -162,18 +162,19 @@ void TrapMutationHandler::initializeIndex1D(int surfacePos,
 		std::vector<std::reference_wrapper<IReactant> > indices;
 		for (int l = 0; l < depthVec.size(); l++) {
 			// Skip if the depth is negative
-			if (depthVec[l] < 0.0) continue;
+			if (depthVec[l] < 0.0)
+				continue;
 			// Check if a helium cluster undergo TM at this depth
 			if (std::fabs(depth - depthVec[l]) < 0.01
 					|| (depthVec[l] - 0.01 < depth
 							&& depthVec[l] - 0.01 > previousDepth)) {
 				// Add the bubble of size l+1 to the indices
 				// Loop on the bubbles
-				for (auto const& heVMapItem : network.getAll(
+				for (auto const &heVMapItem : network.getAll(
 						ReactantType::PSIMixed)) {
 					// Get the bubble and its composition
-					auto& bubble = static_cast<IReactant&>(*(heVMapItem.second));
-					auto const& comp = bubble.getComposition();
+					auto &bubble = static_cast<IReactant&>(*(heVMapItem.second));
+					auto const &comp = bubble.getComposition();
 					// Get the correct bubble
 					if (comp[toCompIdx(Species::He)] == l + 1
 							&& comp[toCompIdx(Species::V)] == sizeVec[l]
@@ -200,8 +201,8 @@ void TrapMutationHandler::initializeIndex1D(int surfacePos,
 }
 
 void TrapMutationHandler::initializeIndex2D(std::vector<int> surfacePos,
-		const IReactionNetwork& network,
-		std::vector<IAdvectionHandler *> advectionHandlers,
+		const IReactionNetwork &network,
+		std::vector<IAdvectionHandler*> advectionHandlers,
 		std::vector<double> grid, int nx, int xs, int ny, double hy, int ys) {
 	// Clear the vector of HeV indices created by He undergoing trap-mutation
 	// at each grid point
@@ -244,19 +245,20 @@ void TrapMutationHandler::initializeIndex2D(std::vector<int> surfacePos,
 			// Loop on the depth vector
 			for (int l = 0; l < depthVec.size(); l++) {
 				// Skip if the depth is negative
-				if (depthVec[l] < 0.0) continue;
+				if (depthVec[l] < 0.0)
+					continue;
 				// Check if a helium cluster undergo TM at this depth
 				if (std::fabs(depth - depthVec[l]) < 0.01
 						|| (depthVec[l] - 0.01 < depth
 								&& depthVec[l] - 0.01 > previousDepth)) {
 					// Add the bubble of size l+1 to the indices
 					// Loop on the bubbles
-					for (auto const& heVMapItem : network.getAll(
+					for (auto const &heVMapItem : network.getAll(
 							ReactantType::PSIMixed)) {
 						// Get the bubble and its composition
-						auto& bubble =
+						auto &bubble =
 								static_cast<IReactant&>(*(heVMapItem.second));
-						auto const& comp = bubble.getComposition();
+						auto const &comp = bubble.getComposition();
 						// Get the correct bubble
 						if (comp[toCompIdx(Species::He)] == l + 1
 								&& comp[toCompIdx(Species::V)] == sizeVec[l]
@@ -280,17 +282,18 @@ void TrapMutationHandler::initializeIndex2D(std::vector<int> surfacePos,
 				// Loop on the sigma 3 distance vector
 				for (int l = 0; l < sigma3DistanceVec.size(); l++) {
 					// Skip if the distance is negative
-					if (sigma3DistanceVec[l] < 0.0) continue;
+					if (sigma3DistanceVec[l] < 0.0)
+						continue;
 					// Check if a helium cluster undergo TM at this depth
 					if (std::fabs(distance - sigma3DistanceVec[l]) < 0.01) {
 						// Add the bubble of size l+1 to the indices
 						// Loop on the bubbles
-						for (auto const& heVMapItem : network.getAll(
+						for (auto const &heVMapItem : network.getAll(
 								ReactantType::PSIMixed)) {
 							// Get the bubble and its composition
-							auto& bubble =
+							auto &bubble =
 									static_cast<IReactant&>(*(heVMapItem.second));
-							auto const& comp = bubble.getComposition();
+							auto const &comp = bubble.getComposition();
 							// Get the correct bubble
 							if (comp[toCompIdx(Species::He)] == l + 1
 									&& comp[toCompIdx(Species::V)]
@@ -299,12 +302,13 @@ void TrapMutationHandler::initializeIndex2D(std::vector<int> surfacePos,
 									&& comp[toCompIdx(Species::T)] == 0) {
 								// Check if this bubble is already 
 								// associated with this grid point.
-								auto biter =
-										std::find_if(indices.begin(),
-												indices.end(),
-												[&bubble](const IReactant& testReactant) {
-													return testReactant.getId() == bubble.getId();
-												});
+								auto biter = std::find_if(indices.begin(),
+										indices.end(),
+										[&bubble](
+												const IReactant &testReactant) {
+											return testReactant.getId()
+													== bubble.getId();
+										});
 								if (biter == indices.end()) {
 									// Add this bubble to the indices
 									indices.emplace_back(bubble);
@@ -334,8 +338,8 @@ void TrapMutationHandler::initializeIndex2D(std::vector<int> surfacePos,
 
 void TrapMutationHandler::initializeIndex3D(
 		std::vector<std::vector<int> > surfacePos,
-		const IReactionNetwork& network,
-		std::vector<IAdvectionHandler *> advectionHandlers,
+		const IReactionNetwork &network,
+		std::vector<IAdvectionHandler*> advectionHandlers,
 		std::vector<double> grid, int nx, int xs, int ny, double hy, int ys,
 		int nz, double hz, int zs) {
 	// Clear the vector of HeV indices created by He undergoing trap-mutation
@@ -382,19 +386,20 @@ void TrapMutationHandler::initializeIndex3D(
 				// Loop on the depth vector
 				for (int l = 0; l < depthVec.size(); l++) {
 					// Skip if the depth is negative
-					if (depthVec[l] < 0.0) continue;
+					if (depthVec[l] < 0.0)
+						continue;
 					// Check if a helium cluster undergo TM at this depth
 					if (std::fabs(depth - depthVec[l]) < 0.01
 							|| (depthVec[l] - 0.01 < depth
 									&& depthVec[l] - 0.01 > previousDepth)) {
 						// Add the bubble of size l+1 to the indices
 						// Loop on the bubbles
-						for (auto const& heVMapItem : network.getAll(
+						for (auto const &heVMapItem : network.getAll(
 								ReactantType::PSIMixed)) {
 							// Get the bubble and its composition
-							auto& bubble =
+							auto &bubble =
 									static_cast<IReactant&>(*(heVMapItem.second));
-							auto const& comp = bubble.getComposition();
+							auto const &comp = bubble.getComposition();
 							// Get the correct bubble
 							if (comp[toCompIdx(Species::He)] == l + 1
 									&& comp[toCompIdx(Species::V)] == sizeVec[l]
@@ -419,17 +424,18 @@ void TrapMutationHandler::initializeIndex3D(
 					// Loop on the sigma 3 distance vector
 					for (int l = 0; l < sigma3DistanceVec.size(); l++) {
 						// Skip if the distance is negative
-						if (sigma3DistanceVec[l] < 0.0) continue;
+						if (sigma3DistanceVec[l] < 0.0)
+							continue;
 						// Check if a helium cluster undergo TM at this depth
 						if (std::fabs(distance - sigma3DistanceVec[l]) < 0.01) {
 							// Add the bubble of size l+1 to the indices
 							// Loop on the bubbles
-							for (auto const& heVMapItem : network.getAll(
+							for (auto const &heVMapItem : network.getAll(
 									ReactantType::PSIMixed)) {
 								// Get the bubble and its composition
-								auto& bubble =
+								auto &bubble =
 										static_cast<IReactant&>(*(heVMapItem.second));
-								auto const& comp = bubble.getComposition();
+								auto const &comp = bubble.getComposition();
 								// Get the correct bubble
 								if (comp[toCompIdx(Species::He)] == l + 1
 										&& comp[toCompIdx(Species::V)]
@@ -441,8 +447,10 @@ void TrapMutationHandler::initializeIndex3D(
 									auto biter =
 											std::find_if(indices.begin(),
 													indices.end(),
-													[&bubble](const IReactant& testReactant) {
-														return testReactant.getId() == bubble.getId();
+													[&bubble](
+															const IReactant &testReactant) {
+														return testReactant.getId()
+																== bubble.getId();
 													});
 									if (biter == indices.end()) {
 										// Add this bubble to the indices
@@ -473,7 +481,7 @@ void TrapMutationHandler::initializeIndex3D(
 }
 
 void TrapMutationHandler::updateTrapMutationRate(
-		const IReactionNetwork& network) {
+		const IReactionNetwork &network) {
 	// Multiply the biggest rate in the network by 1000.0
 	// so that trap-mutation overcomes any other reaction
 	kMutation = 1000.0 * network.getBiggestRate();
@@ -495,30 +503,30 @@ void TrapMutationHandler::updateDisappearingRate(double conc) {
 	return;
 }
 
-void TrapMutationHandler::computeTrapMutation(const IReactionNetwork& network,
+void TrapMutationHandler::computeTrapMutation(const IReactionNetwork &network,
 		double *concOffset, double *updatedConcOffset, int xi, int yj, int zk) {
 
 	// Initialize the rate of the reaction
 	double rate = 0.0;
 
 	// Loop on the list
-	for (IReactant const& currReactant : tmBubbles[zk][yj][xi]) {
+	for (IReactant const &currReactant : tmBubbles[zk][yj][xi]) {
 
 		// Get the stored bubble and its ID
-		auto const& bubble = static_cast<IReactant const&>(currReactant);
+		auto const &bubble = static_cast<IReactant const&>(currReactant);
 		auto bubbleIndex = bubble.getId() - 1;
 
 		// Get the helium cluster with the same number of He and its ID
 		// Note this composition has nonzero entries for both He and I,
 		// so we can't use the network's get function that takes a composition.
-		auto& comp = bubble.getComposition();
-		auto heCluster = (IReactant *) network.get(Species::He,
+		auto &comp = bubble.getComposition();
+		auto heCluster = (IReactant*) network.get(Species::He,
 				comp[toCompIdx(Species::He)]);
 		auto heIndex = heCluster->getId() - 1;
 
 		// Get the interstitial cluster with the same number of I as the number
 		// of vacancies in the bubble and its ID
-		auto iCluster = (IReactant *) network.get(Species::I,
+		auto iCluster = (IReactant*) network.get(Species::I,
 				comp[toCompIdx(Species::V)]);
 		auto iIndex = iCluster->getId() - 1;
 
@@ -545,8 +553,8 @@ void TrapMutationHandler::computeTrapMutation(const IReactionNetwork& network,
 }
 
 int TrapMutationHandler::computePartialsForTrapMutation(
-		const IReactionNetwork& network, double *val, long int *indices, int xi,
-		int yj, int zk) {
+		const IReactionNetwork &network, double *val, xolotl::IdType *indices,
+		int xi, int yj, int zk) {
 
 	// Initialize the rate of the reaction
 	double rate = 0.0;
@@ -555,23 +563,23 @@ int TrapMutationHandler::computePartialsForTrapMutation(
 	// TODO Relying on convention for indices in indices/vals arrays is
 	// error prone - could be done with multiple parallel arrays.
 	uint32_t i = 0;
-	for (IReactant const& currReactant : tmBubbles[zk][yj][xi]) {
+	for (IReactant const &currReactant : tmBubbles[zk][yj][xi]) {
 
 		// Get the stored bubble and its ID
-		auto const& bubble = static_cast<IReactant const&>(currReactant);
+		auto const &bubble = static_cast<IReactant const&>(currReactant);
 		auto bubbleIndex = bubble.getId() - 1;
 
 		// Get the helium cluster with the same number of He and its ID
 		// Note this composition has non-zero entries for both He and I.
 		// so we can't use the network's get function that takes a composition.
-		auto const& comp = bubble.getComposition();
-		auto heCluster = (IReactant *) network.get(Species::He,
+		auto const &comp = bubble.getComposition();
+		auto heCluster = (IReactant*) network.get(Species::He,
 				comp[toCompIdx(Species::He)]);
 		auto heIndex = heCluster->getId() - 1;
 
 		// Get the interstitial cluster with the same number of I as the number
 		// of vacancies in the bubble and its ID
-		auto iCluster = (IReactant *) network.get(Species::I,
+		auto iCluster = (IReactant*) network.get(Species::I,
 				comp[toCompIdx(Species::V)]);
 		auto iIndex = iCluster->getId() - 1;
 

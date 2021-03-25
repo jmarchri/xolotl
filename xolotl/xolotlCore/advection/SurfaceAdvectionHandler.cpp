@@ -4,7 +4,7 @@
 namespace xolotlCore {
 
 void SurfaceAdvectionHandler::initializeAdvectionGrid(
-		std::vector<IAdvectionHandler *> advectionHandlers,
+		std::vector<IAdvectionHandler*> advectionHandlers,
 		std::vector<double> grid, int nx, int xs, int ny, double hy, int ys,
 		int nz, double hz, int zs) {
 
@@ -30,10 +30,10 @@ void SurfaceAdvectionHandler::initializeAdvectionGrid(
 	NDPoint<3> gridPosition { 0.0, 0.0, 0.0 };
 
 	// Consider each advection handler.
-	for (auto const& currAdvecHandler : advectionHandlers) {
+	for (auto const &currAdvecHandler : advectionHandlers) {
 
 		// Get the list of advecting clusters
-		auto const& otherAdvecClusters =
+		auto const &otherAdvecClusters =
 				currAdvecHandler->getAdvectingClusters();
 
 		// Loop on the spatial grid
@@ -79,8 +79,8 @@ void SurfaceAdvectionHandler::initializeAdvectionGrid(
 	return;
 }
 
-void SurfaceAdvectionHandler::computeAdvection(const IReactionNetwork& network,
-		const NDPoint<3>& pos, double **concVector, double *updatedConcOffset,
+void SurfaceAdvectionHandler::computeAdvection(const IReactionNetwork &network,
+		const NDPoint<3> &pos, double **concVector, double *updatedConcOffset,
 		double hxLeft, double hxRight, int ix, double hy, int iy, double hz,
 		int iz) const {
 
@@ -92,9 +92,9 @@ void SurfaceAdvectionHandler::computeAdvection(const IReactionNetwork& network,
 	// advecting clusters in any order (so that we can parallelize).
 	// Maybe with a zip? or a std::transform?
 	int advClusterIdx = 0;
-	for (IReactant const& currReactant : advectingClusters) {
+	for (IReactant const &currReactant : advectingClusters) {
 		// Get a specific one and its index
-		auto const& cluster = static_cast<IReactant const&>(currReactant);
+		auto const &cluster = static_cast<IReactant const&>(currReactant);
 		int index = cluster.getId() - 1;
 
 		// Get the initial concentrations
@@ -129,8 +129,8 @@ void SurfaceAdvectionHandler::computeAdvection(const IReactionNetwork& network,
 }
 
 void SurfaceAdvectionHandler::computePartialsForAdvection(
-		const IReactionNetwork& network, double *val, long int *indices,
-		const NDPoint<3>& pos, double hxLeft, double hxRight, int ix, double hy,
+		const IReactionNetwork &network, double *val, xolotl::IdType *indices,
+		const NDPoint<3> &pos, double hxLeft, double hxRight, int ix, double hy,
 		int iy, double hz, int iz) const {
 	// Consider each advecting cluster.
 	// TODO Maintaining a separate index assumes that advectingClusters is
@@ -140,9 +140,9 @@ void SurfaceAdvectionHandler::computePartialsForAdvection(
 	// advecting clusters in any order (so that we can parallelize).
 	// Maybe with a zip? or a std::transform?
 	int advClusterIdx = 0;
-	for (IReactant const& currReactant : advectingClusters) {
+	for (IReactant const &currReactant : advectingClusters) {
 		// Get a specific one and its index
-		auto const& cluster = static_cast<IReactant const&>(currReactant);
+		auto const &cluster = static_cast<IReactant const&>(currReactant);
 		int index = cluster.getId() - 1;
 		// Get the diffusion coefficient of the cluster
 		double diffCoeff = cluster.getDiffusionCoefficient(ix + 1);

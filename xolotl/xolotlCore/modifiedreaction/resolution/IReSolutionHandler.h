@@ -29,7 +29,7 @@ public:
 	 * @param network The network
 	 * @param electronicStoppingPower To select which fit to use
 	 */
-	virtual void initialize(const IReactionNetwork& network,
+	virtual void initialize(const IReactionNetwork &network,
 			double electronicStoppingPower) = 0;
 
 	/**
@@ -63,7 +63,7 @@ public:
 	 * @param yj The index of the position on the grid in the Y direction
 	 * @param zk The index of the position on the grid in the Z direction
 	 */
-	virtual void computeReSolution(const IReactionNetwork& network,
+	virtual void computeReSolution(const IReactionNetwork &network,
 			double *concOffset, double *updatedConcOffset, int xi, int xs,
 			int yj = 0, int zk = 0) = 0;
 
@@ -86,8 +86,8 @@ public:
 	 * @return The number of xenon clusters that go re-soluted
 	 * at this grid point
 	 */
-	virtual int computePartialsForReSolution(const IReactionNetwork& network,
-			double *val, long int *indices, int xi, int xs, int yj = 0,
+	virtual int computePartialsForReSolution(const IReactionNetwork &network,
+			double *val, xolotl::IdType *indices, int xi, int xs, int yj = 0,
 			int zk = 0) = 0;
 
 	/**

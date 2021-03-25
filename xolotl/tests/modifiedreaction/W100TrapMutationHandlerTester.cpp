@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
 	W100TrapMutationHandler trapMutationHandler;
 
 	// Create the advection handlers needed to initialize the trap mutation handler
-	std::vector<xolotlCore::IAdvectionHandler *> advectionHandlers;
+	std::vector<xolotlCore::IAdvectionHandler*> advectionHandlers;
 	advectionHandlers.push_back(new DummyAdvectionHandler());
 
 	// Initialize it
@@ -105,8 +105,8 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
 			updatedConcOffset, 6, 0);
 
 	// Check the new values of updatedConcOffset
-	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 6.77036e+26, 0.01);// Create I
-	BOOST_REQUIRE_CLOSE(updatedConcOffset[7], -6.77036e+26, 0.01);// He2
+	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 6.77036e+26, 0.01);	// Create I
+	BOOST_REQUIRE_CLOSE(updatedConcOffset[7], -6.77036e+26, 0.01);	// He2
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[16], 6.77036e+26, 0.01);// Create He2V
 
 	// Get the offset for the ninth grid point
@@ -122,18 +122,18 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
 			updatedConcOffset, 9);
 
 	// Check the new values of updatedConcOffset
-	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 5.25172e+21, 0.01);// Create I
-	BOOST_REQUIRE_CLOSE(updatedConcOffset[8], 0.0, 0.01);// He3
+	BOOST_REQUIRE_CLOSE(updatedConcOffset[0], 5.25172e+21, 0.01);	// Create I
+	BOOST_REQUIRE_CLOSE(updatedConcOffset[8], 0.0, 0.01);	// He3
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[17], 0.0, 0.01);// Doesn't create He3V
-	BOOST_REQUIRE_CLOSE(updatedConcOffset[12], -5.2628766e+21, 0.01);// He7
+	BOOST_REQUIRE_CLOSE(updatedConcOffset[12], -5.2628766e+21, 0.01);	// He7
 	BOOST_REQUIRE_CLOSE(updatedConcOffset[31], 5.2628766e+21, 0.01);// Create He7V2
 
 	// Initialize the indices and values to set in the Jacobian
 	int nHelium = network->getAll(ReactantType::He).size();
-	long int indices[3 * nHelium];
+	xolotl::IdType indices[3 * nHelium];
 	double val[3 * nHelium];
 	// Get the pointer on them for the compute modified trap-mutation method
-	long int *indicesPointer = &indices[0];
+	xolotl::IdType *indicesPointer = &indices[0];
 	double *valPointer = &val[0];
 
 	// Compute the partial derivatives for the modified trap-mutation at the grid point 8
@@ -142,12 +142,12 @@ BOOST_AUTO_TEST_CASE(checkModifiedTrapMutation) {
 
 	// Check the values for the indices
 	BOOST_REQUIRE_EQUAL(nMutating, 3);
-	BOOST_REQUIRE_EQUAL(indices[0], 9);// He4
-	BOOST_REQUIRE_EQUAL(indices[1], 18);// He4V
-	BOOST_REQUIRE_EQUAL(indices[2], 0);// I
-	BOOST_REQUIRE_EQUAL(indices[3], 11);// He6
-	BOOST_REQUIRE_EQUAL(indices[4], 30);// He6V2
-	BOOST_REQUIRE_EQUAL(indices[5], 1);// I2
+	BOOST_REQUIRE_EQUAL(indices[0], 9);	// He4
+	BOOST_REQUIRE_EQUAL(indices[1], 18);	// He4V
+	BOOST_REQUIRE_EQUAL(indices[2], 0);	// I
+	BOOST_REQUIRE_EQUAL(indices[3], 11);	// He6
+	BOOST_REQUIRE_EQUAL(indices[4], 30);	// He6V2
+	BOOST_REQUIRE_EQUAL(indices[5], 1);	// I2
 
 	// Check values
 	BOOST_REQUIRE_CLOSE(val[0], -6.575931697e+14, 0.01);

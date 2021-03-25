@@ -22,15 +22,14 @@ private:
 	void initializeDepthSize(double temp) {
 		// Switch values depending on the temperature
 		if (temp < 1066.5) {
-			depthVec = {0.5, 0.8, 1.0, 1.0, 1.0, 1.3, 1.5};
-			sizeVec = {1, 1, 1, 2, 2, 2, 2};
+			depthVec = { 0.5, 0.8, 1.0, 1.0, 1.0, 1.3, 1.5 };
+			sizeVec = { 1, 1, 1, 2, 2, 2, 2 };
 
 			// He1 desorpts with 64%
 			desorp = Desorption(1, 0.64);
-		}
-		else {
-			depthVec = {0.5, 0.8, 1.0, 1.0, 1.3, 1.3, 1.2};
-			sizeVec = {1, 1, 1, 2, 1, 2, 3};
+		} else {
+			depthVec = { 0.5, 0.8, 1.0, 1.0, 1.3, 1.3, 1.2 };
+			sizeVec = { 1, 1, 1, 2, 1, 2, 3 };
 
 			// He1 desorpts with 59%
 			desorp = Desorption(1, 0.59);
@@ -44,12 +43,14 @@ public:
 	/**
 	 * The constructor
 	 */
-	W211TrapMutationHandler() {}
+	W211TrapMutationHandler() {
+	}
 
 	/**
 	 * The Destructor
 	 */
-	~W211TrapMutationHandler() {}
+	~W211TrapMutationHandler() {
+	}
 
 };
 //end class W211TrapMutationHandler

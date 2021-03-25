@@ -21,7 +21,7 @@ FeClusterReactionNetwork::FeClusterReactionNetwork(
 }
 
 double FeClusterReactionNetwork::calculateDissociationConstant(
-		const DissociationReaction& reaction, int i) {
+		const DissociationReaction &reaction, int i) {
 
 	// If the dissociations are not allowed
 	if (!dissociationsEnabled)
@@ -47,24 +47,24 @@ double FeClusterReactionNetwork::calculateDissociationConstant(
 	return k_minus;
 }
 
-void FeClusterReactionNetwork::defineProductionReactions(IReactant& r1,
-		IReactant& r2, IReactant& product) {
+void FeClusterReactionNetwork::defineProductionReactions(IReactant &r1,
+		IReactant &r2, IReactant &product) {
 
 	// Check if the reaction can happen
-	auto const& superProd = static_cast<FeCluster const&>(product);
-	auto const& heBounds = superProd.getHeBounds();
-	auto const& vBounds = superProd.getVBounds();
+	auto const &superProd = static_cast<FeCluster const&>(product);
+	auto const &heBounds = superProd.getHeBounds();
+	auto const &vBounds = superProd.getVBounds();
 	int productLoHe = *(heBounds.begin()), productHiHe = *(heBounds.end()) - 1,
 			productLoV = *(vBounds.begin()), productHiV = *(vBounds.end()) - 1,
 			loHe = 0, hiHe = 0, loV = 0, hiV = 0, singleHeSize = 0,
 			singleVSize = 0;
 
 	if (r1.getType() == ReactantType::FeSuper) {
-		auto const& super = static_cast<FeSuperCluster const&>(r1);
-		auto const& heBounds = super.getHeBounds();
+		auto const &super = static_cast<FeSuperCluster const&>(r1);
+		auto const &heBounds = super.getHeBounds();
 		loHe = *(heBounds.begin());
 		hiHe = *(heBounds.end()) - 1;
-		auto const& vBounds = super.getVBounds();
+		auto const &vBounds = super.getVBounds();
 		loV = *(vBounds.begin());
 		hiV = *(vBounds.end()) - 1;
 		auto singleComp = r2.getComposition();
@@ -73,11 +73,11 @@ void FeClusterReactionNetwork::defineProductionReactions(IReactant& r1,
 				- singleComp[toCompIdx(Species::I)]; // can be < 0
 	}
 	if (r2.getType() == ReactantType::FeSuper) {
-		auto const& super = static_cast<FeSuperCluster const&>(r2);
-		auto const& heBounds = super.getHeBounds();
+		auto const &super = static_cast<FeSuperCluster const&>(r2);
+		auto const &heBounds = super.getHeBounds();
 		loHe = *(heBounds.begin());
 		hiHe = *(heBounds.end()) - 1;
-		auto const& vBounds = super.getVBounds();
+		auto const &vBounds = super.getVBounds();
 		loV = *(vBounds.begin());
 		hiV = *(vBounds.end()) - 1;
 		auto singleComp = r1.getComposition();
@@ -101,7 +101,7 @@ void FeClusterReactionNetwork::defineProductionReactions(IReactant& r1,
 	// depend on the product or the other parameters.
 	std::unique_ptr<ProductionReaction> reaction(
 			new ProductionReaction(r1, r2));
-	auto& prref = add(std::move(reaction));
+	auto &prref = add(std::move(reaction));
 
 	// Determine if reverse reaction is allowed.
 	auto dissociationAllowed = canDissociate(prref);
@@ -123,13 +123,13 @@ void FeClusterReactionNetwork::defineProductionReactions(IReactant& r1,
 }
 
 void FeClusterReactionNetwork::defineDissociationReactions(
-		ProductionReaction& forwardReaction, IReactant& disso) {
+		ProductionReaction &forwardReaction, IReactant &disso) {
 	// Add a dissociation reaction to our network.
 	// Do this once here for each forward reaction product.
 	std::unique_ptr<DissociationReaction> dissociationReaction(
 			new DissociationReaction(disso, forwardReaction.first,
 					forwardReaction.second, &forwardReaction));
-	auto& drref = add(std::move(dissociationReaction));
+	auto &drref = add(std::move(dissociationReaction));
 
 	// Tell all participants in this reaction of their involvement.
 	drref.first.participateIn(drref, disso);
@@ -155,11 +155,11 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 		auto currType = *tvIter;
 
 		// Consider all reactants of the current type.
-		auto const& currTypeReactantMap = getAll(currType);
+		auto const &currTypeReactantMap = getAll(currType);
 		for (auto firstIt = currTypeReactantMap.begin();
 				firstIt != currTypeReactantMap.end(); firstIt++) {
 
-			auto& firstReactant = *(firstIt->second);
+			auto &firstReactant = *(firstIt->second);
 
 			// Get its size
 			firstSize = firstReactant.getSize();
@@ -167,7 +167,7 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 			for (auto secondIt = firstIt; secondIt != currTypeReactantMap.end();
 					secondIt++) {
 
-				auto& secondReactant = *(secondIt->second);
+				auto &secondReactant = *(secondIt->second);
 
 				// Get its size
 				secondSize = secondReactant.getSize();
@@ -189,9 +189,9 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 	// Helium absorption by HeV clusters
 	// He_(a) + (He_b)(V_c) --> [He_(a+b)](V_c)
 	// Consider each He reactant.
-	for (auto const& heMapItem : getAll(ReactantType::He)) {
+	for (auto const &heMapItem : getAll(ReactantType::He)) {
 
-		auto& heReactant = *(heMapItem.second);
+		auto &heReactant = *(heMapItem.second);
 
 		// Skip if it can't diffuse
 		if (xolotlCore::equal(heReactant.getDiffusionFactor(), 0.0))
@@ -200,12 +200,12 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 		firstSize = heReactant.getSize();
 
 		// Consider product with each HeV cluster
-		for (auto const& heVMapItem : getAll(ReactantType::HeV)) {
+		for (auto const &heVMapItem : getAll(ReactantType::HeV)) {
 
-			auto& heVReactant = *(heVMapItem.second);
+			auto &heVReactant = *(heVMapItem.second);
 
 			// Get its composition
-			auto& comp = heVReactant.getComposition();
+			auto &comp = heVReactant.getComposition();
 			// Create the composition of the potential product
 			int newNumHe = comp[toCompIdx(Species::He)] + firstSize;
 			int newNumV = comp[toCompIdx(Species::V)];
@@ -232,9 +232,9 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 		}
 
 		// Consider product with each super cluster
-		for (auto const& superMapItem : getAll(ReactantType::FeSuper)) {
+		for (auto const &superMapItem : getAll(ReactantType::FeSuper)) {
 			// Loop on the potential super products
-			for (auto const& superMapItemProd : getAll(ReactantType::FeSuper)) {
+			for (auto const &superMapItemProd : getAll(ReactantType::FeSuper)) {
 
 				// This method will check if the reaction is possible and then add it to the list
 				defineProductionReactions(heReactant, *(superMapItem.second),
@@ -246,9 +246,9 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 	// Vacancy absorption by HeV clusters
 	// (He_a)(V_b) + V_c --> (He_a)[V_(b+c)]
 	// Consider each V cluster.
-	for (auto const& vMapItem : getAll(ReactantType::V)) {
+	for (auto const &vMapItem : getAll(ReactantType::V)) {
 
-		auto& vReactant = *(vMapItem.second);
+		auto &vReactant = *(vMapItem.second);
 
 		// Skip if it can't diffuse
 		if (xolotlCore::equal(vReactant.getDiffusionFactor(), 0.0))
@@ -256,12 +256,12 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 		// Get the V size
 		firstSize = vReactant.getSize();
 		// Consider product with every HeV cluster.
-		for (auto const& heVMapItem : getAll(ReactantType::HeV)) {
+		for (auto const &heVMapItem : getAll(ReactantType::HeV)) {
 
-			auto& heVReactant = *(heVMapItem.second);
+			auto &heVReactant = *(heVMapItem.second);
 
 			// Get its composition
-			auto& comp = heVReactant.getComposition();
+			auto &comp = heVReactant.getComposition();
 			// Create the composition of the potential product
 			int newNumHe = comp[toCompIdx(Species::He)];
 			int newNumV = comp[toCompIdx(Species::V)] + firstSize;
@@ -287,9 +287,9 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 		}
 
 		// Consider product with each super cluster
-		for (auto const& superMapItem : getAll(ReactantType::FeSuper)) {
+		for (auto const &superMapItem : getAll(ReactantType::FeSuper)) {
 			// Loop on the potential super products
-			for (auto const& superMapItemProd : getAll(ReactantType::FeSuper)) {
+			for (auto const &superMapItemProd : getAll(ReactantType::FeSuper)) {
 
 				// This method will check if the reaction is possible and then add it to the list
 				defineProductionReactions(vReactant, *(superMapItem.second),
@@ -301,16 +301,16 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 	// Helium-Vacancy clustering
 	// He_a + V_b --> (He_a)(V_b)
 	// Consider each He cluster.
-	for (auto const& heMapItem : getAll(ReactantType::He)) {
+	for (auto const &heMapItem : getAll(ReactantType::He)) {
 
-		auto& heReactant = *(heMapItem.second);
+		auto &heReactant = *(heMapItem.second);
 
 		// Get its size
 		firstSize = heReactant.getSize();
 		// Consider product with each V cluster.
-		for (auto const& vMapItem : getAll(ReactantType::V)) {
+		for (auto const &vMapItem : getAll(ReactantType::V)) {
 
-			auto& vReactant = *(vMapItem.second);
+			auto &vReactant = *(vMapItem.second);
 
 			// Get its size
 			secondSize = vReactant.getSize();
@@ -342,21 +342,21 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 	// Vacancy reduction by Interstitial absorption in HeV clusters
 	// (He_a)(V_b) + (I_c) --> (He_a)[V_(b-c)]
 	// Consider each I cluster
-	for (auto const& iMapItem : getAll(ReactantType::I)) {
+	for (auto const &iMapItem : getAll(ReactantType::I)) {
 
-		auto& iReactant = *(iMapItem.second);
+		auto &iReactant = *(iMapItem.second);
 
 		// Get its size
 		firstSize = iReactant.getSize();
 		// Consider product with each HeV cluster.
-		for (auto const& heVMapItem : getAll(ReactantType::HeV)) {
+		for (auto const &heVMapItem : getAll(ReactantType::HeV)) {
 
-			auto& heVReactant = *(heVMapItem.second);
+			auto &heVReactant = *(heVMapItem.second);
 
 			// Get its composition
-			auto& comp = heVReactant.getComposition();
+			auto &comp = heVReactant.getComposition();
 			// The product can be He or HeV
-			IReactant * product = nullptr;
+			IReactant *product = nullptr;
 			if (comp[toCompIdx(Species::V)] == firstSize) {
 				// The product is He
 				product = get(Species::He, comp[toCompIdx(Species::He)]);
@@ -380,23 +380,23 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 		}
 
 		// Consider product with each super cluster
-		for (auto const& superMapItem : getAll(ReactantType::FeSuper)) {
+		for (auto const &superMapItem : getAll(ReactantType::FeSuper)) {
 			// Loop on the potential super products
-			for (auto const& superMapItemProd : getAll(ReactantType::FeSuper)) {
+			for (auto const &superMapItemProd : getAll(ReactantType::FeSuper)) {
 
 				// This method will check if the reaction is possible and then add it to the list
 				defineProductionReactions(iReactant, *(superMapItem.second),
 						*(superMapItemProd.second));
 			}
 			// Loop on the potential He products
-			for (auto const& heMapItemProd : getAll(ReactantType::He)) {
+			for (auto const &heMapItemProd : getAll(ReactantType::He)) {
 
 				// This method will check if the reaction is possible and then add it to the list
 				defineProductionReactions(iReactant, *(superMapItem.second),
 						*(heMapItemProd.second));
 			}
 			// Loop on the potential HeV products
-			for (auto const& heVMapItemProd : getAll(ReactantType::HeV)) {
+			for (auto const &heVMapItemProd : getAll(ReactantType::HeV)) {
 
 				// This method will check if the reaction is possible and then add it to the list
 				defineProductionReactions(iReactant, *(superMapItem.second),
@@ -411,17 +411,17 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 	//        --> V_(b-a), if a < b
 	//        --> 0, if a = b
 	// Consider all I clusters.
-	for (auto const& iMapItem : getAll(ReactantType::I)) {
+	for (auto const &iMapItem : getAll(ReactantType::I)) {
 
-		auto& iReactant = *(iMapItem.second);
+		auto &iReactant = *(iMapItem.second);
 
 		// Get its size
 		firstSize = iReactant.getSize();
 
 		// Consider product with each V cluster.
-		for (auto const& vMapItem : getAll(ReactantType::V)) {
+		for (auto const &vMapItem : getAll(ReactantType::V)) {
 
-			auto& vReactant = *(vMapItem.second);
+			auto &vReactant = *(vMapItem.second);
 
 			// Get its size
 			secondSize = vReactant.getSize();
@@ -465,7 +465,7 @@ void FeClusterReactionNetwork::createReactionConnectivity() {
 }
 
 bool FeClusterReactionNetwork::canDissociate(
-		ProductionReaction& reaction) const {
+		ProductionReaction &reaction) const {
 	// Assume reaction can dissociate by default.
 	bool ret = true;
 
@@ -492,8 +492,8 @@ bool FeClusterReactionNetwork::canDissociate(
 	return ret;
 }
 
-void FeClusterReactionNetwork::checkForDissociation(IReactant& emittingReactant,
-		ProductionReaction& reaction, int a[4], int b[4]) {
+void FeClusterReactionNetwork::checkForDissociation(IReactant &emittingReactant,
+		ProductionReaction &reaction, int a[4], int b[4]) {
 
 	// Check if reaction can dissociate.
 	if (canDissociate(reaction)) {
@@ -513,7 +513,7 @@ void FeClusterReactionNetwork::setTemperature(double temp, int i) {
 }
 
 void FeClusterReactionNetwork::buildSuperClusterMap(
-		const std::vector<IReactant::SizeType>& bounds) {
+		const std::vector<IReactant::SizeType> &bounds) {
 
 	// Save the bounds to use.
 	boundVector = bounds;
@@ -521,11 +521,12 @@ void FeClusterReactionNetwork::buildSuperClusterMap(
 	// Since we represent the super cluster lookup map using a dense
 	// data structure, we must initialize every entry with something
 	// that signifies 'Invalid.'
-	auto const& superClusters = clusterTypeMap[ReactantType::FeSuper];
+	auto const &superClusters = clusterTypeMap[ReactantType::FeSuper];
 	auto bvSize = boundVector.size();
 	superClusterLookupMap.resize(bvSize);
 	std::for_each(superClusterLookupMap.begin(), superClusterLookupMap.end(),
-			[bvSize,&superClusters](HeVToSuperClusterMap::value_type& currVector) {
+			[bvSize, &superClusters](
+					HeVToSuperClusterMap::value_type &currVector) {
 
 				currVector.resize(bvSize, superClusters.end());
 			});
@@ -537,8 +538,8 @@ void FeClusterReactionNetwork::buildSuperClusterMap(
 			++iter) {
 		// Add the super cluster to our lookup map based on
 		// its He and V intervals.
-		auto& currCluster = *(iter->second);
-		auto const& comp = currCluster.getComposition();
+		auto &currCluster = *(iter->second);
+		auto const &comp = currCluster.getComposition();
 		auto currHe = comp[toCompIdx(Species::He)];
 		auto currV = comp[toCompIdx(Species::V)];
 		auto heIntervalIdx = findBoundsIntervalBaseIdx(currHe);
@@ -554,7 +555,7 @@ void FeClusterReactionNetwork::reinitializeNetwork() {
 	// std::for_each is guaranteed to visit reactants in order for C++11.
 	int id = 0;
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&id](IReactant& currReactant) {
+			[&id](IReactant &currReactant) {
 				id++;
 				currReactant.setId(id);
 				currReactant.setMomentId(id, 0);
@@ -564,10 +565,11 @@ void FeClusterReactionNetwork::reinitializeNetwork() {
 	// Get all the super clusters and loop on them
 	// Have to use allReactants again to be sure the ordering is the same across plateforms
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&id, this](IReactant& currReactant) {
+			[&id, this](IReactant &currReactant) {
 				if (currReactant.getType() == ReactantType::FeSuper) {
 
-					auto& currCluster = static_cast<FeSuperCluster&>(currReactant);
+					auto &currCluster =
+							static_cast<FeSuperCluster&>(currReactant);
 
 					id++;
 					currCluster.setMomentId(id, 0);
@@ -575,10 +577,10 @@ void FeClusterReactionNetwork::reinitializeNetwork() {
 					currCluster.setMomentId(id, 1);
 
 					// Update the HeV size
-					auto const& heBounds = currCluster.getHeBounds();
-					auto const& vBounds = currCluster.getVBounds();
+					auto const &heBounds = currCluster.getHeBounds();
+					auto const &vBounds = currCluster.getVBounds();
 					IReactant::SizeType clusterSize = (*(heBounds.end()) - 1)
-					+ (*(vBounds.end()) - 1);
+							+ (*(vBounds.end()) - 1);
 					if (clusterSize > maxClusterSizeMap[ReactantType::HeV]) {
 						maxClusterSizeMap[ReactantType::HeV] = clusterSize;
 					}
@@ -592,7 +594,7 @@ void FeClusterReactionNetwork::reinitializeConnectivities() {
 
 	// Reset connectivities of each reactant.
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[](IReactant& currReactant) {
+			[](IReactant &currReactant) {
 				currReactant.resetConnectivities();
 			});
 
@@ -600,21 +602,22 @@ void FeClusterReactionNetwork::reinitializeConnectivities() {
 }
 
 void FeClusterReactionNetwork::updateConcentrationsFromArray(
-		double * concentrations) {
+		double *concentrations) {
 
 	// Set the concentration on each reactant.
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&concentrations](IReactant& currReactant) {
+			[&concentrations](IReactant &currReactant) {
 				auto id = currReactant.getId() - 1;
 				currReactant.setConcentration(concentrations[id]);
 			});
 
 	// Set the moments
-	auto const& superTypeMap = getAll(ReactantType::FeSuper);
+	auto const &superTypeMap = getAll(ReactantType::FeSuper);
 	std::for_each(superTypeMap.begin(), superTypeMap.end(),
-			[&concentrations](const ReactantMap::value_type& currMapItem) {
+			[&concentrations](const ReactantMap::value_type &currMapItem) {
 
-				auto& cluster = static_cast<FeSuperCluster&>(*(currMapItem.second));
+				auto &cluster =
+						static_cast<FeSuperCluster&>(*(currMapItem.second));
 
 				cluster.setZerothMoment(concentrations[cluster.getId() - 1]);
 				cluster.setHeMoment(concentrations[cluster.getMomentId(0) - 1]);
@@ -630,10 +633,10 @@ std::vector<std::vector<int> > FeClusterReactionNetwork::getCompositionList() co
 
 	// Loop on all the reactants
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&compList](IReactant& currReactant) {
+			[&compList](IReactant &currReactant) {
 				// Get the composition
 				auto comp = currReactant.getComposition();
-				std::vector <int> compVec;
+				std::vector<int> compVec;
 				compVec.push_back(comp[toCompIdx(Species::He)]);
 				compVec.push_back(comp[toCompIdx(Species::V)]);
 				compVec.push_back(comp[toCompIdx(Species::I)]);
@@ -645,16 +648,16 @@ std::vector<std::vector<int> > FeClusterReactionNetwork::getCompositionList() co
 	return compList;
 }
 
-void FeClusterReactionNetwork::getDiagonalFill(SparseFillMap& fillMap) {
+void FeClusterReactionNetwork::getDiagonalFill(SparseFillMap &fillMap) {
 	// Degrees of freedom is the total number of clusters in the network
 	const int dof = getDOF();
 
 	// Get the connectivity for each reactant
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&fillMap,&dof,this](const IReactant& reactant) {
+			[&fillMap, &dof, this](const IReactant &reactant) {
 
 				// Get the reactant's connectivity
-				auto const& connectivity = reactant.getConnectivity();
+				auto const &connectivity = reactant.getConnectivity();
 				auto connectivityLength = connectivity.size();
 				// Get the reactant id so that the connectivity can be lined up in
 				// the proper column
@@ -674,13 +677,13 @@ void FeClusterReactionNetwork::getDiagonalFill(SparseFillMap& fillMap) {
 			});
 
 	// Get the connectivity for each moment
-	for (auto const& superMapItem : getAll(ReactantType::FeSuper)) {
+	for (auto const &superMapItem : getAll(ReactantType::FeSuper)) {
 
-		auto const& reactant =
+		auto const &reactant =
 				static_cast<FeSuperCluster&>(*(superMapItem.second));
 
 		// Get the reactant and its connectivity
-		auto const& connectivity = reactant.getConnectivity();
+		auto const &connectivity = reactant.getConnectivity();
 		auto connectivityLength = connectivity.size();
 		// Get the helium moment id so that the connectivity can be lined up in
 		// the proper column
@@ -721,10 +724,10 @@ double FeClusterReactionNetwork::getTotalAtomConcentration(int i, int minSize) {
 	double heliumConc = 0.0;
 
 	// Sum over all He clusters.
-	for (auto const& currMapItem : getAll(ReactantType::He)) {
+	for (auto const &currMapItem : getAll(ReactantType::He)) {
 
 		// Get the cluster and its composition
-		auto const& cluster = *(currMapItem.second);
+		auto const &cluster = *(currMapItem.second);
 		double size = cluster.getSize();
 
 		// Add the concentration times the He content to the total helium concentration
@@ -733,11 +736,11 @@ double FeClusterReactionNetwork::getTotalAtomConcentration(int i, int minSize) {
 	}
 
 	// Sum over all HeV clusters.
-	for (auto const& currMapItem : getAll(ReactantType::HeV)) {
+	for (auto const &currMapItem : getAll(ReactantType::HeV)) {
 
 		// Get the cluster and its composition
-		auto const& cluster = *(currMapItem.second);
-		auto& comp = cluster.getComposition();
+		auto const &cluster = *(currMapItem.second);
+		auto &comp = cluster.getComposition();
 		double size = comp[toCompIdx(Species::He)];
 
 		// Add the concentration times the He content to the total helium concentration
@@ -746,10 +749,10 @@ double FeClusterReactionNetwork::getTotalAtomConcentration(int i, int minSize) {
 	}
 
 	// Sum over all super clusters.
-	for (auto const& currMapItem : getAll(ReactantType::FeSuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::FeSuper)) {
 
 		// Get the cluster
-		auto const& cluster =
+		auto const &cluster =
 				static_cast<FeSuperCluster&>(*(currMapItem.second));
 
 		// Add its total helium concentration helium concentration
@@ -765,10 +768,10 @@ double FeClusterReactionNetwork::getTotalTrappedAtomConcentration(int i,
 	double heliumConc = 0.0;
 
 	// Sum over all HeV clusters.
-	for (auto const& currMapItem : getAll(ReactantType::HeV)) {
+	for (auto const &currMapItem : getAll(ReactantType::HeV)) {
 		// Get the cluster and its composition
-		auto const& cluster = *(currMapItem.second);
-		auto& comp = cluster.getComposition();
+		auto const &cluster = *(currMapItem.second);
+		auto &comp = cluster.getComposition();
 		double size = comp[toCompIdx(Species::He)];
 
 		// Add the concentration times the He content to the total helium concentration
@@ -777,9 +780,9 @@ double FeClusterReactionNetwork::getTotalTrappedAtomConcentration(int i,
 	}
 
 	// Sum over all super clusters.
-	for (auto const& currMapItem : getAll(ReactantType::FeSuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::FeSuper)) {
 		// Get the cluster
-		auto const& cluster =
+		auto const &cluster =
 				static_cast<FeSuperCluster&>(*(currMapItem.second));
 
 		// Add its total helium concentration
@@ -794,9 +797,9 @@ double FeClusterReactionNetwork::getTotalVConcentration() {
 	double vConc = 0.0;
 
 	// Sum over all V clusters.
-	for (auto const& currMapItem : getAll(ReactantType::V)) {
+	for (auto const &currMapItem : getAll(ReactantType::V)) {
 		// Get the cluster and its composition
-		auto const& cluster = *(currMapItem.second);
+		auto const &cluster = *(currMapItem.second);
 		double size = cluster.getSize();
 
 		// Add the concentration times the V content to the total vacancy concentration
@@ -804,19 +807,19 @@ double FeClusterReactionNetwork::getTotalVConcentration() {
 	}
 
 	// Sum over all HeV clusters
-	for (auto const& currMapItem : getAll(ReactantType::HeV)) {
+	for (auto const &currMapItem : getAll(ReactantType::HeV)) {
 		// Get the cluster and its composition
-		auto const& cluster = *(currMapItem.second);
-		auto& comp = cluster.getComposition();
+		auto const &cluster = *(currMapItem.second);
+		auto &comp = cluster.getComposition();
 
 		// Add the concentration times the V content to the total vacancy concentration
 		vConc += cluster.getConcentration() * comp[toCompIdx(Species::V)];
 	}
 
 	// Sum over all super clusters
-	for (auto const& currMapItem : getAll(ReactantType::FeSuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::FeSuper)) {
 		// Get the cluster
-		auto const& cluster =
+		auto const &cluster =
 				static_cast<FeSuperCluster&>(*(currMapItem.second));
 
 		// Add its total vacancy concentration
@@ -831,9 +834,9 @@ double FeClusterReactionNetwork::getTotalIConcentration() {
 	double iConc = 0.0;
 
 	// Sum over all I clusters
-	for (auto const& currMapItem : getAll(ReactantType::I)) {
+	for (auto const &currMapItem : getAll(ReactantType::I)) {
 		// Get the cluster and its composition
-		auto const& cluster = *(currMapItem.second);
+		auto const &cluster = *(currMapItem.second);
 		double size = cluster.getSize();
 
 		// Add the concentration times the I content to the total interstitial concentration
@@ -848,7 +851,7 @@ void FeClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 
 	// ----- Compute all of the new fluxes -----
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&updatedConcOffset,&i](IReactant& cluster) {
+			[&updatedConcOffset, &i](IReactant &cluster) {
 				// Compute the flux
 				auto flux = cluster.getTotalFlux(i);
 				// Update the concentration of the cluster
@@ -857,9 +860,9 @@ void FeClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 			});
 
 	// ---- Moments ----
-	for (auto const& currMapItem : getAll(ReactantType::FeSuper)) {
+	for (auto const &currMapItem : getAll(ReactantType::FeSuper)) {
 
-		auto const& superCluster =
+		auto const &superCluster =
 				static_cast<FeSuperCluster&>(*(currMapItem.second));
 
 		// Compute the helium moment flux
@@ -879,14 +882,15 @@ void FeClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 }
 
 void FeClusterReactionNetwork::computeAllPartials(
-		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
-		std::vector<double>& vals, int i) const {
+		const std::vector<size_t> &startingIdx,
+		const std::vector<xolotl::IdType> &indices, std::vector<double> &vals,
+		int i) const {
 	// Initial declarations
 	const int dof = getDOF();
 	std::vector<double> clusterPartials(dof, 0.0);
 
 	// Get the super clusters
-	auto const& superClusters = getAll(ReactantType::FeSuper);
+	auto const &superClusters = getAll(ReactantType::FeSuper);
 
 	// Make a vector of types for the non super clusters
 	std::vector<ReactantType> typeVec { ReactantType::He, ReactantType::V,
@@ -897,12 +901,12 @@ void FeClusterReactionNetwork::computeAllPartials(
 		auto currType = *tvIter;
 
 		// Consider all reactants of the current type.
-		auto const& currTypeReactantMap = getAll(currType);
+		auto const &currTypeReactantMap = getAll(currType);
 
 		// Update the column in the Jacobian that represents each normal reactant
-		for (auto const& currMapItem : currTypeReactantMap) {
+		for (auto const &currMapItem : currTypeReactantMap) {
 
-			auto const& reactant =
+			auto const &reactant =
 					static_cast<FeCluster&>(*(currMapItem.second));
 
 			// Get the reactant index
@@ -911,7 +915,7 @@ void FeClusterReactionNetwork::computeAllPartials(
 			// Get the partial derivatives
 			reactant.getPartialDerivatives(clusterPartials, i);
 			// Get the list of column ids from the map
-			auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+			auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 			// Loop over the list of column ids
 			auto myStartingIdx = startingIdx[reactantIndex];
@@ -927,9 +931,9 @@ void FeClusterReactionNetwork::computeAllPartials(
 	}
 
 	// Update the column in the Jacobian that represents the moment for the super clusters
-	for (auto const& currMapItem : superClusters) {
+	for (auto const &currMapItem : superClusters) {
 
-		auto const& reactant =
+		auto const &reactant =
 				static_cast<FeSuperCluster&>(*(currMapItem.second));
 
 		{
@@ -940,7 +944,7 @@ void FeClusterReactionNetwork::computeAllPartials(
 			reactant.getPartialDerivatives(clusterPartials, i);
 
 			// Get the list of column ids from the map
-			auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+			auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 			// Loop over the list of column ids
 			auto myStartingIdx = startingIdx[reactantIndex];
@@ -961,7 +965,7 @@ void FeClusterReactionNetwork::computeAllPartials(
 			// Get the partial derivatives
 			reactant.getHeMomentPartialDerivatives(clusterPartials);
 			// Get the list of column ids from the map
-			auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+			auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 			// Loop over the list of column ids
 			auto myStartingIdx = startingIdx[reactantIndex];
@@ -982,7 +986,7 @@ void FeClusterReactionNetwork::computeAllPartials(
 			// Get the partial derivatives
 			reactant.getVMomentPartialDerivatives(clusterPartials);
 			// Get the list of column ids from the map
-			auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+			auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 			// Loop over the list of column ids
 			auto myStartingIdx = startingIdx[reactantIndex];
@@ -1001,7 +1005,7 @@ void FeClusterReactionNetwork::computeAllPartials(
 }
 
 double FeClusterReactionNetwork::computeBindingEnergy(
-		const DissociationReaction& reaction) const {
+		const DissociationReaction &reaction) const {
 
 	double bindingEnergy = 5.0;
 	if (reaction.dissociating.getType() == ReactantType::He
@@ -1022,7 +1026,7 @@ double FeClusterReactionNetwork::computeBindingEnergy(
 	if ((reaction.dissociating.getType() == ReactantType::HeV)
 			&& (reaction.first.getType() == ReactantType::V
 					|| reaction.second.getType() == ReactantType::V)) {
-		auto& comp = reaction.dissociating.getComposition();
+		auto &comp = reaction.dissociating.getComposition();
 		bindingEnergy = 1.73
 				- 2.59
 						* (pow((double) comp[toCompIdx(Species::V)], 2.0 / 3.0)
@@ -1039,7 +1043,7 @@ double FeClusterReactionNetwork::computeBindingEnergy(
 	if (reaction.dissociating.getType() == ReactantType::FeSuper
 			&& (reaction.first.getType() == ReactantType::V
 					|| reaction.second.getType() == ReactantType::V)) {
-		auto& comp = reaction.dissociating.getComposition();
+		auto &comp = reaction.dissociating.getComposition();
 		double numV = (double) comp[toCompIdx(Species::V)];
 		double numHe = (double) comp[toCompIdx(Species::He)];
 		bindingEnergy = 1.73
@@ -1049,7 +1053,7 @@ double FeClusterReactionNetwork::computeBindingEnergy(
 	if (reaction.first.getType() == ReactantType::I
 			|| reaction.second.getType() == ReactantType::I) {
 		if (reaction.dissociating.getType() == ReactantType::HeV) {
-			auto& comp = reaction.dissociating.getComposition();
+			auto &comp = reaction.dissociating.getComposition();
 			bindingEnergy = 4.88
 					+ 2.59
 							* (pow((double) comp[toCompIdx(Species::V)],
@@ -1065,7 +1069,7 @@ double FeClusterReactionNetwork::computeBindingEnergy(
 													/ (double) comp[toCompIdx(
 															Species::V)]));
 		} else if (reaction.dissociating.getType() == ReactantType::FeSuper) {
-			auto& comp = reaction.dissociating.getComposition();
+			auto &comp = reaction.dissociating.getComposition();
 			double numV = (double) comp[toCompIdx(Species::V)];
 			double numHe = (double) comp[toCompIdx(Species::He)];
 			bindingEnergy = 4.88
@@ -1114,19 +1118,19 @@ double FeClusterReactionNetwork::computeBindingEnergy(
 	return max(bindingEnergy, -5.0);
 }
 
-IReactant * FeClusterReactionNetwork::getSuperFromComp(IReactant::SizeType nHe,
+IReactant* FeClusterReactionNetwork::getSuperFromComp(IReactant::SizeType nHe,
 		IReactant::SizeType nV) {
 
 	// Requests for finding a particular supercluster have high locality.
 	// See if the last supercluster we were asked to find is the right
 	// one for this request.
-	static IReactant* lastRet = nullptr;
+	static IReactant *lastRet = nullptr;
 	if (lastRet and static_cast<FeSuperCluster*>(lastRet)->isIn(nHe, nV)) {
 		return lastRet;
 	}
 
 	// We didn't find the last supercluster in our cache, so do a full lookup.
-	IReactant* ret = nullptr;
+	IReactant *ret = nullptr;
 
 	auto heBaseIdx = findBoundsIntervalBaseIdx(nHe);
 	auto vBaseIdx = findBoundsIntervalBaseIdx(nV);
@@ -1134,7 +1138,7 @@ IReactant * FeClusterReactionNetwork::getSuperFromComp(IReactant::SizeType nHe,
 	if ((heBaseIdx != std::numeric_limits<std::size_t>::max())
 			and (vBaseIdx != std::numeric_limits<std::size_t>::max())) {
 
-		auto& superIter = superClusterLookupMap[heBaseIdx][vBaseIdx];
+		auto &superIter = superClusterLookupMap[heBaseIdx][vBaseIdx];
 		if (superIter != clusterTypeMap.at(ReactantType::FeSuper).end()) {
 			ret = superIter->second.get();
 			assert(static_cast<FeSuperCluster*>(ret)->isIn(nHe, nV));

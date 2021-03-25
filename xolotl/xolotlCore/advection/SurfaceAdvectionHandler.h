@@ -36,7 +36,7 @@ public:
 	 * \see IAdvectionHandler.h
 	 */
 	void initializeAdvectionGrid(
-			std::vector<IAdvectionHandler *> advectionHandlers,
+			std::vector<IAdvectionHandler*> advectionHandlers,
 			std::vector<double> grid, int nx, int xs, int ny = 1, double hy =
 					0.0, int ys = 0, int nz = 1, double hz = 0.0, int zs = 0)
 					override;
@@ -54,8 +54,8 @@ public:
 	 *
 	 * \see IAdvectionHandler.h
 	 */
-	void computeAdvection(const IReactionNetwork& network,
-			const NDPoint<3>& pos, double **concVector,
+	void computeAdvection(const IReactionNetwork &network,
+			const NDPoint<3> &pos, double **concVector,
 			double *updatedConcOffset, double hxLeft, double hxRight, int ix,
 			double hy = 0.0, int iy = 0, double hz = 0.0, int iz = 0) const
 					override;
@@ -76,9 +76,9 @@ public:
 	 *
 	 * \see IAdvectionHandler.h
 	 */
-	void computePartialsForAdvection(const IReactionNetwork& network,
-			double *val, long int *indices, const NDPoint<3>& pos, double hxLeft,
-			double hxRight, int ix, double hy = 0.0, int iy = 0,
+	void computePartialsForAdvection(const IReactionNetwork &network,
+			double *val, xolotl::IdType *indices, const NDPoint<3> &pos,
+			double hxLeft, double hxRight, int ix, double hy = 0.0, int iy = 0,
 			double hz = 0.0, int iz = 0) const override;
 
 	/**
@@ -94,7 +94,7 @@ public:
 	 *
 	 * \see IAdvectionHandler.h
 	 */
-	std::array<int, 3> getStencilForAdvection(const NDPoint<3>& pos) const
+	std::array<int, 3> getStencilForAdvection(const NDPoint<3> &pos) const
 			override {
 		// Always return (1, 0, 0)
 		return {1, 0, 0};
@@ -105,7 +105,7 @@ public:
 	 *
 	 * \see IAdvectionHandler.h
 	 */
-	bool isPointOnSink(const NDPoint<3>& pos) const override {
+	bool isPointOnSink(const NDPoint<3> &pos) const override {
 		// Always return false
 		return false;
 	}

@@ -34,7 +34,7 @@ public:
 	 *
 	 * \see IHeterogeneousNucleationHandler.h
 	 */
-	void initialize(const IReactionNetwork& network) {
+	void initialize(const IReactionNetwork &network) {
 		// Doesn't do anything
 		return;
 	}
@@ -66,7 +66,7 @@ public:
 	 *
 	 * \see IHeterogeneousNucleationHandler.h
 	 */
-	void computeHeterogeneousNucleation(const IReactionNetwork& network,
+	void computeHeterogeneousNucleation(const IReactionNetwork &network,
 			double *concOffset, double *updatedConcOffset, int xi, int xs,
 			int yj = 0, int zk = 0) {
 		// Doesn't do anything
@@ -84,8 +84,8 @@ public:
 	 * \see IHeterogeneousNucleationHandler.h
 	 */
 	bool computePartialsForHeterogeneousNucleation(
-			const IReactionNetwork& network, double *val, long int *indices, int xi,
-			int xs, int yj = 0, int zk = 0) {
+			const IReactionNetwork &network, double *val,
+			xolotl::IdType *indices, int xi, int xs, int yj = 0, int zk = 0) {
 		// Doesn't do anything
 		return false;
 	}

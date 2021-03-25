@@ -46,6 +46,8 @@ if (PETSC_FOUND)
     include_directories(${PETSC_INCLUDES})
     set(CMAKE_REQUIRED_INCLUDES ${SAVED_CMAKE_REQUIRED_INCLUDES})
     set(CMAKE_REQUIRED_LIBRARIES ${SAVED_CMAKE_REQUIRED_LIBRARIES})
+    option(Xolotl_USE_64BIT_INDEX_TYPE "" ${PETSc_USE_64BIT_INDICES})
+    set(XOLOTL_USE_64BIT_INDEX_TYPE ${Xolotl_USE_64BIT_INDEX_TYPE})
 endif()
 
 # Make sure that we only pull the static HDF5
@@ -160,6 +162,7 @@ if(BUILD_SHARED_LIBS)
     
     #Install the xolotl header files
     install(FILES ${HEADERS} DESTINATION ${PROJECT_BINARY_DIR}/include)
+    install(FILES ${CMAKE_BINARY_DIR}/XolotlConfig.h DESTINATION ${PROJECT_BINARY_DIR}/include)
     install(TARGETS ${LIBRARY_NAME} DESTINATION ${PROJECT_BINARY_DIR}/lib)
     
 else(BUILD_SHARED_LIBS)

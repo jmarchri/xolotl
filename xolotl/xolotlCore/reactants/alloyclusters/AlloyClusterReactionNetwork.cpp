@@ -22,7 +22,7 @@ AlloyClusterReactionNetwork::AlloyClusterReactionNetwork(
 }
 
 double AlloyClusterReactionNetwork::calculateReactionRateConstant(
-		const ProductionReaction& reaction, int i) const {
+		const ProductionReaction &reaction, int i) const {
 	// Get the reaction radii
 	double r_first = reaction.first.getReactionRadius();
 	double r_second = reaction.second.getReactionRadius();
@@ -39,7 +39,7 @@ double AlloyClusterReactionNetwork::calculateReactionRateConstant(
 }
 
 double AlloyClusterReactionNetwork::calculateDissociationConstant(
-		const DissociationReaction& reaction, int i) {
+		const DissociationReaction &reaction, int i) {
 
 	// If the dissociations are not allowed
 	if (!dissociationsEnabled)
@@ -78,12 +78,12 @@ double AlloyClusterReactionNetwork::calculateDissociationConstant(
 }
 
 double AlloyClusterReactionNetwork::computeBindingEnergy(
-		const DissociationReaction& reaction) const {
+		const DissociationReaction &reaction) const {
 	double firstEnergy = reaction.first.getFormationEnergy(), secondEnergy =
 			reaction.second.getFormationEnergy(), dissoEnergy =
 			reaction.dissociating.getFormationEnergy();
 
-	auto& dissoCluster = static_cast<AlloyCluster&>(reaction.dissociating);
+	auto &dissoCluster = static_cast<AlloyCluster&>(reaction.dissociating);
 	if (dissoCluster.isSuper()) {
 		dissoEnergy = getFormationEnergy(dissoCluster.getType(),
 				dissoCluster.getSize());
@@ -192,15 +192,15 @@ void AlloyClusterReactionNetwork::createReactionConnectivity() {
 	auto forwardReactions = getForwardReactions("default");
 
 	// Loop over all reactions
-	for (auto & forwardReaction : forwardReactions) {
+	for (auto &forwardReaction : forwardReactions) {
 		// Get all reactants for given reaction
-		auto& allReactants1 = getAll(forwardReaction.getFirstReactant());
-		auto& allReactants2 = getAll(forwardReaction.getSecondReactant());
+		auto &allReactants1 = getAll(forwardReaction.getFirstReactant());
+		auto &allReactants2 = getAll(forwardReaction.getSecondReactant());
 		// Loop over all individual reactants
-		for (auto & reactant1 : allReactants1) {
-			auto& cluster1 = static_cast<AlloyCluster&>(*(reactant1.second));
-			for (auto & reactant2 : allReactants2) {
-				auto& cluster2 = static_cast<AlloyCluster&>(*(reactant2.second));
+		for (auto &reactant1 : allReactants1) {
+			auto &cluster1 = static_cast<AlloyCluster&>(*(reactant1.second));
+			for (auto &reactant2 : allReactants2) {
+				auto &cluster2 = static_cast<AlloyCluster&>(*(reactant2.second));
 				// Skip repeating reactions
 				if ((cluster1.getType() == cluster2.getType())
 						&& (cluster2.getSize() > cluster1.getSize()))
@@ -222,7 +222,7 @@ void AlloyClusterReactionNetwork::createReactionConnectivity() {
 						// Create the reaction
 						std::unique_ptr<ProductionReaction> reaction(
 								new ProductionReaction(cluster1, cluster2));
-						auto& prref = add(std::move(reaction));
+						auto &prref = add(std::move(reaction));
 						// Tell the reactants that they are in this reaction
 						(cluster1).participateIn(prref);
 						(cluster2).participateIn(prref);
@@ -236,19 +236,19 @@ void AlloyClusterReactionNetwork::createReactionConnectivity() {
 				// Get list of accepted products
 				auto products = forwardReaction.getProducts();
 				// Loop over all accepted products
-				for (auto & productName : products) {
+				for (auto &productName : products) {
 					// Get all the clusters of this type
-					auto& allProducts = getAll(productName);
+					auto &allProducts = getAll(productName);
 					// Loop over all individual products
-					for (auto & product : allProducts) {
-						auto& prodCluster =
+					for (auto &product : allProducts) {
+						auto &prodCluster =
 								static_cast<AlloyCluster&>(*(product.second));
 						// Check if the reaction is possible
 						if (checkOverlap(cluster1, cluster2, prodCluster)) {
 							// Create the reaction
 							std::unique_ptr<ProductionReaction> reaction(
 									new ProductionReaction(cluster1, cluster2));
-							auto& prref = add(std::move(reaction));
+							auto &prref = add(std::move(reaction));
 							// Tell the reactants that they are in this reaction
 							(cluster1).participateIn(prref, prodCluster);
 							(cluster2).participateIn(prref, prodCluster);
@@ -261,22 +261,22 @@ void AlloyClusterReactionNetwork::createReactionConnectivity() {
 	}
 
 	auto backwardReactions = getBackwardReactions("default");
-	for (auto & backwardReaction : backwardReactions) {
+	for (auto &backwardReaction : backwardReactions) {
 		auto monomerName = backwardReaction.getMonomer();
-		auto& monomer = static_cast<AlloyCluster&>(*get(toSpecies(monomerName),
+		auto &monomer = static_cast<AlloyCluster&>(*get(toSpecies(monomerName),
 				1));
 		auto parentName = backwardReaction.getParent();
-		auto& parents = getAll(parentName);
-		for (auto & parent : parents) {
-			auto& parentCluster = static_cast<AlloyCluster&>(*(parent.second));
+		auto &parents = getAll(parentName);
+		for (auto &parent : parents) {
+			auto &parentCluster = static_cast<AlloyCluster&>(*(parent.second));
 			auto productNames = backwardReaction.getProducts();
 			// Loop over all accepted products
-			for (auto & productName : productNames) {
+			for (auto &productName : productNames) {
 				// Get all the clusters of this type
-				auto& allProducts = getAll(productName);
+				auto &allProducts = getAll(productName);
 				// Loop over all individual products
-				for (auto & product : allProducts) {
-					auto& prodCluster =
+				for (auto &product : allProducts) {
+					auto &prodCluster =
 							static_cast<AlloyCluster&>(*(product.second));
 					if (checkOverlap(monomer, prodCluster, parentCluster)) {
 						// Create the dissociation
@@ -286,10 +286,10 @@ void AlloyClusterReactionNetwork::createReactionConnectivity() {
 						// Create the corresponding reaction
 						std::unique_ptr<ProductionReaction> reaction(
 								new ProductionReaction(monomer, prodCluster));
-						auto& prref = add(std::move(reaction));
+						auto &prref = add(std::move(reaction));
 						// Set it in the dissociation
 						dissoReaction->reverseReaction = &prref;
-						auto& drref = add(std::move(dissoReaction));
+						auto &drref = add(std::move(dissoReaction));
 						// Tell the reactants that they are in this reaction
 						(monomer).participateIn(drref, parentCluster);
 						(prodCluster).participateIn(drref, parentCluster);
@@ -304,7 +304,7 @@ void AlloyClusterReactionNetwork::createReactionConnectivity() {
 }
 
 void AlloyClusterReactionNetwork::checkDissociationConnectivity(
-		IReactant * emittingReactant,
+		IReactant *emittingReactant,
 		std::shared_ptr<ProductionReaction> reaction) {
 
 	return;
@@ -322,7 +322,7 @@ void AlloyClusterReactionNetwork::reinitializeNetwork() {
 	// Reset the Ids
 	int id = 0;
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&id](IReactant& currReactant) {
+			[&id](IReactant &currReactant) {
 				id++;
 				currReactant.setId(id);
 				currReactant.setMomentId(id);
@@ -331,33 +331,41 @@ void AlloyClusterReactionNetwork::reinitializeNetwork() {
 	// Get all the super clusters and loop on them
 	// Have to use allReactants again to be sure the ordering is the same across plateforms
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&id, this](IReactant& currReactant) {
+			[&id, this](IReactant &currReactant) {
 
 				if (currReactant.getType() == ReactantType::VoidSuper
 						|| currReactant.getType() == ReactantType::FaultedSuper
 						|| currReactant.getType() == ReactantType::FrankSuper
-						|| currReactant.getType() == ReactantType::PerfectSuper) {
-					auto& currCluster = static_cast<AlloySuperCluster&>(currReactant);
+						|| currReactant.getType()
+								== ReactantType::PerfectSuper) {
+					auto &currCluster =
+							static_cast<AlloySuperCluster&>(currReactant);
 					id++;
 					currCluster.setMomentId(id);
 
 					// Update the size
-					IReactant::SizeType clusterSize = (double)currCluster.getSize()
-					+ (double)(currCluster.getSectionWidth() - 1) / 2.0;
+					IReactant::SizeType clusterSize =
+							(double) currCluster.getSize()
+									+ (double) (currCluster.getSectionWidth()
+											- 1) / 2.0;
 					if (currReactant.getType() == ReactantType::VoidSuper
-							&& clusterSize > maxClusterSizeMap[ReactantType::Void]) {
+							&& clusterSize
+									> maxClusterSizeMap[ReactantType::Void]) {
 						maxClusterSizeMap[ReactantType::Void] = clusterSize;
 					}
 					if (currReactant.getType() == ReactantType::FaultedSuper
-							&& clusterSize > maxClusterSizeMap[ReactantType::Faulted]) {
+							&& clusterSize
+									> maxClusterSizeMap[ReactantType::Faulted]) {
 						maxClusterSizeMap[ReactantType::Faulted] = clusterSize;
 					}
 					if (currReactant.getType() == ReactantType::PerfectSuper
-							&& clusterSize > maxClusterSizeMap[ReactantType::Perfect]) {
+							&& clusterSize
+									> maxClusterSizeMap[ReactantType::Perfect]) {
 						maxClusterSizeMap[ReactantType::Perfect] = clusterSize;
 					}
 					if (currReactant.getType() == ReactantType::FrankSuper
-							&& clusterSize > maxClusterSizeMap[ReactantType::Frank]) {
+							&& clusterSize
+									> maxClusterSizeMap[ReactantType::Frank]) {
 						maxClusterSizeMap[ReactantType::Frank] = clusterSize;
 					}
 				}
@@ -369,7 +377,7 @@ void AlloyClusterReactionNetwork::reinitializeNetwork() {
 void AlloyClusterReactionNetwork::reinitializeConnectivities() {
 	// Loop on all the reactants to reset their connectivities
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[](IReactant& currReactant) {
+			[](IReactant &currReactant) {
 				currReactant.resetConnectivities();
 			});
 
@@ -377,21 +385,24 @@ void AlloyClusterReactionNetwork::reinitializeConnectivities() {
 }
 
 void AlloyClusterReactionNetwork::updateConcentrationsFromArray(
-		double * concentrations) {
+		double *concentrations) {
 
 	// Set the concentration on each reactant.
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&concentrations](IReactant& currReactant) {
+			[&concentrations](IReactant &currReactant) {
 				auto id = currReactant.getId() - 1;
 				currReactant.setConcentration(concentrations[id]);
 				// Set the moments
 				if (currReactant.getType() == ReactantType::VoidSuper
 						|| currReactant.getType() == ReactantType::FaultedSuper
 						|| currReactant.getType() == ReactantType::FrankSuper
-						|| currReactant.getType() == ReactantType::PerfectSuper) {
-					auto& currCluster = static_cast<AlloySuperCluster&>(currReactant);
+						|| currReactant.getType()
+								== ReactantType::PerfectSuper) {
+					auto &currCluster =
+							static_cast<AlloySuperCluster&>(currReactant);
 					currCluster.setZerothMoment(concentrations[id]);
-					currCluster.setMoment(concentrations[currCluster.getMomentId() - 1]);
+					currCluster.setMoment(
+							concentrations[currCluster.getMomentId() - 1]);
 				}
 			});
 
@@ -404,10 +415,10 @@ std::vector<std::vector<int> > AlloyClusterReactionNetwork::getCompositionList()
 
 	// Loop on all the reactants
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&compList](IReactant& currReactant) {
+			[&compList](IReactant &currReactant) {
 				// Get the composition
 				auto comp = currReactant.getComposition();
-				std::vector <int> compVec;
+				std::vector<int> compVec;
 				compVec.push_back(comp[toCompIdx(Species::V)]);
 				compVec.push_back(comp[toCompIdx(Species::I)]);
 				compVec.push_back(comp[toCompIdx(Species::Void)]);
@@ -422,16 +433,16 @@ std::vector<std::vector<int> > AlloyClusterReactionNetwork::getCompositionList()
 	return compList;
 }
 
-void AlloyClusterReactionNetwork::getDiagonalFill(SparseFillMap& fillMap) {
+void AlloyClusterReactionNetwork::getDiagonalFill(SparseFillMap &fillMap) {
 
 	// Degrees of freedom is the total number of clusters in the network
 	const int dof = getDOF();
 
 	// Get the connectivity for each reactant
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&fillMap, &dof, this](const IReactant& reactant) {
+			[&fillMap, &dof, this](const IReactant &reactant) {
 				// Get the reactant and its connectivity
-				auto const& connectivity = reactant.getConnectivity();
+				auto const &connectivity = reactant.getConnectivity();
 				auto connectivityLength = connectivity.size();
 				// Get the reactant id so that the connectivity can be lined up in
 				// the proper column
@@ -461,15 +472,15 @@ void AlloyClusterReactionNetwork::getDiagonalFill(SparseFillMap& fillMap) {
 		auto currType = *tvIter;
 
 		// Consider all reactants of the current type.
-		auto const& currTypeReactantMap = getAll(currType);
+		auto const &currTypeReactantMap = getAll(currType);
 
 		// Update the column in the Jacobian that represents each normal reactant
-		for (auto const& currMapItem : currTypeReactantMap) {
+		for (auto const &currMapItem : currTypeReactantMap) {
 
-			auto const& reactant =
+			auto const &reactant =
 					static_cast<AlloySuperCluster&>(*(currMapItem.second));
 
-			auto const& connectivity = reactant.getConnectivity();
+			auto const &connectivity = reactant.getConnectivity();
 			auto connectivityLength = connectivity.size();
 			// Get the xenon moment id so that the connectivity can be lined up in
 			// the proper column
@@ -498,7 +509,7 @@ void AlloyClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 
 	// ----- Compute all of the new fluxes -----
 	std::for_each(allReactants.begin(), allReactants.end(),
-			[&updatedConcOffset,&i](IReactant& cluster) {
+			[&updatedConcOffset, &i](IReactant &cluster) {
 
 				// Compute the flux
 				auto flux = cluster.getTotalFlux(i);
@@ -518,12 +529,12 @@ void AlloyClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 		auto currType = *tvIter;
 
 		// Consider all reactants of the current type.
-		auto const& currTypeReactantMap = getAll(currType);
+		auto const &currTypeReactantMap = getAll(currType);
 
 		// Update the column in the Jacobian that represents each normal reactant
-		for (auto const& currMapItem : currTypeReactantMap) {
+		for (auto const &currMapItem : currTypeReactantMap) {
 
-			auto& superCluster =
+			auto &superCluster =
 					static_cast<AlloySuperCluster&>(*(currMapItem.second));
 
 			// Compute the xenon moment flux
@@ -538,8 +549,9 @@ void AlloyClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 }
 
 void AlloyClusterReactionNetwork::computeAllPartials(
-		const std::vector<size_t>& startingIdx, const std::vector<long int>& indices,
-		std::vector<double>& vals, int i) const {
+		const std::vector<size_t> &startingIdx,
+		const std::vector<xolotl::IdType> &indices, std::vector<double> &vals,
+		int i) const {
 
 	// Initial declarations
 	const int dof = getDOF();
@@ -555,12 +567,12 @@ void AlloyClusterReactionNetwork::computeAllPartials(
 		auto currType = *tvIter;
 
 		// Consider all reactants of the current type.
-		auto const& currTypeReactantMap = getAll(currType);
+		auto const &currTypeReactantMap = getAll(currType);
 
 		// Update the column in the Jacobian that represents each normal reactant
-		for (auto const& currMapItem : currTypeReactantMap) {
+		for (auto const &currMapItem : currTypeReactantMap) {
 
-			auto const& reactant =
+			auto const &reactant =
 					static_cast<AlloyCluster&>(*(currMapItem.second));
 
 			// Get the reactant index
@@ -569,7 +581,7 @@ void AlloyClusterReactionNetwork::computeAllPartials(
 			// Get the partial derivatives
 			reactant.getPartialDerivatives(clusterPartials, i);
 			// Get the list of column ids from the map
-			auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+			auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 			// Loop over the list of column ids
 			auto myStartingIdx = startingIdx[reactantIndex];
@@ -596,12 +608,12 @@ void AlloyClusterReactionNetwork::computeAllPartials(
 		auto currType = *tvIter;
 
 		// Consider all reactants of the current type.
-		auto const& currTypeReactantMap = getAll(currType);
+		auto const &currTypeReactantMap = getAll(currType);
 
 		// Update the column in the Jacobian that represents each normal reactant
-		for (auto const& currMapItem : currTypeReactantMap) {
+		for (auto const &currMapItem : currTypeReactantMap) {
 
-			auto const& reactant =
+			auto const &reactant =
 					static_cast<AlloySuperCluster&>(*(currMapItem.second));
 
 			// Get the super cluster index
@@ -612,7 +624,7 @@ void AlloyClusterReactionNetwork::computeAllPartials(
 
 			{
 				// Get the list of column ids from the map
-				auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+				auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 				// Loop over the list of column ids
 				auto myStartingIdx = startingIdx[reactantIndex];
@@ -633,7 +645,7 @@ void AlloyClusterReactionNetwork::computeAllPartials(
 				// Get the partial derivatives
 				reactant.getMomentPartialDerivatives(clusterPartials);
 				// Get the list of column ids from the map
-				auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+				auto const &pdColIdsVector = dFillMap.at(reactantIndex);
 
 				// Loop over the list of column ids
 				auto myStartingIdx = startingIdx[reactantIndex];
