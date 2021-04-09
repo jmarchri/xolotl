@@ -64,6 +64,9 @@ std::vector<double> nDeuterium2D;
 std::vector<double> previousTFlux2D;
 //! The variable to store the total number of tritium going through the bottom.
 std::vector<double> nTritium2D;
+//! Variables to keep track of Xe reaching the surface
+double previousXeFlux2D = 0.0;
+double nXeSurf2D = 0.0;
 //! The variable to store the sputtering yield at the surface.
 double sputteringYield2D = 0.0;
 // The vector of depths at which bursting happens
@@ -808,6 +811,61 @@ PetscErrorCode computeXenonRetention2D(TS ts, PetscInt timestep, PetscReal time,
 		}
 	}
 
+	// Free surface
+	if (solverHandler.getLeftOffset() == 1) {
+		if (procId == 0) {
+			// Get the delta time from the previous timestep to this timestep
+			double dt = time - solverHandler.getPreviousTime();
+			// Compute the total number of impurities that went to the surface
+			nXeSurf2D += previousXeFlux2D * dt;
+		}
+
+		// Get the Xe_1 cluster
+		auto &cluster = *(network.get(Species::Xe, 1));
+		// Get its id
+		int id = cluster.getId() - 1;
+		// Get its size and diffusion coefficient
+		int size = cluster.getSize();
+		// Init previous flux
+		double localXeFlux2D = 0.0;
+
+		// Loop on every Y position
+		for (PetscInt j = 0; j < My; j++) {
+			// Get the local surface position
+			int xi = solverHandler.getSurfacePosition(j);
+
+			// Check we are on the right proc
+			if (xi >= xs && xi < xs + xm && j >= ys && j < ys + ym) {
+				// Factor for finite difference
+				double hxLeft = 0.0, hxRight = 0.0;
+				if (xi - 1 >= 0 && xi < Mx) {
+					hxLeft = (grid[xi + 1] - grid[xi - 1]) / 2.0;
+					hxRight = (grid[xi + 2] - grid[xi]) / 2.0;
+				} else if (xi - 1 < 0) {
+					hxLeft = grid[xi + 1] - grid[xi];
+					hxRight = (grid[xi + 2] - grid[xi]) / 2.0;
+				} else {
+					hxLeft = (grid[xi + 1] - grid[xi - 1]) / 2.0;
+					hxRight = grid[xi + 1] - grid[xi];
+				}
+				double factor = 2.0 * hy / (hxLeft + hxRight);
+
+				// Initialize the value for the flux
+				double newFlux = 0.0;
+
+				// Right
+				xi += 1;
+				// Compute the flux coming from the right
+				localXeFlux2D += (double) size * solutionArray[j][xi][id]
+						* cluster.getDiffusionCoefficient(xi + 1 - xs) * factor;
+			}
+		}
+
+		// Add the data from each process
+		MPI_Reduce(&localXeFlux2D, &previousXeFlux2D, 1,
+		MPI_DOUBLE, MPI_SUM, 0, xolotlComm);
+	}
+
 	// Master process
 	if (procId == 0) {
 		// Compute the total surface irradiated
@@ -820,7 +878,8 @@ PetscErrorCode computeXenonRetention2D(TS ts, PetscInt timestep, PetscReal time,
 		// Print the result
 		std::cout << "\nTime: " << time << std::endl;
 		std::cout << "Xenon concentration = " << totalConcData[0] << std::endl;
-		std::cout << "Xenon GB = " << nXenon / surface << std::endl
+		std::cout << "Xenon GB = " << nXenon / surface << std::endl;
+		std::cout << "Xenon Surf = " << nXeSurf2D / surface << std::endl
 				<< std::endl;
 
 		// Make sure the average partial radius makes sense
@@ -838,7 +897,8 @@ PetscErrorCode computeXenonRetention2D(TS ts, PetscInt timestep, PetscReal time,
 		outputFile.open("retentionOut.txt", ios::app);
 		outputFile << time << " " << totalConcData[0] << " "
 				<< totalConcData[2] / totalConcData[1] << " "
-				<< averagePartialRadius << " " << nXenon / surface << std::endl;
+				<< averagePartialRadius << " " << nXenon / surface << " "
+				<< nXeSurf2D / surface << std::endl;
 		outputFile.close();
 	}
 

@@ -65,8 +65,9 @@ double nHeliumSurf1D = 0.0, nHeliumBulk1D = 0.0, nHeliumBurst1D = 0.0,
 		nTritiumSurf1D = 0.0, nTritiumBulk1D = 0.0, nTritiumBurst1D = 0.0,
 		nVacancySurf1D = 0.0, nVacancyBulk1D = 0.0, nInterSurf1D = 0.0,
 		nInterBulk1D = 0.0, nInterEvent1D = 0.0;
-//! The variable to store the xenon flux at the previous time step.
+//! Variables to keep track of Xe reaching the surface
 double previousXeFlux1D = 0.0;
+double nXeSurf1D = 0.0;
 //! The variable to store the sputtering yield at the surface.
 double sputteringYield1D = 0.0;
 //! The threshold for the negative concentration
@@ -1031,6 +1032,8 @@ PetscErrorCode computeXenonRetention1D(TS ts, PetscInt, PetscReal time,
 
 	// Get the physical grid
 	auto grid = solverHandler.getXGrid();
+	// Get the position of the surface
+	int surfacePos = solverHandler.getSurfacePosition();
 
 	// Get the network
 	auto &network = solverHandler.getNetwork();
@@ -1061,6 +1064,11 @@ PetscErrorCode computeXenonRetention1D(TS ts, PetscInt, PetscReal time,
 
 	// Loop on the grid
 	for (PetscInt xi = xs; xi < xs + xm; xi++) {
+
+		// Boundary conditions
+		if (xi < surfacePos + solverHandler.getLeftOffset()
+				|| xi >= Mx - solverHandler.getRightOffset())
+			continue;
 
 		// Get the pointer to the beginning of the solution data for this grid point
 		gridPointSolution = solutionArray[xi];
@@ -1208,6 +1216,56 @@ PetscErrorCode computeXenonRetention1D(TS ts, PetscInt, PetscReal time,
 		}
 	}
 
+	// Free surface
+	if (solverHandler.getLeftOffset() == 1) {
+		if (procId == 0) {
+			// Get the delta time from the previous timestep to this timestep
+			double dt = time - solverHandler.getPreviousTime();
+			// Compute the total number of impurities that went to the surface
+			nXeSurf1D += previousXeFlux1D * dt;
+		}
+
+		// Get the Xe_1 cluster
+		auto &cluster = *(network.get(Species::Xe, 1));
+		// Get its id
+		int id = cluster.getId() - 1;
+		// Get its size and diffusion coefficient
+		int size = cluster.getSize();
+		// Init previous flux
+		double localXeFlux1D = 0.0;
+
+		// Get the local surface position
+		int xi = solverHandler.getSurfacePosition();
+
+		// Check we are on the right proc
+		if (xi >= xs && xi < xs + xm) {
+			// Factor for finite difference
+			double hxLeft = 0.0, hxRight = 0.0;
+			if (xi - 1 >= 0 && xi < Mx) {
+				hxLeft = (grid[xi + 1] - grid[xi - 1]) / 2.0;
+				hxRight = (grid[xi + 2] - grid[xi]) / 2.0;
+			} else if (xi - 1 < 0) {
+				hxLeft = grid[xi + 1] - grid[xi];
+				hxRight = (grid[xi + 2] - grid[xi]) / 2.0;
+			} else {
+				hxLeft = (grid[xi + 1] - grid[xi - 1]) / 2.0;
+				hxRight = grid[xi + 1] - grid[xi];
+			}
+			double factor = 2.0 / (hxLeft + hxRight);
+
+			// Right
+			xi += 1;
+			// Compute the flux coming from the right
+			localXeFlux1D += (double) size * solutionArray[xi][id]
+					* cluster.getDiffusionCoefficient(xi + 1 - xs) * factor;
+
+		}
+
+		// Add the data from each process
+		MPI_Reduce(&localXeFlux1D, &previousXeFlux1D, 1,
+		MPI_DOUBLE, MPI_SUM, 0, xolotlComm);
+	}
+
 	// Master process
 	if (procId == 0) {
 		// Get the number of xenon that went to the GB
@@ -1216,7 +1274,8 @@ PetscErrorCode computeXenonRetention1D(TS ts, PetscInt, PetscReal time,
 		// Print the result
 		std::cout << "\nTime: " << time << std::endl;
 		std::cout << "Xenon concentration = " << totalConcData[0] << std::endl;
-		std::cout << "Xenon GB = " << nXenon << std::endl << std::endl;
+		std::cout << "Xenon GB = " << nXenon << std::endl;
+		std::cout << "Xenon Surf = " << nXeSurf1D << std::endl << std::endl;
 
 		// Make sure the average partial radius makes sense
 		double averagePartialRadius = totalConcData[4] / totalConcData[3];
@@ -1232,7 +1291,8 @@ PetscErrorCode computeXenonRetention1D(TS ts, PetscInt, PetscReal time,
 		outputFile.open("retentionOut.txt", ios::app);
 		outputFile << time << " " << totalConcData[0] << " "
 				<< totalConcData[2] / totalConcData[1] << " "
-				<< averagePartialRadius << " " << nXenon << std::endl;
+				<< averagePartialRadius << " " << nXenon << " " << nXeSurf1D
+				<< std::endl;
 		outputFile.close();
 	}
 
